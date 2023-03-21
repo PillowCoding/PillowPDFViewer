@@ -5,3 +5,112 @@ $main-color: rgba(12, 12, 13, 1);
 $annotation-background-color: #f1f1f1;
 $annotation-background-hover-color: #ebebeb;
 $annotation-background-focus-color: #cecece;
+
+$input-background-color: rgba(204, 204, 204, 1);
+$input-background-hover-color: rgb(190, 190, 190);
+$input-border-color: rgba(204, 204, 204, 1);
+
+$close-button-height: 28px;
+$close-button-width: 28px;
+
+.display-flex
+{
+    display: flex;
+}
+
+.full-height
+{
+    height: 100%;
+}
+
+.full-width
+{
+    width: 100%;
+}
+
+.font-bold
+{
+    font-weight: 700;
+}
+
+.warning
+{
+    color: goldenrod;
+}
+
+a, .button
+{
+    font-size: 12px;
+    margin: 0;
+    padding: .25rem 1rem 0 1rem;
+    border: none;
+    background-color: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    line-height: 1.4rem;
+
+    &:hover
+    {
+        background-color: rgba(0, 0, 0, 0.3);
+    }
+
+    &.small
+    {
+        padding: .15rem .8rem 0 .8rem;
+    }
+}
+
+.close {
+    width: $close-button-width;
+    height: $close-button-height;
+    opacity: 0.3;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    &:before, &:after {
+        position: absolute;
+        content: ' ';
+        height: calc($close-button-height / 2);
+        width: 2px;
+        background-color: #333;
+    }
+
+    &:before {
+        transform: rotate(45deg) translateX(calc($close-button-width / 2));
+    }
+    &:after {
+        transform: rotate(-45deg) translate(0, calc($close-button-width / 2));
+    }
+}
+
+.form
+{
+    input[type="text"] {
+        // I honestly can't figure out why 18 is the magic number here.
+        width: calc(100% - 18px);
+        padding: 8px;
+        border-radius: 4px;
+        margin: 5px auto;
+        border: 1px solid $input-border-color;
+        background-color: white;
+        color: black;
+        outline: none;
+    }
+    
+    input[type="submit"] {
+        height: 25px;
+        width: 50px;
+        color: black;
+        margin-left: -50px;
+        cursor: pointer;
+        background-color: $input-background-color;
+        border: solid $input-border-color 1px;
+        appearance: none;
+
+        &:hover
+        {
+            background-color: $input-background-hover-color;
+        }
+    }
+}

@@ -27,26 +27,60 @@ import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-ann
 
             <ng-template let-annotation="annotation" templateRef="metaDataHeader">
                 <div class="annotation-metadata">
-                    <p><span class="me-2 fw-bold">By:</span><span>{{annotation.creator}}</span></p>
-                    <p>{{annotation.dateCreated | date: 'short'}}</p>
+                    <p><span class="font-bold margin-right-small">By:</span><span>{{annotation.creator}}</span></p>
+                    <p class="font-bold">{{annotation.dateCreated | date: 'short'}}</p>
                 </div>
-
+                
                 <!-- In your case you could add a check to this to ensure you can delete annotations, for example. -->
-                <button type="button" class="btn-close" aria-label="Close" (click)="this.clickDeleteAnnotation($event, annotation)"></button>
+                <a type="button" class="close" aria-label="Close" (click)="this.clickDeleteAnnotation($event, annotation)"></a>
             </ng-template>
 
             <ng-template let-comment="comment" templateRef="comment">
-                <span class="me-2 fw-bold">{{comment.creator}}:</span> <span>{{comment.text}}</span>
+                <span class="font-bold margin-right-small">{{comment.creator}}:</span> <span>{{comment.text}}</span>
             </ng-template>
         </lib-ng2-pdfjs-viewer>
     `,
     styles: [`
+
+        $close-button-height: 40px;
+        $close-button-width: 40px;
+
         .annotation-metadata
         {
-            display: flex;
+            display: inline-flex;
             justify-content: space-between;
-            flex-grow: 1;
-            margin-right: 2rem;
+            width: calc(100% - $close-button-width);
+            margin-right: .5rem;
+        }
+
+        .font-bold
+        {
+            font-weight: 700;
+        }
+
+        .close {
+            width: $close-button-width;
+            height: $close-button-height;
+            opacity: 0.3;
+
+            &:hover {
+                opacity: 1;
+            }
+
+            &:before, &:after {
+                position: absolute;
+                content: ' ';
+                height: calc($close-button-height / 2);
+                width: 2px;
+                background-color: #333;
+            }
+
+            &:before {
+                transform: rotate(45deg) translateX(calc($close-button-width / 2));
+            }
+            &:after {
+                transform: rotate(-45deg) translate(0, calc($close-button-width / 2));
+            }
         }
     `]
 })

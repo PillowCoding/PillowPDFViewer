@@ -6,6 +6,7 @@ article
   border: 1px solid $default-border-color;
   border-radius: 5px;
   margin: 0 .25rem 0 .25rem;
+  padding: .5rem .5rem 1rem 1rem;
   cursor: pointer;
 
   &:hover
@@ -18,22 +19,21 @@ article
     background-color: $annotation-background-focus-color;
   }
 
-  >header
+  .annotation-header > p
   {
-    padding: 1rem 1rem 0 45px;
-    height: 37px;
-    display: flex;
+    text-align: right;
+    padding-right: 2.5rem;
   }
 
   >.annotation-content
   {
-    padding: 5px 10px 15px 10px;
     word-break: break-all;
   }
 }
 
 blockquote {
   display: -webkit-box;
+  margin: 0;
   background: #e2e2e2;
   border-left: 10px solid #bbbbbb;
   border-radius: 2px;
@@ -44,7 +44,6 @@ blockquote {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-bottom: .2rem;
 
   &::before {
     color: #4d4d4d;

@@ -20,10 +20,9 @@ export type pdfAnnotationCommentSubmission = {annotation: pdfAnnotation, comment
             <p>...</p>
           </blockquote>
         </ng-container>
-        <div class="input-group input-group-sm mb-3" *ngIf="annotation.reference">
-          <input #annotationComment type="text" class="form-control" aria-label="Annotation input" aria-describedby="inputGroup-sizing-sm" attr.data-annotation-input="{{annotation.id}}">
-
-          <button class="btn px-3 btn-primary" (click)="onSubmitAnnotationComment()">Post</button>
+        <div class="form" *ngIf="annotation.reference">
+          <input #annotationComment type="text" aria-label="Annotation input" attr.data-annotation-input="{{annotation.id}}" />
+          <input type="submit" role="button" (click)="onSubmitAnnotationComment()" value="Post" />
         </div>
 
         <div *ngFor="let comment of annotation.comments">
@@ -33,11 +32,13 @@ export type pdfAnnotationCommentSubmission = {annotation: pdfAnnotation, comment
     </article>
 
     <ng-template #defaultMetaDataHeaderTemplate let-annotation="annotation">
-      <p>{{annotation.dateCreated | date: 'h:mm:ss'}}</p>
+      <div class="annotation-header font-bold">
+        <p>{{annotation.dateCreated | date: 'h:mm:ss'}}</p>
+      </div>
     </ng-template>
 
     <ng-template #defaultCommentTemplate let-comment="comment">
-      <span class="me-2 fw-bold">{{comment.dateCreated | date: 'h:mm:ss'}}:</span> {{comment.text}}
+      <span class="font-bold">{{comment.dateCreated | date: 'h:mm:ss'}}:</span> {{comment.text}}
     </ng-template>
   `,
   styleUrls: ['pdf-annotation.component.scss']

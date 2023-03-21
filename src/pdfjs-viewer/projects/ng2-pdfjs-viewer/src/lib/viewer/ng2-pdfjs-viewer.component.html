@@ -1,9 +1,9 @@
-<div class="w-100 pdf-toolbar px-2 py-1 d-flex" *ngIf="UseToolbarFileSelector">
+<div class="display-flex pdf-toolbar" *ngIf="UseToolbarFileSelector">
   <label class="button me-2" role="button" for="file-select-manual">Load file</label>
   <input class="form-control" id="file-select-manual" type="file" (change)="onChangeSingleFile($event)" hidden>
 </div>
 
-<div class="d-flex h-100" *ngIf="pdfBehaviour">
+<div class="display-flex full-height" *ngIf="pdfBehaviour">
 
   <lib-ng2-pdfjs-viewer-iframe-wrapper #iframeWrapper
     [(pendingAnnotation)]="_pendingAnnotation"

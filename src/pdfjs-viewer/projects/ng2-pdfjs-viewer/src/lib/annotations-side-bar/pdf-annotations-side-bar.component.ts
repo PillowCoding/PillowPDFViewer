@@ -10,14 +10,13 @@ const clamp = (value: number, min: number, max: number) => {
 @Component({
   selector: 'lib-ng2-pdfjs-viewer-annotations-sidebar',
   template: `
-    <div class="annotation-container h-100" [style.width.rem]="sidebarExpanded ? baseAnnotationContainerWidth : 2">
+    <div class="annotation-container full-height" [style.width.rem]="sidebarExpanded ? baseAnnotationContainerWidth : 2">
       <div class="header">
-        <button
+        <a
           *ngIf="sidebarExpanded"
-          class="toolbar-button" title="Collapse"
+          class="toolbar-button close close-annotations" title="Collapse"
           (click)="collapseAnnotations()">
-          x
-        </button>
+        </a>
         <button
         *ngIf="!sidebarExpanded"
           class="toolbar-button" title="Expand"
@@ -25,15 +24,15 @@ const clamp = (value: number, min: number, max: number) => {
           <
         </button>
 
-        <span class="ms-2 fw-bold" *ngIf="sidebarExpanded">Annotations ({{shownAnnotations.length}})</span>
+        <span class="count font-bold" *ngIf="sidebarExpanded">Annotations ({{shownAnnotations.length}})</span>
 
-        <div class="me-2 fw-bold" style="margin-left: auto;line-height: 35px;" *ngIf="sidebarExpanded">
-          <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
-            <button type="button" class="btn btn-secondary"
+        <div class="scaling-buttons" *ngIf="sidebarExpanded">
+          <div role="group">
+            <button type="button" class="button small"
               (click)="increaseContainerWidth()">
               <
             </button>
-            <button type="button" class="btn btn-secondary"
+            <button type="button" class="button small"
               (click)="decreaseContainerWidth()">
               >
             </button>
@@ -41,16 +40,16 @@ const clamp = (value: number, min: number, max: number) => {
         </div>
       </div>
       <ol class="annotations" *ngIf="sidebarExpanded">
-        <p class="text-warning ms-3" *ngIf="shownAnnotations.length == 0 && !pendingAnnotation">There are no annotations on this page.</p>
+        <p class="warning no-annotations" *ngIf="shownAnnotations.length == 0 && !pendingAnnotation">There are no annotations on this page.</p>
 
-        <li *ngIf="pendingAnnotation" class="annotation mb-2">
+        <li *ngIf="pendingAnnotation" class="annotation">
           <lib-ng2-pdfjs-viewer-annotation
             [annotation]="pendingAnnotation"
             (onCommentPosted)="submitInitialAnnotationComment($event)">
           </lib-ng2-pdfjs-viewer-annotation>
         </li>
 
-        <li *ngFor="let annotation of shownAnnotations" class="annotation mb-2">
+        <li *ngFor="let annotation of shownAnnotations" class="annotation">
           <lib-ng2-pdfjs-viewer-annotation
             [annotation]="annotation"
             [metaDataHeaderTemplate]="annotationMetaDataHeaderTemplate"
