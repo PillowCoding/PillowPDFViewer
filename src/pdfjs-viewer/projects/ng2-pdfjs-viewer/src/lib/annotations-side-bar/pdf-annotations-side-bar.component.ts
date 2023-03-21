@@ -19,9 +19,8 @@ const clamp = (value: number, min: number, max: number) => {
         </a>
         <button
         *ngIf="!sidebarExpanded"
-          class="toolbar-button" title="Expand"
+          class="toolbar-button expand" title="Expand"
           (click)="expandAnnotations()">
-          <
         </button>
 
         <span class="count font-bold" *ngIf="sidebarExpanded">Annotations ({{shownAnnotations.length}})</span>

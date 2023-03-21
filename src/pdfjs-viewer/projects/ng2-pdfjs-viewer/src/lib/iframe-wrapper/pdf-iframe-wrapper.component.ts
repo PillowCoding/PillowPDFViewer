@@ -160,6 +160,36 @@ export class PdfIframeWrapperComponent implements OnInit
     // Inject the annotate button
     const leftVerticalToolbarSeperator = this.pdfBehaviour.rightToolbarContainer.getElementsByClassName('verticalToolbarSeparator')[0];
 
+    // Insert custom css
+    const styleContainer = this.pdfBehaviour.iframeDocument.createElement("style");
+    styleContainer.textContent = `
+      #draw-annotate::before
+      {
+        -webkit-mask-image: var(--toolbarButton-editorInk-icon);
+      }
+      #draw-annotate::after
+      {
+        content: 'A';
+        font-size: 8px;
+        position: absolute;
+        left: 4px;
+        top: 4px;
+      }
+      #text-annotate::before
+      {
+        -webkit-mask-image: var(--toolbarButton-editorFreeText-icon);
+      }
+      #text-annotate::after
+      {
+        content: 'A';
+        font-size: 8px;
+        position: absolute;
+        left: 4px;
+        top: 4px;
+      }
+    `;
+    this.pdfBehaviour.iframeDocument.head.appendChild(styleContainer);
+
     // Create the annotate by text and draw buttons.
     const annotateButtonBase = document.createElement('button');
     annotateButtonBase.classList.add('toolbarButton');

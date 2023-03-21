@@ -64,4 +64,13 @@
   {
     padding: 0px 6px 5px 10px
   }
+
+  &.expand
+  {
+    background-image: url(/assets/pdfjs/web/images/toolbarButton-secondaryToolbarToggle.svg);
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+    background-position: center;
+    transform: rotate(180deg);
+  }
 }
