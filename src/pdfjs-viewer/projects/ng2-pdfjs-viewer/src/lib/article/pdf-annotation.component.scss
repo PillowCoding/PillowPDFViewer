@@ -1,0 +1,67 @@
+@import './../common.scss';
+
+article
+{
+  background-color: $annotation-background-color;
+  border: 1px solid $default-border-color;
+  border-radius: 5px;
+  margin: 0 .25rem 0 .25rem;
+  cursor: pointer;
+
+  &:hover
+  {
+    background-color: $annotation-background-hover-color;
+  }
+
+  &.focus
+  {
+    background-color: $annotation-background-focus-color;
+  }
+
+  >header
+  {
+    padding: 1rem 1rem 0 45px;
+    height: 37px;
+    display: flex;
+  }
+
+  >.annotation-content
+  {
+    padding: 5px 10px 15px 10px;
+    word-break: break-all;
+  }
+}
+
+blockquote {
+  display: -webkit-box;
+  background: #e2e2e2;
+  border-left: 10px solid #bbbbbb;
+  border-radius: 2px;
+  padding: 0.5em 10px;
+  quotes: "\201C""\201D""\2018""\2019";
+  text-overflow: ellipsis;
+  max-height: 120px;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: .2rem;
+
+  &::before {
+    color: #4d4d4d;
+    content: open-quote;
+    font-size: 2rem;
+    line-height: 0.1em;
+    margin-right: 0.25em;
+    vertical-align: -0.4em;
+  }
+  
+  &::after {
+    content: no-close-quote;
+  }
+
+  > p
+  {
+    display: inline;
+    font-size: .7rem;
+  }
+}

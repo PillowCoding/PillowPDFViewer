@@ -1,0 +1,15 @@
+@import './../common.scss';
+
+.pdf-toolbar {
+  background-color: $default-background-color;
+  > .button {
+    height: 31px;
+    font-size: 12px;
+    margin: 0;
+    padding: .25rem 1rem 0 1rem;
+    border: none;
+    background-color: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    line-height: 1.4rem;
+  }
+}

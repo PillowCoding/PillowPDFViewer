@@ -1,0 +1,37 @@
+<div class="w-100 pdf-toolbar px-2 py-1 d-flex" *ngIf="UseToolbarFileSelector">
+  <label class="button me-2" role="button" for="file-select-manual">Load file</label>
+  <input class="form-control" id="file-select-manual" type="file" (change)="onChangeSingleFile($event)" hidden>
+</div>
+
+<div class="d-flex h-100" *ngIf="pdfBehaviour">
+
+  <lib-ng2-pdfjs-viewer-iframe-wrapper #iframeWrapper
+    [(pendingAnnotation)]="_pendingAnnotation"
+    
+    [enableDebugMessages]="enableDebugMessages"
+    [pdfBehaviour]="pdfBehaviour"
+
+    (onAnnotationClick)="focusAnnotation($event)"
+    (onIframeClick)="onIframeClicked()"
+    (onStartNewAnnotation)="onStartNewAnnotation()"
+    (onPendingAnnotationTextSelected)="onPendingAnnotationTextSelected()"
+    (onPendingAnnotationBoundingBoxCreated)="onPendingAnnotationBoundingBoxCreated()">
+  </lib-ng2-pdfjs-viewer-iframe-wrapper>
+
+  <lib-ng2-pdfjs-viewer-annotations-sidebar #annotationsSidebar *ngIf="annotationsEnabled"
+    [enableDebugMessages]="enableDebugMessages"
+    [baseAnnotationContainerWidth]="baseAnnotationContainerWidth"
+    [pendingAnnotation]="_pendingAnnotation"
+
+    [annotationMetaDataHeaderTemplate]="annotationMetaDataHeaderTemplate"
+    [annotationCommentTemplate]="annotationCommentTemplate"
+
+    [currentPage]="page"
+    [annotations]="_annotations"
+
+    (onSidebarCollapse)="onSidebarCollapse()"
+    (onClick)="focusAnnotation($event)"
+    (onInitialCommentPosted)="submitInitialAnnotationComment($event)"
+    (onCommentPosted)="commentPosted($event)">
+  </lib-ng2-pdfjs-viewer-annotations-sidebar>
+</div>
