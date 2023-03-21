@@ -27,7 +27,7 @@ import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-ann
 
             <ng-template let-annotation="annotation" templateRef="metaDataHeader">
                 <div class="annotation-metadata">
-                    <p><span class="font-bold margin-right-small">By:</span><span>{{annotation.creator}}</span></p>
+                    <p><span class="font-bold">By:</span><span> {{annotation.creator}}</span></p>
                     <p class="font-bold">{{annotation.dateCreated | date: 'short'}}</p>
                 </div>
                 
@@ -36,7 +36,7 @@ import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-ann
             </ng-template>
 
             <ng-template let-comment="comment" templateRef="comment">
-                <span class="font-bold margin-right-small">{{comment.creator}}:</span> <span>{{comment.text}}</span>
+                <span class="font-bold">{{comment.creator}}:</span><span> {{comment.text}}</span>
             </ng-template>
         </lib-ng2-pdfjs-viewer>
     `,
