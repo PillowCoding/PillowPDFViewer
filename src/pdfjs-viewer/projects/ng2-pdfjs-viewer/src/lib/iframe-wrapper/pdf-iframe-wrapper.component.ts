@@ -76,6 +76,11 @@ export class PdfIframeWrapperComponent implements OnInit
     return this._pdfAnnotationDrawer;
   }
 
+  public get markInfo(): Promise<any>
+  {
+    return this.pdfBehaviour.pdfViewerApplication.pdfDocument.getMarkInfo();
+  }
+
   ngOnInit()
   {
     this._pdfAnnotationWriter = new defaultPdfAnnotationWriter(this.pdfBehaviour);
@@ -156,7 +161,7 @@ export class PdfIframeWrapperComponent implements OnInit
       }))
   }
 
-  private onPdfAttached()
+  private async onPdfAttached()
   {
     // Inject the annotate button
     const leftVerticalToolbarSeperator = this.pdfBehaviour.rightToolbarContainer.getElementsByClassName('verticalToolbarSeparator')[0];
@@ -197,18 +202,27 @@ export class PdfIframeWrapperComponent implements OnInit
     (<any>annotateButtonBase).role = 'radio';
     annotateButtonBase.setAttribute('aria-checked', 'false');
 
+    // Insert draw button.
     const annotateDrawButton = annotateButtonBase.cloneNode(true) as HTMLButtonElement;
     annotateDrawButton.title = 'Annotate draw';
     annotateDrawButton.id = 'draw-annotate';
     annotateDrawButton.onclick = () => this.onAnnotationDrawButtonClicked();
-
-    const annotateTextButton = annotateButtonBase.cloneNode(true) as HTMLButtonElement;
-    annotateTextButton.title = 'Annotate text';
-    annotateTextButton.id = 'text-annotate';
-    annotateTextButton.onclick = () => this.onAnnotationTextButtonClicked();
-
     leftVerticalToolbarSeperator.insertAdjacentElement('afterend', annotateDrawButton);
-    leftVerticalToolbarSeperator.insertAdjacentElement('afterend', annotateTextButton);
+
+    // Currently there is no support for "structured content" in PDFs.
+    // These type of PDFs have a different structure on the textlayer.
+    // The "Marked" value in the PDFs markinfo indicates if the PDF has this feature enabled.
+    // Until this is supported, we disable the button on these.
+    const markInfo = await this.markInfo;
+    const marked = markInfo && markInfo.Marked === true;
+    if (!marked)
+    {
+      const annotateTextButton = annotateButtonBase.cloneNode(true) as HTMLButtonElement;
+      annotateTextButton.title = 'Annotate text';
+      annotateTextButton.id = 'text-annotate';
+      annotateTextButton.onclick = () => this.onAnnotationTextButtonClicked();
+      leftVerticalToolbarSeperator.insertAdjacentElement('afterend', annotateTextButton);
+    }
 
     this.pdfBehaviour.iframeDocument.addEventListener('mouseup', () => this.onIframeClicked());
     this.onInitialized.emit();
