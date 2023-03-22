@@ -44,10 +44,6 @@ export class PdfIframeWrapperComponent implements OnInit
   @Output() onAnnotationClick = new EventEmitter<pdfAnnotation>();
   @Output() onIframeClick = new EventEmitter<void>();
 
-  // These values represent the start value of a new draw annotation.
-  private _pendingAnnotationBoundingBoxStartPage?: number;
-  private _pendingAnnotationBoundingBoxStart?: vector2;
-
   /** The translations for the tool bar button types. A key will return one or more button ids that can be used to enable/disable the button(s). */
   private toolBarTranslation: { [key in toolbarButtonType] : string[]; } = {
     'annotation': [ 'text-annotate', 'draw-annotate' ],
@@ -130,6 +126,13 @@ export class PdfIframeWrapperComponent implements OnInit
     // Remove draw layer when the pending annotation is a pending draw annotation.
     if (this.pendingAnnotation.type === 'draw')
     {
+      // Clear the canvas if the page is known.
+      // This will remove any pending annotations that _might_ exist.
+      if (this.pendingAnnotation.page)
+      {
+        this.pdfAnnotationDrawer.clearCanvas(this.pendingAnnotation.page, true);
+      }
+      
       this.pdfAnnotationDrawer.disableLayer();
     }
 
@@ -140,8 +143,6 @@ export class PdfIframeWrapperComponent implements OnInit
     }
 
     delete(this.pendingAnnotation);
-    delete(this._pendingAnnotationBoundingBoxStartPage);
-    delete(this._pendingAnnotationBoundingBoxStart);
 
     this.pendingAnnotationChange.emit(this.pendingAnnotation);
   }
@@ -326,9 +327,9 @@ export class PdfIframeWrapperComponent implements OnInit
     this.onPendingAnnotationBoundingBoxCreated.emit();
   }
 
-  public drawRectangle(bounds: boundingBox, page: number, color: string)
+  public drawRectangle(bounds: boundingBox, page: number, color: string, pending = false)
   {
-    this.pdfAnnotationDrawer.drawRectangle(bounds, page, color, 1, false);
+    this.pdfAnnotationDrawer.drawRectangle(bounds, page, color, 1, pending);
   }
 
   /**

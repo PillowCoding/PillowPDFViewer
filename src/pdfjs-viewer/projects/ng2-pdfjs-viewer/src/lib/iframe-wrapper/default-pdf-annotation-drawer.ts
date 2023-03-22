@@ -51,6 +51,7 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
             x.layerElement.style.pointerEvents = 'none';
         });
 
+        // Fail safe to ensure there's no more pending annotations
         if (this._pendingAnnotationBoundingBoxStart)
         {
             this.clearCanvas(this._pendingAnnotationPage!, true);
@@ -251,10 +252,12 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
             end: position,
         }
 
-        this.sendDebugMessage('Bounding box created.', bounds);
+        this.clearCanvas(this._pendingAnnotationPage!, true);
+        delete(this._pendingAnnotationPage);
+        delete(this._pendingAnnotationBoundingBoxStart);
 
+        this.sendDebugMessage('Bounding box created.', bounds);
         this.boundingBoxCreated.next({ bounds, page });
-        this.disableLayer();
     }
 
     /**

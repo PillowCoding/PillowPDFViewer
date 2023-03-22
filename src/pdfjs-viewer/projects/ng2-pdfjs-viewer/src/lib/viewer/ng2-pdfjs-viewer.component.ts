@@ -457,8 +457,8 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
       throw new Error('Expected the pending annotation to be a draw annotation.');
     }
 
-    this._iframeWrapper.drawRectangle(<boundingBox>this._pendingAnnotation.reference, this._pendingAnnotation.page!, this.defaultPendingAnnotationDrawColor);
     this.changeDetector.detectChanges();
+    this._iframeWrapper.drawRectangle(<boundingBox>this._pendingAnnotation.reference, this._pendingAnnotation.page!, this.defaultPendingAnnotationDrawColor, true);
     this._annotationsSidebar!.focusAnnotationInput(this._pendingAnnotation!);
   }
 
@@ -492,9 +492,10 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         this.defaultAnnotationTextColor);
     }
 
-    // Draw the bounding box rectangle
+    // Draw the bounding box rectangle.
     if (annotation.type === 'draw')
     {
+      this._iframeWrapper.pdfAnnotationDrawer.clearCanvas(annotation.page!, true);
       this.drawAnnotationsOnPage(annotation.page!);
     }
 
