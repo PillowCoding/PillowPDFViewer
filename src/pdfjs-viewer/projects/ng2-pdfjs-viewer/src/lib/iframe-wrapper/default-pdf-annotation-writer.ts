@@ -101,6 +101,13 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
             return;
         }
 
+        // Ignore if there is no reference to work with.
+        // This is possible if the annotate button was pressed twice.
+        if (!annotation.reference)
+        {
+            return;
+        }
+
         const { xpath, selectedText } = <textSelection>annotation.reference;
         let nodeReference = this.getNodeReferenceByXpath(this._pdfBehaviour.iframeDocument, xpath);
         let remainingTextLength = selectedText.length;
