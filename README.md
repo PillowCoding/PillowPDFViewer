@@ -46,7 +46,15 @@ This is a step-by-step instruction on how to install the application.
 <!-- Issues -->
 ## Issues
 - Text search will overwrite annotation colors if you search text that has been annotated. This does not throw any errors as far as has been tested. Due to the fact that this is partially caused by internal code, there will probably not be a fix for it.
+- Certain shortcut keys still work even though their corresponding button is disabled.
+- draw and text annotation will not appear if the file is selected through the file selection button rather than passed as a parameter.
 
 ## Todo
 - Add types to commonly used things such as pdfViewerApplication to ease development.
 - Implement pagination on annotations with a way to also disable it.
+- Make the "scaling" buttons for the annotations sidebar toggleable through an option.
+- Add proper text annotation support for "structured PDF" types. Currently these do not have this feature enabled.
+- Add localisation to the PDF.
+- Add the ability to remove comments on the "modified" page.
+- Improve draw annotations to not draw with a click, but rather with an actual drag.
+- Add a loading indicator for annotations when anything asynchronous is done.
