@@ -107,8 +107,8 @@ export class PdfIframeWrapperComponent implements OnInit
   {
     const buttonids = this.toolBarTranslation[buttonType];
     buttonids.forEach(x => {
-      this.pdfBehaviour.iframeDocument.getElementById(x)!
-        .toggleAttribute('hidden', hidden);
+      this.pdfBehaviour.iframeDocument.getElementById(x)
+        ?.toggleAttribute('hidden', hidden);
     });
   }
 
@@ -116,7 +116,11 @@ export class PdfIframeWrapperComponent implements OnInit
   {
     const buttonids = this.toolBarTranslation[buttonType];
     return buttonids.map(x => {
-      const element = this.pdfBehaviour.iframeDocument.getElementById(x)!;
+      const element = this.pdfBehaviour.iframeDocument.getElementById(x);
+      if (!element)
+      {
+        return false;
+      }
       return this.pdfBehaviour.iframeWindow.getComputedStyle(element).display === 'none';
     }).every(x => x == true);
   }
