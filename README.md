@@ -52,7 +52,6 @@ This is a step-by-step instruction on how to install the application.
 ## Todo
 - Add types to commonly used things such as pdfViewerApplication to ease development.
 - Implement pagination on annotations with a way to also disable it.
-- Make the "scaling" buttons for the annotations sidebar toggleable through an option.
 - Add proper text annotation support for "structured PDF" types. Currently these do not have this feature enabled.
 - Add localisation to the PDF.
 - Add the ability to remove comments on the "modified" page.

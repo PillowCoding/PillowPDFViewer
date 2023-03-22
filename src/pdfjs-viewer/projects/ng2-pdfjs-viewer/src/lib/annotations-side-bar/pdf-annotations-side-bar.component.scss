@@ -5,6 +5,11 @@
   background-color: $default-background-color;
   border-left: solid 1px $default-border-color;
 
+  &.expanded
+  {
+    width: 30rem;
+  }
+
   >.header
   {
     display: flex;
@@ -14,13 +19,6 @@
     {
       line-height: 35px;
       margin-left: 2rem;
-    }
-
-    >.scaling-buttons
-    {
-      margin-left: auto;
-      margin-right: .5rem;
-      line-height: 35px;
     }
   }
 

@@ -72,9 +72,6 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
   @Input() defaultPendingAnnotationTextColor = '#00FF00';
   @Input() defaultAnnotationTextColor = '#FFA500';
   @Input() defaultAnnotationTextFocusColor = '#ff4500';
-
-  /** The base width used for an expanded annotation container. Note the user can save a custom value in localstorage. */
-  @Input() baseAnnotationContainerWidth = 40;
   
   // Document state.
   // https://github.com/mozilla/pdf.js/wiki/Viewer-options

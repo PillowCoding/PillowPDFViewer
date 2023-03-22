@@ -1,16 +1,11 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
-import { pdfAnnotationCommentSubmission, PdfAnnotationComponent } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
+import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
 import { pdfAnnotation } from 'ng2-pdfjs-viewer/pdf-annotation';
-
-const containerWidthLocalStorageKey = 'ng2-pdfjs-viewer-annotations-container-width';
-const clamp = (value: number, min: number, max: number) => {
-  return Math.min(Math.max(value, min), max);
-};
 
 @Component({
   selector: 'lib-ng2-pdfjs-viewer-annotations-sidebar',
   template: `
-    <div class="annotation-container full-height" [style.width.rem]="sidebarExpanded ? baseAnnotationContainerWidth : 2">
+    <div class="annotation-container full-height" [class.expanded]="sidebarExpanded">
       <div class="header">
         <a
           *ngIf="sidebarExpanded"
@@ -24,19 +19,6 @@ const clamp = (value: number, min: number, max: number) => {
         </button>
 
         <span class="count font-bold" *ngIf="sidebarExpanded">Annotations ({{shownAnnotations.length}})</span>
-
-        <div class="scaling-buttons" *ngIf="sidebarExpanded">
-          <div role="group">
-            <button type="button" class="button small"
-              (click)="increaseContainerWidth()">
-              <
-            </button>
-            <button type="button" class="button small"
-              (click)="decreaseContainerWidth()">
-              >
-            </button>
-          </div>
-        </div>
       </div>
       <ol class="annotations" *ngIf="sidebarExpanded">
         <p class="warning no-annotations" *ngIf="shownAnnotations.length == 0 && !pendingAnnotation">There are no annotations on this page.</p>
@@ -63,11 +45,10 @@ const clamp = (value: number, min: number, max: number) => {
   `,
   styleUrls: ['pdf-annotations-side-bar.component.scss']
 })
-export class PdfAnnotationsSideBarComponent implements OnInit
+export class PdfAnnotationsSideBarComponent
 {
   @Input() enableDebugMessages!: boolean;
   @Input() pendingAnnotation?: pdfAnnotation;
-  @Input() baseAnnotationContainerWidth!: number;
 
   @Input() annotationMetaDataHeaderTemplate?: TemplateRef<any>;
   @Input() annotationCommentTemplate?: TemplateRef<any>;
@@ -104,17 +85,6 @@ export class PdfAnnotationsSideBarComponent implements OnInit
   constructor(
     private changeDetector: ChangeDetectorRef)
   {
-  }
-
-  ngOnInit()
-  {
-    const savedContainerWidth = localStorage.getItem(containerWidthLocalStorageKey);
-    if (!savedContainerWidth)
-    {
-      return;
-    }
-
-    this.baseAnnotationContainerWidth = Number(savedContainerWidth);
   }
 
   public ensureExpanded()
@@ -175,23 +145,6 @@ export class PdfAnnotationsSideBarComponent implements OnInit
 
     (attributeArticle[0] as HTMLElement).focus();
     this.sendDebugMessage('Input focus changed', attributeArticle[0]);
-  }
-
-  protected decreaseContainerWidth()
-  {
-    this.setContainerWidth(-5);
-  }
-
-  protected increaseContainerWidth()
-  {
-    this.setContainerWidth(5);
-  }
-
-  private setContainerWidth(change: number)
-  {
-    this.baseAnnotationContainerWidth += change;
-    this.baseAnnotationContainerWidth = clamp(this.baseAnnotationContainerWidth, 20, 60);
-    localStorage.setItem(containerWidthLocalStorageKey, this.baseAnnotationContainerWidth.toString());
   }
 
   protected expandAnnotations()
