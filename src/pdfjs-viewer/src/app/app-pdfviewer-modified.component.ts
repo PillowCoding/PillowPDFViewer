@@ -2,6 +2,8 @@ import { Component, ViewChild } from '@angular/core';
 import { annotationProviderRequest, annotationProviderResponse, Ng2PdfjsViewerComponent, pdfAnnotation, pdfContext } from 'ng2-pdfjs-viewer';
 import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
 
+type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: Array<pdfAnnotation> };
+
 @Component({
     selector: 'app-pdfviewer-simple',
     template: `
@@ -9,7 +11,9 @@ import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-ann
             #pdfViewer
 
             [fileSource]="'/assets/compressed.tracemonkey-pldi-09.pdf'"
+
             [enableDebugMessages]="false"
+            [enableEventBusDebugMessages]="false"
 
             [UseToolbarFileSelector]="false"
             [openFileEnabled]="false"
@@ -88,11 +92,10 @@ export class appPdfViewerModifiedComponent
 {
     @ViewChild('pdfViewer') private _pdfViewer?: Ng2PdfjsViewerComponent;
     
-    private readonly _annotationStorageKey = 'annotations-modified';
+    private readonly _annotationStorageKey = 'storedFileAnnotations';
+    private readonly delay = (ms: number) => { return new Promise( resolve => setTimeout(resolve, ms) ); }
 
     private _annotations?: Array<pdfAnnotation>;
-
-    private delay = (ms: number) => { return new Promise( resolve => setTimeout(resolve, ms) ); }
 
     constructor() {
         this.annotationsProvider = this.annotationsProvider.bind(this);
@@ -105,12 +108,26 @@ export class appPdfViewerModifiedComponent
 
     async annotationsProvider(request: annotationProviderRequest): Promise<annotationProviderResponse>
     {
-        if (!this._annotations)
+        // Considering this is a test, we just fetch all stored annotations which is easier than filtering.
+        if (this._annotations === undefined)
         {
-            this._annotations = JSON.parse(localStorage.getItem(this._annotationStorageKey) ?? '[]');
+            const allStoredFileAnnotationsUnparsed = localStorage.getItem(this._annotationStorageKey);
+            if (!allStoredFileAnnotationsUnparsed)
+            {
+                this._annotations = [];
+            }
+            else
+            {
+                const baseUrl = this._pdfViewer!.baseUrl;
+                const allStoredFileAnnotations: Array<storedFileAnnotations> = JSON.parse(allStoredFileAnnotationsUnparsed);
+                this._annotations = allStoredFileAnnotations
+                    .filter(x => x.baseUrl == baseUrl)[0]?.annotations || [];
+            }
         }
 
-        const pageAnnotations = this._annotations!.filter(x => x.page == request.page);
+        // Determine the right annotations based on file source.
+        const pageAnnotations = this._annotations!
+            .filter(x => x.page == request.page);
         const annotations = pageAnnotations.slice(request.skip, request.skip + request.take);
         return {
             annotations,
@@ -126,7 +143,24 @@ export class appPdfViewerModifiedComponent
             return;
         }
 
-        localStorage.setItem(this._annotationStorageKey, JSON.stringify(this._annotations));
+        const fileName = this._pdfViewer!.fileName;
+        const baseUrl = this._pdfViewer!.baseUrl;
+
+        // Get existing annotations.
+        // We will push a new entry to the array.
+        // If no existing annotations exist, we will create a new array.
+        const allStoredFileAnnotationsUnparsed = localStorage.getItem(this._annotationStorageKey);
+        const allStoredFileAnnotations: Array<storedFileAnnotations> = allStoredFileAnnotationsUnparsed ? 
+            JSON.parse(allStoredFileAnnotationsUnparsed) :
+            [];
+
+        allStoredFileAnnotations.push({
+            fileName,
+            baseUrl,
+            annotations: this._annotations
+        });
+
+        localStorage.setItem(this._annotationStorageKey, JSON.stringify(allStoredFileAnnotations));
         console.log("Annotations have been saved.");
     }
 

@@ -153,6 +153,18 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     return this._pdfBehaviour;
   }
 
+  /** Gets the fileName of the current file that has been opened. */
+  public get fileName()
+  {
+    return this.pdfBehaviour.pdfViewerApplication._title;
+  }
+
+  /** Gets the base url of the current file that has been opened. */
+  public get baseUrl()
+  {
+    return this.pdfBehaviour.pdfViewerApplication.baseUrl;
+  }
+
   constructor(
     private readonly changeDetector: ChangeDetectorRef)
   {
