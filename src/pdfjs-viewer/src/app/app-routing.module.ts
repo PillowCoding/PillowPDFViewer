@@ -4,6 +4,7 @@ import { appPdfViewerAnnotateComponent } from "./app-pdfviewer-annotate.componen
 import { appPdfViewerDownloadComponent } from "./app-pdfviewer-download.component";
 import { appPdfViewerModifiedComponent } from "./app-pdfviewer-modified.component";
 import { appPdfViewerSimpleComponent } from "./app-pdfviewer-simple.component";
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 const routes: Routes =
 [
@@ -16,7 +17,10 @@ const routes: Routes =
 ];
 
 @NgModule({
-	imports: [RouterModule.forRoot(routes)],
+	imports: [
+		RouterModule.forRoot(routes),
+		BrowserAnimationsModule
+	],
 	exports: [RouterModule]
 })
 export class AppRoutingModule { }

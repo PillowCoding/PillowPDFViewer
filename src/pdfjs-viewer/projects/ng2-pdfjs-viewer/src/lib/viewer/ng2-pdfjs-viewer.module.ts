@@ -4,7 +4,6 @@ import { Ng2PdfjsViewerComponent } from './ng2-pdfjs-viewer.component';
 import { PdfAnnotationComponent } from '../article/pdf-annotation.component'
 import { PdfAnnotationsSideBarComponent } from 'ng2-pdfjs-viewer/annotations-side-bar/pdf-annotations-side-bar.component';
 import { PdfIframeWrapperComponent } from 'ng2-pdfjs-viewer/iframe-wrapper/pdf-iframe-wrapper.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -15,7 +14,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
   ],
   imports: [
     CommonModule,
-    BrowserAnimationsModule
   ],
   exports: [
     Ng2PdfjsViewerComponent,
