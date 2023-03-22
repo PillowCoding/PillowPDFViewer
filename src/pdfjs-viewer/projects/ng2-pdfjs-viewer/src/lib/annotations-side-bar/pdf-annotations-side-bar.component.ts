@@ -1,3 +1,4 @@
+import { animate, state, style, transition, trigger } from '@angular/animations';
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
 import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
 import { pdfAnnotation } from 'ng2-pdfjs-viewer/pdf-annotation';
@@ -5,7 +6,7 @@ import { pdfAnnotation } from 'ng2-pdfjs-viewer/pdf-annotation';
 @Component({
   selector: 'lib-ng2-pdfjs-viewer-annotations-sidebar',
   template: `
-    <div class="annotation-container full-height" [class.expanded]="sidebarExpanded">
+    <div class="annotation-container full-height" [@expandInOut]="sidebarExpanded ? 'expand' : 'collapse'">
       <div class="header">
         <a
           *ngIf="sidebarExpanded"
@@ -43,7 +44,19 @@ import { pdfAnnotation } from 'ng2-pdfjs-viewer/pdf-annotation';
       </ol>
     </div>
   `,
-  styleUrls: ['pdf-annotations-side-bar.component.scss']
+  styleUrls: ['pdf-annotations-side-bar.component.scss'],
+  animations: [
+    trigger('expandInOut', [
+      state('expand', style({
+        width: '30rem'
+      })),
+      state('collapse', style({
+        width: '28px'
+      })),
+      transition('expand => collapse', animate('100ms ease-out')),
+      transition('collapse => expand', animate('100ms ease-out'))
+    ])
+  ]
 })
 export class PdfAnnotationsSideBarComponent
 {

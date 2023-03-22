@@ -5,11 +5,6 @@
   background-color: $default-background-color;
   border-left: solid 1px $default-border-color;
 
-  &.expanded
-  {
-    width: 30rem;
-  }
-
   >.header
   {
     display: flex;
@@ -33,6 +28,7 @@
     {
       list-style: none;
       margin-bottom: .2rem;
+      overflow-x: hidden;
     }
 
     >p.no-annotations
