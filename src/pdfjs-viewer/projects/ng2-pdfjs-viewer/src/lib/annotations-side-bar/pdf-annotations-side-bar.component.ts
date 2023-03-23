@@ -93,7 +93,7 @@ export class PdfAnnotationsSideBarComponent
   /** The annotations shown in the sidebar. */
   public get shownAnnotations()
   {
-    return this.annotations.filter(x => x.page == this.currentPage);
+    return this.annotations.filter(x => x.page == this.currentPage).reverse();
   }
 
   constructor(
