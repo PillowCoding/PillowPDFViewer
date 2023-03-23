@@ -161,6 +161,30 @@ export class PdfAnnotationsSideBarComponent
     this.sendDebugMessage('Input focus changed', attributeArticle[0]);
   }
 
+  public setAnnotationLoading(annotation: pdfAnnotation)
+  {
+    const annotationContainer = document.querySelectorAll(`[data-annotation="${annotation.id}"]`);
+
+    if (annotationContainer.length != 1)
+    {
+      throw new Error('Could not find the annotation to mark as loading.');
+    }
+
+    annotationContainer[0].classList.add('loading');
+  }
+
+  public setAnnotationNotLoading(annotation: pdfAnnotation)
+  {
+    const annotationContainer = document.querySelectorAll(`[data-annotation="${annotation.id}"]`);
+
+    if (annotationContainer.length != 1)
+    {
+      throw new Error('Could not find the annotation to mark as loading.');
+    }
+
+    annotationContainer[0].classList.remove('loading');
+  }
+
   protected expandAnnotations()
   {
     if (this._sidebarExpanded)

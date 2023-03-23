@@ -478,6 +478,9 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     annotation.comments.push(initialComment);
     this._annotations.push(annotation);
 
+    // Push a change so that the list of annotations is redrawn. This way the "loading" indication below works properly.
+    this.changeDetector.detectChanges();
+
     // Color the annotation.
     if (annotation.type === 'text')
     {
@@ -498,7 +501,9 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
 
     if (this.behaviourOnAnnotationPosted)
     {
+      this._annotationsSidebar!.setAnnotationLoading(annotation);
       await this.behaviourOnAnnotationPosted(annotation);
+      this._annotationsSidebar!.setAnnotationNotLoading(annotation);
     }
 
     // Emit the addedannotation.
@@ -601,7 +606,9 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
   {
     if (this.behaviourOnCommentPosted)
     {
+      this._annotationsSidebar!.setAnnotationLoading(submission.annotation);
       await this.behaviourOnCommentPosted(submission);
+      this._annotationsSidebar!.setAnnotationNotLoading(submission.annotation);
     }
 
     this.onCommentPosted.emit(submission);

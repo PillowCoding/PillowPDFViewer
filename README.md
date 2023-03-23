@@ -55,4 +55,3 @@ This is a step-by-step instruction on how to install the application.
 - Add proper text annotation support for "structured PDF" types. Currently these do not have this feature enabled.
 - Add the ability to remove comments on the "modified" page.
 - Improve draw annotations to not draw with a click, but rather with an actual drag.
-- Add a loading indicator for annotations when anything asynchronous is done.

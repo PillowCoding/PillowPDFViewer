@@ -7,6 +7,7 @@ import { PdfIframeWrapperComponent } from 'ng2-pdfjs-viewer/iframe-wrapper/pdf-i
 import { LocalisationConfiguration } from 'ng2-pdfjs-viewer/localisation/localisationConfiguration';
 import { LocalisationService } from 'ng2-pdfjs-viewer/localisation/localisation.service';
 import { TranslatePipe } from "../localisation/translate.pipe";
+import { RingLoadingComponent } from "../loading-icons/ring-loading/ring-loading.component";
 
 @NgModule({
     declarations: [
@@ -20,7 +21,8 @@ import { TranslatePipe } from "../localisation/translate.pipe";
     ],
     imports: [
         CommonModule,
-        TranslatePipe
+        TranslatePipe,
+        RingLoadingComponent
     ]
 })
 export class Ng2PdfjsViewerModule

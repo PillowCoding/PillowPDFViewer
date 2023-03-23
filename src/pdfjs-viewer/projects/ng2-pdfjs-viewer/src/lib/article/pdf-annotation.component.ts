@@ -8,6 +8,10 @@ export type pdfAnnotationCommentSubmission = {annotation: pdfAnnotation, comment
   selector: 'lib-ng2-pdfjs-viewer-annotation',
   template: `
     <article (click)="clickAnnotation($event)" attr.data-annotation="{{annotation.id}}">
+      <div class="loading-indicator">
+        <lib-ng2-pdfjs-viewer-loading-ring></lib-ng2-pdfjs-viewer-loading-ring>
+      </div>
+
       <header>
         <ng-container *ngTemplateOutlet="metaDataHeaderTemplate || defaultMetaDataHeaderTemplate; context: { annotation: annotation }"></ng-container>
       </header>
