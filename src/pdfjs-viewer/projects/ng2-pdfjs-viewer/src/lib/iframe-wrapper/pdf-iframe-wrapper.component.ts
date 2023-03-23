@@ -1,4 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { LocalisationService } from 'ng2-pdfjs-viewer/localisation/localisation.service';
 import { boundingBox, pdfAnnotation, textSelection, vector2 } from 'ng2-pdfjs-viewer/pdf-annotation';
 import { pdfAnnotationDrawer } from 'ng2-pdfjs-viewer/pdf-annotation-drawer';
 import { pdfAnnotationWriter } from 'ng2-pdfjs-viewer/pdf-annotation-writer';
@@ -79,6 +80,11 @@ export class PdfIframeWrapperComponent implements OnInit
   public get markInfo(): Promise<any>
   {
     return this.pdfBehaviour.pdfViewerApplication.pdfDocument.getMarkInfo();
+  }
+
+  constructor(
+    private localisationService: LocalisationService)
+  {
   }
 
   ngOnInit()
@@ -208,7 +214,7 @@ export class PdfIframeWrapperComponent implements OnInit
 
     // Insert draw button.
     const annotateDrawButton = annotateButtonBase.cloneNode(true) as HTMLButtonElement;
-    annotateDrawButton.title = 'Annotate draw';
+    annotateDrawButton.title = this.localisationService.Translate('annotation.drawButton');
     annotateDrawButton.id = 'draw-annotate';
     annotateDrawButton.onclick = () => this.onAnnotationDrawButtonClicked();
     leftVerticalToolbarSeperator.insertAdjacentElement('afterend', annotateDrawButton);
@@ -222,7 +228,7 @@ export class PdfIframeWrapperComponent implements OnInit
     if (!marked)
     {
       const annotateTextButton = annotateButtonBase.cloneNode(true) as HTMLButtonElement;
-      annotateTextButton.title = 'Annotate text';
+      annotateTextButton.title = this.localisationService.Translate('annotation.textButton');
       annotateTextButton.id = 'text-annotate';
       annotateTextButton.onclick = () => this.onAnnotationTextButtonClicked();
       leftVerticalToolbarSeperator.insertAdjacentElement('afterend', annotateTextButton);

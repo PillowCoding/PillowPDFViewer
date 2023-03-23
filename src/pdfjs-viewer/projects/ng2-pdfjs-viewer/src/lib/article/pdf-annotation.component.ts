@@ -22,7 +22,7 @@ export type pdfAnnotationCommentSubmission = {annotation: pdfAnnotation, comment
         </ng-container>
         <div class="form" *ngIf="annotation.reference">
           <input #annotationComment type="text" aria-label="Annotation input" attr.data-annotation-input="{{annotation.id}}" />
-          <input type="submit" role="button" (click)="onSubmitAnnotationComment()" value="Post" />
+          <input type="submit" role="button" (click)="onSubmitAnnotationComment()" [value]="'annotations.post' | translate" />
         </div>
 
         <div *ngFor="let comment of annotation.comments">

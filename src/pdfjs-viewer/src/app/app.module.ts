@@ -9,6 +9,7 @@ import { appPdfViewerSimpleComponent } from './app-pdfviewer-simple.component';
 
 import { AppComponent } from './app.component';
 import { appPdfViewerModifiedComponent } from './app-pdfviewer-modified.component';
+import { LocalisationConfiguration } from 'ng2-pdfjs-viewer/localisation/localisationConfiguration';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,7 @@ import { appPdfViewerModifiedComponent } from './app-pdfviewer-modified.componen
     BrowserModule,
     CommonModule,
     AppRoutingModule,
-    Ng2PdfjsViewerModule,
+    Ng2PdfjsViewerModule.forRoot(new LocalisationConfiguration({ localisationToUse: navigator.language })),
   ],
   providers: [],
   bootstrap: [AppComponent]

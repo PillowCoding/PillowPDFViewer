@@ -1,0 +1,10 @@
+{
+    "sidebar.expand": "Expand",
+    "sidebar.collapse": "Collapse",
+    "annotation.textButton": "Annotate by text",
+    "annotation.drawButton": "Annotate by drawing",
+    "annotations.singular": "{0} annotation",
+    "annotations.plural": "{0} annotations",
+    "annotations.nonePage": "There are no annotations on this page.",
+    "annotations.post": "Post"
+}

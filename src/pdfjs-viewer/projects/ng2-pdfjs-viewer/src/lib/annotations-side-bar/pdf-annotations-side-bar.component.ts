@@ -10,19 +10,20 @@ import { pdfAnnotation } from 'ng2-pdfjs-viewer/pdf-annotation';
       <div class="header">
         <a
           *ngIf="sidebarExpanded"
-          class="toolbar-button close close-annotations" title="Collapse"
+          class="toolbar-button close close-annotations" [title]="'sidebar.collapse' | translate"
           (click)="collapseAnnotations()">
         </a>
         <button
         *ngIf="!sidebarExpanded"
-          class="toolbar-button expand" title="Expand"
+          class="toolbar-button expand" [title]="'sidebar.expand' | translate"
           (click)="expandAnnotations()">
         </button>
 
-        <span class="count font-bold" *ngIf="sidebarExpanded">Annotations ({{shownAnnotations.length}})</span>
+        <span class="count font-bold" *ngIf="sidebarExpanded && shownAnnotations.length == 1">{{'annotations.singular' | translate: shownAnnotations.length.toString()}}</span>
+        <span class="count font-bold" *ngIf="sidebarExpanded && shownAnnotations.length != 1">{{'annotations.plural' | translate: shownAnnotations.length.toString()}}</span>
       </div>
       <ol class="annotations" *ngIf="sidebarExpanded">
-        <p class="warning no-annotations" *ngIf="shownAnnotations.length == 0 && !pendingAnnotation">There are no annotations on this page.</p>
+        <p class="warning no-annotations" *ngIf="shownAnnotations.length == 0 && !pendingAnnotation">{{'annotations.nonePage' | translate}}</p>
 
         <li *ngIf="pendingAnnotation" class="annotation">
           <lib-ng2-pdfjs-viewer-annotation
