@@ -456,6 +456,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
 
     this.changeDetector.detectChanges();
     this._iframeWrapper.drawRectangle(<boundingBox>this._pendingAnnotation.reference, this._pendingAnnotation.page!, this.defaultPendingAnnotationDrawColor, true);
+    this._iframeWrapper.pdfAnnotationDrawer.disableLayer();
     this._annotationsSidebar!.focusAnnotationInput(this._pendingAnnotation!);
   }
 
@@ -596,7 +597,6 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
    */
   protected async submitInitialAnnotationComment(event: pdfAnnotationCommentSubmission)
   {
-    this._iframeWrapper.pdfAnnotationDrawer.disableLayer();
     await this.postAnnotation(event.comment);
   }
 
