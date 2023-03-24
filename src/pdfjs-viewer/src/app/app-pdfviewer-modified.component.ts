@@ -20,14 +20,12 @@ type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: A
             [printingEnabled]="false"
             [textEditorEnabled]="false"
             [drawingEnabled]="false"
+            [downloadEnabled]="false"
 
             [annotationsProvider]="annotationsProvider"
-            [behaviourOnDownload]="onDownloadBehaviour"
             [behaviourOnAnnotationPosted]="onAnnotationPost"
             [behaviourOnCommentPosted]="onCommentPost"
-            (onAnnotationPosted)="onAnnotationPosted($event)"
-            (onAnnotationDeleted)="onAnnotationDeleted($event)"
-            (onCommentPosted)="onCommentPosted($event)">
+            (onAnnotationDeleted)="onAnnotationDeleted($event)">
 
             <ng-template let-annotation="annotation" templateRef="metaDataHeader">
                 <div class="annotation-metadata">
@@ -99,11 +97,10 @@ export class appPdfViewerModifiedComponent
 
     constructor() {
         this.annotationsProvider = this.annotationsProvider.bind(this);
-        this.onDownloadBehaviour = this.onDownloadBehaviour.bind(this);
         this.onAnnotationPost = this.onAnnotationPost.bind(this);
         this.onCommentPost = this.onCommentPost.bind(this);
-        this.onAnnotationPosted = this.onAnnotationPosted.bind(this);
         this.onAnnotationDeleted = this.onAnnotationDeleted.bind(this);
+        this.saveAnnotations = this.saveAnnotations.bind(this);
     }
 
     async annotationsProvider(request: annotationProviderRequest): Promise<annotationProviderResponse>
@@ -136,7 +133,7 @@ export class appPdfViewerModifiedComponent
         }
     }
 
-    onDownloadBehaviour(context: pdfContext)
+    async saveAnnotations()
     {
         if (!this._annotations)
         {
@@ -154,19 +151,29 @@ export class appPdfViewerModifiedComponent
             JSON.parse(allStoredFileAnnotationsUnparsed) :
             [];
 
-        allStoredFileAnnotations.push({
-            fileName,
-            baseUrl,
-            annotations: this._annotations
-        });
+        const existingStoredAnnotations = allStoredFileAnnotations
+            .filter(x => x.baseUrl == baseUrl)[0];
 
+        if (!existingStoredAnnotations)
+        {
+            allStoredFileAnnotations.push({
+                fileName,
+                baseUrl,
+                annotations: this._annotations
+            });
+        }
+        else
+        {
+            existingStoredAnnotations.annotations = this._annotations
+        }
+
+        await this.delay(1000);
         localStorage.setItem(this._annotationStorageKey, JSON.stringify(allStoredFileAnnotations));
         console.log("Annotations have been saved.");
     }
 
     async onAnnotationPost(annotation: pdfAnnotation)
     {
-        // Delays simulate a database call in this case.
         await this.delay(1000);
         const comment = annotation.comments.pop()!;
 
@@ -174,8 +181,10 @@ export class appPdfViewerModifiedComponent
         (<any>annotation).creator = 'me';
 
         annotation.comments.push(comment);
-        await this.delay(1000);
         this._annotations!.push(annotation);
+        console.log("Annotation was posted.");
+
+        await this.saveAnnotations();
     }
 
     async onCommentPost(submission: pdfAnnotationCommentSubmission)
@@ -183,17 +192,9 @@ export class appPdfViewerModifiedComponent
         // Delays simulate a database call in this case.
         await this.delay(1000);
         (<any>submission.comment).creator = 'me';
-        await this.delay(1000);
-    }
-
-    onAnnotationPosted(annotation: pdfAnnotation)
-    {
-        console.log("Annotation was posted.");
-    }
-
-    onCommentPosted(submission: pdfAnnotationCommentSubmission)
-    {
         console.log("Comment was posted.");
+
+        await this.saveAnnotations();
     }
 
     protected clickDeleteAnnotation(event: any, annotation: pdfAnnotation)
