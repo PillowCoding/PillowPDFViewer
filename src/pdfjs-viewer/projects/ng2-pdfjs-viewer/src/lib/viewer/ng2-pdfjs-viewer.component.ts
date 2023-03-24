@@ -596,6 +596,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
    */
   protected async submitInitialAnnotationComment(event: pdfAnnotationCommentSubmission)
   {
+    this._iframeWrapper.pdfAnnotationDrawer.disableLayer();
     await this.postAnnotation(event.comment);
   }
 
