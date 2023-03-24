@@ -10,10 +10,10 @@ import { annotationProviderRequest, annotationProviderResponse, pdfAnnotation, p
             [enableEventBusDebugMessages]="true"
 
             [UseToolbarFileSelector]="false"
-            [openFileEnabled]="false"
-            [printingEnabled]="false"
-            [textEditorEnabled]="false"
-            [drawingEnabled]="false"
+            [enableFileSelect]="false"
+            [enablePrinting]="false"
+            [enableTextEditing]="false"
+            [enableDrawEditing]="false"
 
             [page]="1"
             [zoom]="'auto'"

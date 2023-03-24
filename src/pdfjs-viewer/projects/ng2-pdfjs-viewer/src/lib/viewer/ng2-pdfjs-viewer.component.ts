@@ -80,12 +80,14 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
   @Input()  page = 1;
   @Output() pageChange = new EventEmitter<number>();
 
-  @Input() annotationsEnabled = true;
-  @Input() openFileEnabled = true;
-  @Input() printingEnabled = true;
-  @Input() downloadEnabled = true;
-  @Input() textEditorEnabled = true;
-  @Input() drawingEnabled = true;
+  @Input() enableTextAnnotating = true;
+  @Input() enableDrawAnnotating = true;
+  @Input() enableFileSelect = true;
+  @Input() enablePrinting = true;
+  @Input() enableDownloading = true;
+  @Input() enableTextEditing = true;
+  @Input() enableDrawEditing = true;
+  
   @Input() scrollMode?: scrollModeType;
   @Input() spreadMode?: spreadModeType;
   @Input() rotation?: number;
@@ -162,6 +164,11 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     return this.pdfBehaviour.pdfViewerApplication.baseUrl;
   }
 
+  public get markInfo(): Promise<any>
+  {
+    return this.pdfBehaviour.pdfViewerApplication.pdfDocument.getMarkInfo();
+  }
+
   constructor(
     private readonly changeDetector: ChangeDetectorRef)
   {
@@ -179,12 +186,11 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     // This has been moved from `ngOnInit` to `ngAfterViewInit` because the text layer had a bug where drawn annotations would disappear.
     // The cause is the drawer which changes the width of the canvas, which causes the annotation to disappear if they were already drawn.
     // By subscribing later, we change the order of execution.
-    this.pdfBehaviour.onIframeLoaded.subscribe(() => this.onIframeLoaded());
     this.pdfBehaviour.onPageChanging.subscribe((e) => this.onPageChange(e));
     this.pdfBehaviour.onTextLayerRendered.subscribe(() => this.onPdfTextLayerRendered());
     this.pdfBehaviour.onPageRendered.subscribe(({ first }) => this.onPageRendered(first));
 
-    this._iframeWrapper.onInitialized.subscribe(() => this.onPdfAttached());
+    this._iframeWrapper.onInitialized.subscribe(() => this.onWrapperLoaded());
     this._iframeWrapper.loadIframe();
   }
 
@@ -247,8 +253,17 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     this.onAnnotationDeleted.emit(annotation);
   }
 
-  private async onIframeLoaded()
+  private async onWrapperLoaded()
   {
+    // Set button availability based on settings.
+    this._iframeWrapper.disableButton('textAnnotate', !this.enableTextAnnotating);
+    this._iframeWrapper.disableButton('drawAnnotate', !this.enableDrawAnnotating);
+    this._iframeWrapper.disableButton('openFile', !this.enableFileSelect);
+    this._iframeWrapper.disableButton('printing', !this.enablePrinting);
+    this._iframeWrapper.disableButton('downloadPdf', !this.enableDownloading);
+
+    document.addEventListener('mouseup', (e) => this.onMouseUp());
+
     if (!this.fileSource)
     {
       return;
@@ -257,35 +272,25 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     await this.pdfBehaviour.loadFile(this.fileSource);
   }
 
-  private onPdfAttached()
+  private async onPdfTextLayerRendered()
   {
     // Custom download behaviour
     if(this.behaviourOnDownload)
     {
       this.setDownloadBehaviour(this.behaviourOnDownload);
     }
-    
-    this._iframeWrapper.setButtonHidden('openFile', !this.openFileEnabled);
-    this._iframeWrapper.setButtonHidden('printing', !this.printingEnabled);
-    this._iframeWrapper.setButtonHidden('downloadPdf', !this.downloadEnabled);
-    this._iframeWrapper.setButtonHidden('textEditor', !this.textEditorEnabled);
-    this._iframeWrapper.setButtonHidden('drawEditor', !this.drawingEnabled);
-    this._iframeWrapper.setButtonHidden('annotation', !this.annotationsEnabled);
 
-    // Remove the left vertical toolbar seperator if all relevant buttons are hidden.
-    const editButtonsHidden = this._iframeWrapper.getButtonHidden('textEditor') && this._iframeWrapper.getButtonHidden('drawEditor') && this._iframeWrapper.getButtonHidden('annotation');
-    if (editButtonsHidden)
+    // Currently there is no support for "structured content" in PDFs.
+    // These type of PDFs have a different structure on the textlayer.
+    // The "Marked" value in the PDFs markinfo indicates if the PDF has this feature enabled.
+    // Until this is supported, we disable the button on these.
+    const markInfo = await this.markInfo;
+    const marked = markInfo && markInfo.Marked === true;
+    if (marked)
     {
-      this.pdfBehaviour.rightToolbarContainer
-        .getElementsByClassName('verticalToolbarSeparator')[0]
-        .setAttribute('hidden', String(true));
+      this._iframeWrapper.disableButton('textAnnotate', true);
     }
 
-    document.addEventListener('mouseup', (e) => this.onMouseUp());
-  }
-
-  private onPdfTextLayerRendered()
-  {
     const textAnnotations = this._annotations
       .filter(x => x.type === 'text');
 
@@ -310,6 +315,11 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
 
   private onPageRendered(first: boolean)
   {
+    // Set text and draw editing availability based on settings.
+    // These are checked every render because the internal PDFJS code enables this at a later state than we can check.
+    this._iframeWrapper.disableButton('textEditor', !this.enableTextEditing);
+    this._iframeWrapper.disableButton('drawEditor', !this.enableDrawEditing);
+
     if (!first)
     {
       return;

@@ -7,6 +7,7 @@ export class pdfBehaviour
     // Event outputs not related to the EventBus, called manually.
     onIframeLoading = new Subject<void>();
     onIframeLoaded = new Subject<void>();
+    onPdfApplicationLoaded = new Subject<void>();
     onPdfInitializing = new Subject<void>();
     onPdfInitialized = new Subject<void>();
 
@@ -135,10 +136,15 @@ export class pdfBehaviour
         const args = { url: source };
         await this.pdfViewerApplication.open(args);
 
-        this.attachEventBusEvents();
-
         this.sendDebugMessage('Pdf Initialized.');
         this.onPdfInitialized.next();
+    }
+
+    public pdfApplicationLoaded()
+    {
+        this.attachEventBusEvents();
+        this.sendDebugMessage('Eventbus attached.');
+        this.onPdfApplicationLoaded.next();
     }
 
     public getPageNumberOfElement(element: Element)
@@ -189,6 +195,10 @@ export class pdfBehaviour
         this.iframeDocument.addEventListener('click', (e) => this.onIframeClicked.next(e));
         this.iframeDocument.addEventListener('mousemove', (e) => this.onIframeMouseMove.next(e));
         this.onIframeLoaded.next();
+
+        // Wait for the internal application to be initialized.
+        await this.pdfViewerApplication.initializedPromise;
+        this.pdfApplicationLoaded();
     }
 
     /**

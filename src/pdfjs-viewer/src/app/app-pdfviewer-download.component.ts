@@ -7,11 +7,12 @@ import { pdfAnnotation, pdfContext } from 'ng2-pdfjs-viewer';
         <lib-ng2-pdfjs-viewer
             [fileSource]="'/assets/compressed.tracemonkey-pldi-09.pdf'"
             [UseToolbarFileSelector]="false"
-            [openFileEnabled]="false"
-            [annotationsEnabled]="false"
-            [printingEnabled]="false"
-            [textEditorEnabled]="false"
-            [drawingEnabled]="false"
+            [enableFileSelect]="false"
+            [enableTextAnnotating]="false"
+            [enableDrawAnnotating]="false"
+            [enablePrinting]="false"
+            [enableTextEditing]="false"
+            [enableDrawEditing]="false"
             [behaviourOnDownload]="this.onDownload">
         </lib-ng2-pdfjs-viewer>
     `,

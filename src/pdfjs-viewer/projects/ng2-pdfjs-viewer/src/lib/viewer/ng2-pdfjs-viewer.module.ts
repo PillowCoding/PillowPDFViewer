@@ -15,14 +15,14 @@ import { RingLoadingComponent } from "../loading-icons/ring-loading/ring-loading
         PdfAnnotationComponent,
         PdfAnnotationsSideBarComponent,
         PdfIframeWrapperComponent,
+        RingLoadingComponent,
+        TranslatePipe,
     ],
     exports: [
         Ng2PdfjsViewerComponent,
     ],
     imports: [
         CommonModule,
-        TranslatePipe,
-        RingLoadingComponent
     ]
 })
 export class Ng2PdfjsViewerModule

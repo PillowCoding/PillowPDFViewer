@@ -18,7 +18,7 @@
     (onPendingAnnotationBoundingBoxCreated)="onPendingAnnotationBoundingBoxCreated()">
   </lib-ng2-pdfjs-viewer-iframe-wrapper>
 
-  <lib-ng2-pdfjs-viewer-annotations-sidebar #annotationsSidebar *ngIf="annotationsEnabled"
+  <lib-ng2-pdfjs-viewer-annotations-sidebar #annotationsSidebar *ngIf="enableTextAnnotating || enableDrawAnnotating"
     [enableDebugMessages]="enableDebugMessages"
     [pendingAnnotation]="_pendingAnnotation"
 

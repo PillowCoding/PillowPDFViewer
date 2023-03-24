@@ -7,7 +7,7 @@ import { pdfBehaviour } from 'ng2-pdfjs-viewer/pdf-behaviour';
 import { defaultPdfAnnotationDrawer } from './default-pdf-annotation-drawer';
 import { defaultPdfAnnotationWriter } from './default-pdf-annotation-writer';
 
-export type toolbarButtonType = 'annotation' | 'openFile' | 'printing' | 'downloadPdf' | 'textEditor' | 'drawEditor';
+export type toolbarButtonType = 'textAnnotate' | 'drawAnnotate' | 'openFile' | 'printing' | 'downloadPdf' | 'textEditor' | 'drawEditor';
 export type zoomType = { zoom: number; leftOffset: number; topOffset: number; } | 'page-width' | 'page-height' | 'page-fit' | 'auto';
 export type pageModeType = 'none' | 'thumbs' | 'outline' | 'attachments' | 'layers';
 export type scrollModeType = 'vertical' | 'horizontal' | 'wrapped' | 'page';
@@ -47,7 +47,8 @@ export class PdfIframeWrapperComponent implements OnInit
 
   /** The translations for the tool bar button types. A key will return one or more button ids that can be used to enable/disable the button(s). */
   private toolBarTranslation: { [key in toolbarButtonType] : string[]; } = {
-    'annotation': [ 'text-annotate', 'draw-annotate' ],
+    'textAnnotate': [ 'text-annotate' ],
+    'drawAnnotate': [ 'draw-annotate' ],
     'openFile': [ 'openFile', 'secondaryOpenFile' ],
     'printing': [ 'print', 'secondaryPrint' ],
     'downloadPdf': [ 'download', 'secondaryDownload' ],
@@ -77,11 +78,6 @@ export class PdfIframeWrapperComponent implements OnInit
     return this._pdfAnnotationDrawer;
   }
 
-  public get markInfo(): Promise<any>
-  {
-    return this.pdfBehaviour.pdfViewerApplication.pdfDocument.getMarkInfo();
-  }
-
   constructor(
     private localisationService: LocalisationService)
   {
@@ -96,7 +92,7 @@ export class PdfIframeWrapperComponent implements OnInit
     this.pdfAnnotationDrawer.boundingBoxCreated.subscribe(({ bounds, page }) => this.onBoundingBoxCreated(bounds, page));
     this.pdfAnnotationDrawer.enableDebugLogging = this.enableDebugMessages;
 
-    this.pdfBehaviour.onPdfInitialized.subscribe(() => this.onPdfAttached());
+    this.pdfBehaviour.onIframeLoaded.subscribe(() => this.iframeLoaded());
   }
 
   public loadIframe()
@@ -105,29 +101,32 @@ export class PdfIframeWrapperComponent implements OnInit
   }
 
   /**
-   * Sets a button with the given buttonType id as hidden.
-   * @param buttonType The type of button to set hidden.
-   * @param hidden If true, set the button as hidden.
+   * Sets a button as disabled.
+   * @param buttonType The type of button to set as disabled.
+   * @param disabled If true, set the button as disabled.
    */
-  public setButtonHidden(buttonType: toolbarButtonType, hidden: boolean)
+  public disableButton(buttonType: toolbarButtonType, disabled: boolean)
   {
     const buttonids = this.toolBarTranslation[buttonType];
     buttonids.forEach(x => {
-      this.pdfBehaviour.iframeDocument.getElementById(x)
-        ?.toggleAttribute('hidden', hidden);
+      const element = this.pdfBehaviour.iframeDocument.getElementById(x)!;
+      element.toggleAttribute('disabled', disabled);
+      element.ariaDisabled = String(disabled);
     });
   }
 
-  public getButtonHidden(buttonType: toolbarButtonType)
+  /**
+   * Checks if the given button is disabled.
+   * @param buttonType The button type to check.
+   * @returns True if disabled.
+   */
+  public buttonDisabled(buttonType: toolbarButtonType)
   {
     const buttonids = this.toolBarTranslation[buttonType];
     return buttonids.map(x => {
-      const element = this.pdfBehaviour.iframeDocument.getElementById(x);
-      if (!element)
-      {
-        return false;
-      }
-      return this.pdfBehaviour.iframeWindow.getComputedStyle(element).display === 'none';
+      const element = this.pdfBehaviour.iframeDocument.getElementById(x)!;
+      console.log(element.ariaDisabled)
+      return element.ariaDisabled === 'true';
     }).every(x => x == true);
   }
 
@@ -171,7 +170,7 @@ export class PdfIframeWrapperComponent implements OnInit
       }))
   }
 
-  private async onPdfAttached()
+  private iframeLoaded()
   {
     // Inject the annotate button
     const leftVerticalToolbarSeperator = this.pdfBehaviour.rightToolbarContainer.getElementsByClassName('verticalToolbarSeparator')[0];
@@ -219,20 +218,11 @@ export class PdfIframeWrapperComponent implements OnInit
     annotateDrawButton.onclick = () => this.onAnnotationDrawButtonClicked();
     leftVerticalToolbarSeperator.insertAdjacentElement('afterend', annotateDrawButton);
 
-    // Currently there is no support for "structured content" in PDFs.
-    // These type of PDFs have a different structure on the textlayer.
-    // The "Marked" value in the PDFs markinfo indicates if the PDF has this feature enabled.
-    // Until this is supported, we disable the button on these.
-    const markInfo = await this.markInfo;
-    const marked = markInfo && markInfo.Marked === true;
-    if (!marked)
-    {
-      const annotateTextButton = annotateButtonBase.cloneNode(true) as HTMLButtonElement;
+    const annotateTextButton = annotateButtonBase.cloneNode(true) as HTMLButtonElement;
       annotateTextButton.title = this.localisationService.Translate('annotation.textButton');
       annotateTextButton.id = 'text-annotate';
       annotateTextButton.onclick = () => this.onAnnotationTextButtonClicked();
       leftVerticalToolbarSeperator.insertAdjacentElement('afterend', annotateTextButton);
-    }
 
     this.pdfBehaviour.iframeDocument.addEventListener('mouseup', () => this.onIframeClicked());
     this.onInitialized.emit();

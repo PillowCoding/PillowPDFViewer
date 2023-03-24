@@ -16,11 +16,11 @@ type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: A
             [enableEventBusDebugMessages]="false"
 
             [UseToolbarFileSelector]="false"
-            [openFileEnabled]="false"
-            [printingEnabled]="false"
-            [textEditorEnabled]="false"
-            [drawingEnabled]="false"
-            [downloadEnabled]="false"
+            [enableFileSelect]="false"
+            [enablePrinting]="false"
+            [enableTextEditing]="false"
+            [enableDrawEditing]="false"
+            [enableDownloading]="false"
 
             [annotationsProvider]="annotationsProvider"
             [behaviourOnAnnotationPosted]="onAnnotationPost"
