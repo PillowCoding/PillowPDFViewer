@@ -612,6 +612,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     }
 
     this.onCommentPosted.emit(submission);
+    this.changeDetector.detectChanges();
   }
 
   /**
