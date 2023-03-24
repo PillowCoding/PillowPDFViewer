@@ -203,9 +203,10 @@ export class appPdfViewerModifiedComponent
         this._pdfViewer!.deleteAnnotation(annotation);
     }
 
-    onAnnotationDeleted(annotation: pdfAnnotation)
+    async onAnnotationDeleted(annotation: pdfAnnotation)
     {
         this._annotations = this._annotations!.filter(x => x.id != annotation.id);
         console.log("Annotation was deleted.");
+        await this.saveAnnotations();
     }
 }
