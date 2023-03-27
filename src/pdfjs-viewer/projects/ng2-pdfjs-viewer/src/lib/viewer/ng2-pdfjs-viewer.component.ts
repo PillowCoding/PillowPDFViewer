@@ -63,7 +63,6 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
   @Input() fileSource?: string | Blob | Uint8Array;
   @Input() viewerRelativePath?: string;
   @Input() annotationsProvider?: annotationProviderDelegateType;
-  @Input() UseToolbarFileSelector = true;
   @Input() enableDebugMessages = false;
   @Input() enableEventBusDebugMessages = false;
   @Input() defaultPendingAnnotationDrawColor = '#00FF00';
@@ -626,17 +625,6 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
 
     this.onCommentPosted.emit(submission);
     this.changeDetector.detectChanges();
-  }
-
-  /**
-   * Called when a file was uploaded.
-   * @param event The event context of the uploaded file.
-   */
-  protected onChangeSingleFile(event: Event) {
-    this.pdfBehaviour.pdfViewerApplication.eventBus.dispatch("fileinputchange", {
-      source: this,
-      fileInput: event.target
-    });
   }
 
   /**

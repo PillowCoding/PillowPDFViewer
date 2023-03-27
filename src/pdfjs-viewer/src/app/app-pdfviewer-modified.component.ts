@@ -15,7 +15,6 @@ type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: A
             [enableDebugMessages]="false"
             [enableEventBusDebugMessages]="false"
 
-            [UseToolbarFileSelector]="false"
             [enableFileSelect]="false"
             [enablePrinting]="false"
             [enableTextEditing]="false"

@@ -9,7 +9,6 @@ import { annotationProviderRequest, annotationProviderResponse, pdfAnnotation, p
             [enableDebugMessages]="true"
             [enableEventBusDebugMessages]="true"
 
-            [UseToolbarFileSelector]="false"
             [enableFileSelect]="false"
             [enablePrinting]="false"
             [enableTextEditing]="false"
