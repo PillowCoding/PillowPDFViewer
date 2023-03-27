@@ -256,7 +256,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
   private async onWrapperLoaded()
   {
     // Set button availability based on settings.
-    this._iframeWrapper.disableButton('openFile', true);
+    this._iframeWrapper.disableButton('openFile', !this.enableFileSelect);
     this._iframeWrapper.disableButton('printing', true);
     this._iframeWrapper.disableButton('downloadPdf', true);
 
@@ -319,7 +319,6 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     this._iframeWrapper.disableButton('drawEditor', !this.enableDrawEditing);
     this._iframeWrapper.disableButton('textAnnotate', !this.enableTextAnnotating);
     this._iframeWrapper.disableButton('drawAnnotate', !this.enableDrawAnnotating);
-    this._iframeWrapper.disableButton('openFile', !this.enableFileSelect);
     this._iframeWrapper.disableButton('printing', !this.enablePrinting);
     this._iframeWrapper.disableButton('downloadPdf', !this.enableDownloading);
 
