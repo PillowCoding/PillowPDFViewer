@@ -256,11 +256,9 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
   private async onWrapperLoaded()
   {
     // Set button availability based on settings.
-    this._iframeWrapper.disableButton('textAnnotate', !this.enableTextAnnotating);
-    this._iframeWrapper.disableButton('drawAnnotate', !this.enableDrawAnnotating);
-    this._iframeWrapper.disableButton('openFile', !this.enableFileSelect);
-    this._iframeWrapper.disableButton('printing', !this.enablePrinting);
-    this._iframeWrapper.disableButton('downloadPdf', !this.enableDownloading);
+    this._iframeWrapper.disableButton('openFile', true);
+    this._iframeWrapper.disableButton('printing', true);
+    this._iframeWrapper.disableButton('downloadPdf', true);
 
     document.addEventListener('mouseup', (e) => this.onMouseUp());
 
@@ -316,9 +314,14 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
   private onPageRendered(first: boolean)
   {
     // Set text and draw editing availability based on settings.
-    // These are checked every render because the internal PDFJS code enables this at a later state than we can check.
+    // These are checked every render because the internal PDFJS code enables some at a later state than we can check.
     this._iframeWrapper.disableButton('textEditor', !this.enableTextEditing);
     this._iframeWrapper.disableButton('drawEditor', !this.enableDrawEditing);
+    this._iframeWrapper.disableButton('textAnnotate', !this.enableTextAnnotating);
+    this._iframeWrapper.disableButton('drawAnnotate', !this.enableDrawAnnotating);
+    this._iframeWrapper.disableButton('openFile', !this.enableFileSelect);
+    this._iframeWrapper.disableButton('printing', !this.enablePrinting);
+    this._iframeWrapper.disableButton('downloadPdf', !this.enableDownloading);
 
     if (!first)
     {

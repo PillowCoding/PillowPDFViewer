@@ -224,6 +224,10 @@ export class PdfIframeWrapperComponent implements OnInit
       annotateTextButton.onclick = () => this.onAnnotationTextButtonClicked();
       leftVerticalToolbarSeperator.insertAdjacentElement('afterend', annotateTextButton);
 
+    // Disable the buttons by default.
+    this.disableButton('textAnnotate', true);
+    this.disableButton('drawAnnotate', true);
+
     this.pdfBehaviour.iframeDocument.addEventListener('mouseup', () => this.onIframeClicked());
     this.onInitialized.emit();
   }
