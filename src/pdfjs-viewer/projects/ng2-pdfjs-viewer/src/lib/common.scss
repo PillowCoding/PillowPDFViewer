@@ -1,17 +1,51 @@
-$default-background-color: rgba(249, 249, 250, 1);
-$default-border-color: rgba(204, 204, 204, 1);
-$button-hover-color: rgba(221, 222, 223, 1);
-$main-color: rgba(12, 12, 13, 1);
-$annotation-background-color: #f1f1f1;
-$annotation-background-hover-color: #ebebeb;
-$annotation-background-focus-color: #cecece;
+::ng-deep :root
+{
+    --text-color: rgba(12, 12, 13, 1);
+    --icon-color: rgb(1, 1, 1, .7);
 
-$input-background-color: rgba(204, 204, 204, 1);
-$input-background-hover-color: rgb(190, 190, 190);
-$input-border-color: rgba(204, 204, 204, 1);
+    --toolbar-background-color: rgba(249, 249, 250, 1);
+    --toolbar-border-color: rgba(184, 184, 184, 1);
 
-$close-button-height: 28px;
-$close-button-width: 28px;
+    --button-background-color: rgba(215, 215, 219, 1);
+    --button-hover-background-color: rgba(102, 102, 103, 1);
+    --button-hover-color: rgba(102, 102, 103, 1);
+    --button-hover-text-color: rgba(255, 255, 255, 1);
+
+    --card-background-color: #f1f1f1;
+    --card-background-hover-color: #ebebeb;
+    --card-background-focus-color: #cecece;
+    --card-border-color: rgba(204, 204, 204, 1);
+
+    --input-background-color: rgba(204, 204, 204, 1);
+    --input-background-hover-color: rgb(190, 190, 190);
+    --input-border-color: rgba(204, 204, 204, 1);
+
+    --quote-background-color: #e2e2e2;
+    --quote-border-color: #bbbbbb;
+}
+
+@media (prefers-color-scheme: dark) {
+    ::ng-deep :root
+    {
+        --text-color: rgba(255, 255, 255, .85);
+        --icon-color: rgb(249, 249, 250, .7);
+        --toolbar-background-color: rgba(56, 56, 61, 1);
+        --toolbar-border-color: rgba(0, 0, 0, 0.3);
+
+        --button-background-color: rgba(74, 74, 79, 1);
+        --button-hover-background-color: rgba(102, 102, 103, 1);
+        --button-hover-color: rgba(102, 102, 103, 1);
+        --button-hover-text-color: rgba(255, 255, 255, 1);
+
+        --card-background-color: rgba(74, 74, 79, 1);
+        --card-background-hover-color: rgba(102, 102, 103, 1);
+        --card-background-focus-color: rgb(124, 124, 124);
+        --card-border-color: rgba(40, 40, 40, 1);
+
+        --quote-background-color: rgb(136, 136, 136);
+        --quote-border-color: rgb(117, 117, 117);
+    }
+}
 
 .display-flex
 {
@@ -38,10 +72,11 @@ $close-button-width: 28px;
     color: goldenrod;
 }
 
+$close-button-height: 28px;
+$close-button-width: 28px;
 .close {
     width: $close-button-width;
     height: $close-button-height;
-    opacity: 0.3;
 
     &:hover {
         opacity: 1;
@@ -52,7 +87,7 @@ $close-button-width: 28px;
         content: ' ';
         height: calc($close-button-height / 2);
         width: 2px;
-        background-color: #333;
+        background-color: var(--icon-color);
     }
 
     &:before {
@@ -71,7 +106,7 @@ $close-button-width: 28px;
         padding: 8px;
         border-radius: 4px;
         margin: 5px auto;
-        border: 1px solid $input-border-color;
+        border: 1px solid var(--input-border-color);
         background-color: white;
         color: black;
         outline: none;
@@ -83,13 +118,13 @@ $close-button-width: 28px;
         color: black;
         margin-left: -50px;
         cursor: pointer;
-        background-color: $input-background-color;
-        border: solid $input-border-color 1px;
+        background-color: var(--input-background-color);
+        border: solid var(--input-border-color) 1px;
         appearance: none;
 
         &:hover
         {
-            background-color: $input-background-hover-color;
+            background-color: var(--input-background-hover-color);
         }
     }
 }

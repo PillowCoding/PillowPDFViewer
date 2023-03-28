@@ -68,7 +68,7 @@ type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: A
         .close {
             width: $close-button-width;
             height: $close-button-height;
-            opacity: 0.3;
+            opacity: 0.6;
 
             &:hover {
                 opacity: 1;
@@ -79,7 +79,7 @@ type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: A
                 content: ' ';
                 height: calc($close-button-height / 2);
                 width: 2px;
-                background-color: #333;
+                background-color: var(--icon-color);
             }
 
             &:before {

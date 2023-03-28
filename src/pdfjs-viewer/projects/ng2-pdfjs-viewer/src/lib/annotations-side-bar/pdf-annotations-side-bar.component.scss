@@ -2,8 +2,8 @@
 
 .annotation-container
 {
-  background-color: $default-background-color;
-  border-left: solid 1px $default-border-color;
+  background-color: var(--toolbar-background-color);
+  border-left: solid 1px var(--toolbar-border-color);
 
   >.header
   {
@@ -12,6 +12,7 @@
 
     >.count
     {
+      color: var(--text-color);
       line-height: 35px;
       margin-left: 2rem;
     }
@@ -51,7 +52,7 @@
 
   &:hover
   {
-    background-color: $button-hover-color;
+    background-color: var(--button-hover-color);
   }
 
   &.close-annotations
@@ -61,10 +62,11 @@
 
   &.expand
   {
-    background-image: url(/assets/pdfjs/web/images/toolbarButton-secondaryToolbarToggle.svg);
-    background-repeat: no-repeat;
-    background-size: 16px 16px;
-    background-position: center;
+    mask-image: url(/assets/pdfjs/web/images/toolbarButton-secondaryToolbarToggle.svg);
+    mask-repeat: no-repeat;
+    mask-size: 16px 16px;
+    mask-position: center;
+    background-color: var(--icon-color);
     transform: rotate(180deg);
   }
 }

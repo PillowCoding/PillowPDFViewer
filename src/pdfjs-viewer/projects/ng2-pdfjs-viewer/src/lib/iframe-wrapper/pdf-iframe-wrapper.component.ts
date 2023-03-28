@@ -19,11 +19,7 @@ export type spreadModeType = 'none' | 'odd' | 'even';
     <iframe #iframe title="ng2-pdfjs-viewer" width="100%" height="100%">
     </iframe>
   `,
-  styles: [`
-    :host {
-      flex-grow: 1;
-    }
-  `]
+  styleUrls: ['pdf-iframe-wrapper.component.scss']
 })
 export class PdfIframeWrapperComponent implements OnInit
 {
@@ -182,25 +178,25 @@ export class PdfIframeWrapperComponent implements OnInit
       {
         -webkit-mask-image: var(--toolbarButton-editorInk-icon);
       }
-      #draw-annotate::after
-      {
-        content: 'A';
-        font-size: 8px;
-        position: absolute;
-        left: 4px;
-        top: 4px;
-      }
       #text-annotate::before
       {
         -webkit-mask-image: var(--toolbarButton-editorFreeText-icon);
       }
-      #text-annotate::after
+      #draw-annotate::after, #text-annotate::after
       {
         content: 'A';
         font-size: 8px;
         position: absolute;
         left: 4px;
         top: 4px;
+
+        color: var(--main-color);
+        opacity: var(--toolbar-icon-opacity);
+      }
+      #draw-annotate::before, #text-annotate::before
+      {
+        color: var(--main-color);
+        opacity: var(--toolbar-icon-opacity);
       }
     `;
     this.pdfBehaviour.iframeDocument.head.appendChild(styleContainer);
