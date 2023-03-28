@@ -217,14 +217,20 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
                 }
 
                 const layerElement = annotateDrawLayerElement.cloneNode(true) as HTMLDivElement;
-                layerElement.onclick = (event: MouseEvent) => this.onClickDrawLayerEvent(event);
+                layerElement.onmousedown = (event: MouseEvent) => this.onClickDrawLayerEvent(true, event);
+                layerElement.onmouseup = (event: MouseEvent) => this.onClickDrawLayerEvent(false, event);
 
                 x.insertAdjacentElement('beforeend', layerElement);
                 this._annotationDrawLayerInstances.push({ page, layerElement });
             });
     }
 
-    private onClickDrawLayerEvent(event: MouseEvent)
+    /**
+     * Invoked when a draw layer has been pressed.
+     * @param mouseDown A boolean determing if the trigger event was mouseDown. If false, the click was triggered by mouseUp.
+     * @param event The event data of the mouse.
+     */
+    private onClickDrawLayerEvent(mouseDown: boolean, event: MouseEvent)
     {
         const pageParent = (event.target as Element).closest('.page') as HTMLDivElement;
         const page = this._pdfBehaviour.getPageNumberFromParent(pageParent);
@@ -234,16 +240,29 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
             return;
         }
 
-        const position = this.getPositionRelativeToDiv(event, pageParent);
         const pendingAnnotationBoundingBoxStartPage = this._pendingAnnotationPage;
         const pendingAnnotationBoundingBoxStart = this._pendingAnnotationBoundingBoxStart;
         const drawAsStart = !pendingAnnotationBoundingBoxStartPage && !pendingAnnotationBoundingBoxStart;
+
+        // Check if the start press is mouse down.
+        if (drawAsStart && !mouseDown)
+        {
+            return;
+        }
+
+        const position = this.getPositionRelativeToDiv(event, pageParent);
 
         if (drawAsStart)
         {
             this.sendDebugMessage(`Drawing start position ${position.x}, ${position.y} for page ${page}.`);
             this._pendingAnnotationBoundingBoxStart = position;
             this._pendingAnnotationPage = page;
+            return;
+        }
+
+        // Check if the end press is mouse up.
+        if (mouseDown)
+        {
             return;
         }
 
