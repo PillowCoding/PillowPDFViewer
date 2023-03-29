@@ -2,6 +2,7 @@ import { AfterViewInit, ChangeDetectorRef, Component, ContentChild, ContentChild
 import { PdfAnnotationsSideBarComponent } from 'ng2-pdfjs-viewer/annotations-side-bar/pdf-annotations-side-bar.component';
 import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
 import { pageModeType, PdfIframeWrapperComponent, scrollModeType, spreadModeType, zoomType } from 'ng2-pdfjs-viewer/iframe-wrapper/pdf-iframe-wrapper.component';
+import { LocalisationService } from 'ng2-pdfjs-viewer/localisation/localisation.service';
 import { pageChangingEventType, pdfBehaviour } from 'ng2-pdfjs-viewer/pdf-behaviour';
 import { templateRefDirective } from 'ng2-pdfjs-viewer/templateRef.directive';
 import { boundingBox, pdfAnnotation, pdfAnnotationComment } from './../pdf-annotation';
@@ -172,6 +173,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
   }
 
   constructor(
+    private readonly localisationService: LocalisationService,
     private readonly changeDetector: ChangeDetectorRef)
   {
     this.getShownAnnotations = this.getShownAnnotations.bind(this);
@@ -303,6 +305,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     if (marked)
     {
       this._iframeWrapper.disableButton('textAnnotate', true);
+      this._iframeWrapper.setButtonTitle('textAnnotate', this.localisationService.Translate('textAnnotate.disabledNotSupported'));
     }
 
     const allAnnotations = this._storedAnnotations

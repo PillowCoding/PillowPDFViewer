@@ -75,7 +75,7 @@ export class PdfIframeWrapperComponent implements OnInit
   }
 
   constructor(
-    private localisationService: LocalisationService)
+    private readonly localisationService: LocalisationService)
   {
   }
 
@@ -109,6 +109,9 @@ export class PdfIframeWrapperComponent implements OnInit
       element.toggleAttribute('disabled', disabled);
       element.ariaDisabled = String(disabled);
     });
+
+    const title = this.localisationService.Translate(buttonType.toString() + '.' + (!disabled ? 'enabled' : 'disabled'));
+    this.setButtonTitle(buttonType, title);
   }
 
   /**
@@ -123,6 +126,15 @@ export class PdfIframeWrapperComponent implements OnInit
       const element = this.pdfBehaviour.iframeDocument.getElementById(x)!;
       return element.ariaDisabled === 'true';
     }).every(x => x == true);
+  }
+
+  public setButtonTitle(buttonType: toolbarButtonType, text: string)
+  {
+    const buttonids = this.toolBarTranslation[buttonType];
+    return buttonids.forEach(x => {
+      const element = this.pdfBehaviour.iframeDocument.getElementById(x)!;
+      element.title = text;
+    });
   }
 
   public deletePendingAnnotation()
@@ -208,13 +220,11 @@ export class PdfIframeWrapperComponent implements OnInit
 
     // Insert draw button.
     const annotateDrawButton = annotateButtonBase.cloneNode(true) as HTMLButtonElement;
-    annotateDrawButton.title = this.localisationService.Translate('annotation.drawButton');
     annotateDrawButton.id = 'draw-annotate';
     annotateDrawButton.onclick = () => this.onAnnotationDrawButtonClicked();
     leftVerticalToolbarSeperator.insertAdjacentElement('afterend', annotateDrawButton);
 
     const annotateTextButton = annotateButtonBase.cloneNode(true) as HTMLButtonElement;
-      annotateTextButton.title = this.localisationService.Translate('annotation.textButton');
       annotateTextButton.id = 'text-annotate';
       annotateTextButton.onclick = () => this.onAnnotationTextButtonClicked();
       leftVerticalToolbarSeperator.insertAdjacentElement('afterend', annotateTextButton);
