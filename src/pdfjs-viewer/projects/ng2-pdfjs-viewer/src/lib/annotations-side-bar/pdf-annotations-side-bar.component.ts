@@ -3,6 +3,8 @@ import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Output, 
 import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
 import { pdfAnnotation } from 'ng2-pdfjs-viewer/pdf-annotation';
 
+export type shownAnnotationsFetcherType = () => Array<pdfAnnotation>;
+
 @Component({
   selector: 'lib-ng2-pdfjs-viewer-annotations-sidebar',
   template: `
@@ -26,11 +28,12 @@ import { pdfAnnotation } from 'ng2-pdfjs-viewer/pdf-annotation';
           (click)="expandAnnotations()">
         </button>
 
-        <span class="count" *ngIf="sidebarExpanded && shownAnnotations.length == 1">{{'annotations.singular' | translate: shownAnnotations.length.toString()}}</span>
-        <span class="count" *ngIf="sidebarExpanded && shownAnnotations.length != 1">{{'annotations.plural' | translate: shownAnnotations.length.toString()}}</span>
+        <span class="count" *ngIf="sidebarExpanded && loading">{{'annotations.loading' | translate}}</span>
+        <span class="count" *ngIf="sidebarExpanded && shownAnnotations && shownAnnotations.length == 1">{{'annotations.singular' | translate: shownAnnotations.length.toString()}}</span>
+        <span class="count" *ngIf="sidebarExpanded && shownAnnotations && shownAnnotations.length != 1">{{'annotations.plural' | translate: shownAnnotations.length.toString()}}</span>
       </div>
       <ol class="annotations" *ngIf="sidebarExpanded">
-        <p class="warning no-annotations" *ngIf="shownAnnotations.length == 0 && !pendingAnnotation">{{'annotations.nonePage' | translate}}</p>
+        <p class="warning no-annotations" *ngIf="!loading && shownAnnotations?.length == 0 && !pendingAnnotation">{{'annotations.nonePage' | translate}}</p>
 
         <li *ngIf="pendingAnnotation" class="annotation">
           <lib-ng2-pdfjs-viewer-annotation
@@ -76,9 +79,7 @@ export class PdfAnnotationsSideBarComponent
   @Input() annotationMetaDataHeaderTemplate?: TemplateRef<any>;
   @Input() annotationCommentTemplate?: TemplateRef<any>;
 
-  // Used for the shown annotations.
-  @Input() currentPage!: number;
-  @Input() annotations!: Array<pdfAnnotation>;
+  @Input() shownAnnotationsFetcher!: shownAnnotationsFetcherType;
 
   @Output() onSidebarExpand = new EventEmitter();
   @Output() onSidebarExpanded = new EventEmitter();
@@ -88,21 +89,28 @@ export class PdfAnnotationsSideBarComponent
   @Output() onInitialCommentPosted = new EventEmitter<pdfAnnotationCommentSubmission>();
   @Output() onCommentPosted = new EventEmitter<pdfAnnotationCommentSubmission>();
 
+  /** If true, the sidebar is loading. */
+  protected loading = false;
+
   /** Represents the current focussed annotation, if any are focused on. */
   private _currentAnnotationFocus?: pdfAnnotation;
   
   private _sidebarExpanded = false;
 
+  public get shownAnnotations()
+  {
+    const a = this.shownAnnotationsFetcher();
+    if (a)
+    {
+      console.log(a[0]?.dateCreated);
+    }
+    return a;
+  }
+
   /** A boolean to define if the annotations bar is expanded. */
   public get sidebarExpanded()
   {
     return this._sidebarExpanded;
-  }
-
-  /** The annotations shown in the sidebar. */
-  public get shownAnnotations()
-  {
-    return this.annotations.filter(x => x.page == this.currentPage).reverse();
   }
 
   constructor(
@@ -173,11 +181,13 @@ export class PdfAnnotationsSideBarComponent
   public setLoading()
   {
     (this._sidebarContainer.nativeElement as HTMLDivElement).classList.add('loading');
+    this.loading = true;
   }
 
   public setNotLoading()
   {
     (this._sidebarContainer.nativeElement as HTMLDivElement).classList.remove('loading');
+    this.loading = false;
   }
 
   public setAnnotationLoading(annotation: pdfAnnotation)

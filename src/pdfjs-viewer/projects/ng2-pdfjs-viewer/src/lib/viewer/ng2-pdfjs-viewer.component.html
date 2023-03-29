@@ -20,8 +20,7 @@
     [annotationMetaDataHeaderTemplate]="annotationMetaDataHeaderTemplate"
     [annotationCommentTemplate]="annotationCommentTemplate"
 
-    [currentPage]="page"
-    [annotations]="_annotations"
+    [shownAnnotationsFetcher]="getShownAnnotations"
 
     (onSidebarCollapse)="onSidebarCollapse()"
     (onClick)="focusAnnotation($event)"

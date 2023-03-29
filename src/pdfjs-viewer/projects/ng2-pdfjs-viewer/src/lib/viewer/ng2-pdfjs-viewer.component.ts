@@ -16,6 +16,8 @@ export type annotationProviderDelegateType = (request: annotationProviderRequest
 export type behaviourOnAnnotationPostedDelegateType = (annotation: pdfAnnotation) => Promise<void>;
 export type behaviourOnCommentPostedDelegateType = (submission: pdfAnnotationCommentSubmission) => Promise<void>;
 
+export type annotationFilterReference = annotationProviderRequest & { annotations: Array<pdfAnnotation> };
+
 @Component({
   selector: 'lib-ng2-pdfjs-viewer',
   templateUrl: 'ng2-pdfjs-viewer.component.html',
@@ -135,7 +137,8 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
   /** If something is in the process of being annotated, this annotation specifies the pending data. */
   protected _pendingAnnotation?: pdfAnnotation;
 
-  protected _annotations: Array<pdfAnnotation> = [];
+  /** Represents an array of annotations that are fetched and stored into memory, so be used in the application. Each array of annotations have their filtered reference with them. */
+  protected _storedAnnotations: Array<annotationFilterReference> = [];
 
   private _initialized = false;
 
@@ -171,6 +174,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
   constructor(
     private readonly changeDetector: ChangeDetectorRef)
   {
+    this.getShownAnnotations = this.getShownAnnotations.bind(this);
   }
 
   ngOnInit()
@@ -236,7 +240,13 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
 
   public deleteAnnotation(annotation: pdfAnnotation)
   {
-    this._annotations = this._annotations.filter(x => x.id !== annotation.id);
+    const annotationsIndex = this._storedAnnotations.findIndex(x => x.page === annotation.page);
+    const newAnnotations = this._storedAnnotations[annotationsIndex]
+      .annotations
+      .filter(x => x.id !== annotation.id);
+
+    this._storedAnnotations[annotationsIndex]
+      .annotations = newAnnotations;
 
     if (annotation.type === 'text')
     {
@@ -250,6 +260,21 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     
     this.changeDetector.detectChanges();
     this.onAnnotationDeleted.emit(annotation);
+  }
+
+  public getShownAnnotations()
+  {
+    const pageAnnotations = this._storedAnnotations.filter(x => x.page === this.page)[0]
+      ?.annotations
+      ?.slice()
+      ?.reverse();
+
+    if (pageAnnotations)
+    {
+      console.log(pageAnnotations[0]?.dateCreated);
+    }
+    
+    return pageAnnotations;
   }
 
   private async onWrapperLoaded()
@@ -288,10 +313,14 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
       this._iframeWrapper.disableButton('textAnnotate', true);
     }
 
-    const textAnnotations = this._annotations
+    const allAnnotations = this._storedAnnotations
+      .map(x => x.annotations)
+      .reduce((accumulator, value) => accumulator.concat(value), []);
+
+    const textAnnotations = allAnnotations
       .filter(x => x.type === 'text');
 
-    const drawAnnotations = this._annotations
+    const drawAnnotations = allAnnotations
       .filter(x => x.type === 'draw');
 
     textAnnotations.forEach(annotation =>
@@ -372,29 +401,35 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    console.log(`${page}: ${this._annotations.some(x => x.page == this.page)}`);
-
-    // TODO: Properly store the location where the annotations are from.
-    // TODO: Remove `There are no annotations on this page.` when loading.
-    if (!this._annotations.some(x => x.page == this.page))
+    if (this._storedAnnotations.some(x => x.page == this.page))
     {
-      this.sendDebugMessage(`Start fetch annotations. { page: ${page} }`);
-
-      this._annotationsSidebar!.setLoading();
-      const response = await this.annotationsProvider({ page });
-      this._annotationsSidebar!.setNotLoading();
-
-      this._annotations.push(...response.annotations);
-
-      this.sendDebugMessage('Response', response);
-
-      // Render the annotations if the page is rendered.
-      // Since this might happen after the textlayer has been rendered, this check ensures the annotations are still rendered.
-      const canvasRendered = this._iframeWrapper.pdfAnnotationDrawer.canvasRendered(page);
-      if (canvasRendered) {
-        this.drawAnnotationsOnPage(page);
-      }
+      return;
     }
+
+    this.sendDebugMessage(`Start fetch annotations. { page: ${page} }`);
+
+    this._annotationsSidebar!.setLoading();
+
+    const response = await this.annotationsProvider({ page });
+
+    this._annotationsSidebar!.setNotLoading();
+
+    const annotationResponse: annotationFilterReference = {
+      page,
+      annotations: response.annotations || []
+    }
+    this._storedAnnotations.push(annotationResponse);
+
+    this.sendDebugMessage('Response', response);
+
+    // Render the annotations if the page is rendered.
+    // Since this might happen after the textlayer has been rendered, this check ensures the annotations are still rendered.
+    const canvasRendered = this._iframeWrapper.pdfAnnotationDrawer.canvasRendered(page);
+    if (canvasRendered) {
+      this.drawAnnotationsOnPage(page);
+    }
+
+    this.changeDetector.detectChanges();
   }
 
   private setDownloadBehaviour(delegate: behaviourOnDownloadDelegateType)
@@ -494,7 +529,9 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     this._pendingAnnotation = undefined;
 
     annotation.comments.push(initialComment);
-    this._annotations.push(annotation);
+
+    const annotationsIndex = this._storedAnnotations.findIndex(x => x.page === annotation.page);
+    this._storedAnnotations[annotationsIndex].annotations.push(annotation);
 
     // Push a change so that the list of annotations is redrawn. This way the "loading" indication below works properly.
     this.changeDetector.detectChanges();
@@ -535,9 +572,11 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
   {
     this._iframeWrapper.pdfAnnotationDrawer.clearCanvas(page!, false);
 
-    this.drawAnnotations(
-      this._annotations
-        .filter(x => x.page === page && x.type === 'draw'));
+    const annotationsIndex = this._storedAnnotations.findIndex(x => x.page === page);
+    const annotations = this._storedAnnotations[annotationsIndex]
+      .annotations
+      .filter(x => x.page === page && x.type === 'draw');
+    this.drawAnnotations(annotations);
   }
 
   private drawAnnotations(annotations: Array<pdfAnnotation>)
