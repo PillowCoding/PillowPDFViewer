@@ -122,18 +122,21 @@ export class appPdfViewerModifiedComponent
             {
                 const baseUrl = this._pdfViewer!.baseUrl;
                 const allStoredFileAnnotations: Array<storedFileAnnotations> = JSON.parse(allStoredFileAnnotationsUnparsed);
+
                 this._annotations = allStoredFileAnnotations
                     .filter(x => x.baseUrl == baseUrl)[0]?.annotations || [];
             }
         }
 
+        console.log(`Fetching annotations. Page: ${request.page}`);
+        await this.delay(1000);
+
         // Determine the right annotations based on file source.
-        const pageAnnotations = this._annotations!
+        const annotations = this._annotations!
             .filter(x => x.page == request.page);
-        const annotations = pageAnnotations.slice(request.skip, request.skip + request.take);
         return {
             annotations,
-            totalPage: pageAnnotations.length,
+            totalPage: annotations.length,
             total: this._annotations!.length
         }
     }

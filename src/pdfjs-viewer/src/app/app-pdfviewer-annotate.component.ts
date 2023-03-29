@@ -46,11 +46,10 @@ export class appPdfViewerAnnotateComponent
             this._annotations = JSON.parse(localStorage.getItem('pdfAnnotations') ?? '[]');
         }
 
-        const pageAnnotations = this._annotations!.filter(x => x.page == request.page);
-        const annotations = pageAnnotations.slice(request.skip, request.skip + request.take);
+        const annotations = this._annotations!.filter(x => x.page == request.page);
         return {
             annotations,
-            totalPage: pageAnnotations.length,
+            totalPage: annotations.length,
             total: this._annotations!.length
         }
     }

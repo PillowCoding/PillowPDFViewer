@@ -7,7 +7,7 @@ import { templateRefDirective } from 'ng2-pdfjs-viewer/templateRef.directive';
 import { boundingBox, pdfAnnotation, pdfAnnotationComment } from './../pdf-annotation';
 import { pdfContext } from './../pdf-context';
 
-export type annotationProviderRequest = { page: number, skip: number, take: number };
+export type annotationProviderRequest = { page: number };
 export type annotationProviderResponse = { annotations: Array<pdfAnnotation>, totalPage: number, total: number; };
 
 export type behaviourOnDownloadDelegateType = (context: pdfContext) => void;
@@ -372,12 +372,18 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    console.log(`${page}: ${this._annotations.some(x => x.page == this.page)}`);
+
+    // TODO: Properly store the location where the annotations are from.
+    // TODO: Remove `There are no annotations on this page.` when loading.
     if (!this._annotations.some(x => x.page == this.page))
     {
-      const skip = 0;
-      const take = 999;
-      this.sendDebugMessage(`Start fetch annotations. { page: ${page}, skip: ${skip}, take: ${take} }`);
-      const response = await this.annotationsProvider({ page, skip, take });
+      this.sendDebugMessage(`Start fetch annotations. { page: ${page} }`);
+
+      this._annotationsSidebar!.setLoading();
+      const response = await this.annotationsProvider({ page });
+      this._annotationsSidebar!.setNotLoading();
+
       this._annotations.push(...response.annotations);
 
       this.sendDebugMessage('Response', response);

@@ -1,12 +1,19 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { ChangeDetectorRef, Component, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Output, TemplateRef, ViewChild } from '@angular/core';
 import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
 import { pdfAnnotation } from 'ng2-pdfjs-viewer/pdf-annotation';
 
 @Component({
   selector: 'lib-ng2-pdfjs-viewer-annotations-sidebar',
   template: `
-    <div class="annotation-container full-height" [@expandInOut]="sidebarExpanded ? 'expand' : 'collapse'">
+    <div #sidebarContainer
+      class="annotation-container full-height" [@expandInOut]="sidebarExpanded ? 'expand' : 'collapse'">
+
+      <div *ngIf="sidebarExpanded"
+        class="loading-indicator">
+        <lib-ng2-pdfjs-viewer-loading-ring></lib-ng2-pdfjs-viewer-loading-ring>
+      </div>
+
       <div class="header">
         <a
           *ngIf="sidebarExpanded"
@@ -61,6 +68,8 @@ import { pdfAnnotation } from 'ng2-pdfjs-viewer/pdf-annotation';
 })
 export class PdfAnnotationsSideBarComponent
 {
+  @ViewChild('sidebarContainer') private _sidebarContainer!: ElementRef;
+  
   @Input() enableDebugMessages!: boolean;
   @Input() pendingAnnotation?: pdfAnnotation;
 
@@ -159,6 +168,16 @@ export class PdfAnnotationsSideBarComponent
 
     (attributeArticle[0] as HTMLElement).focus();
     this.sendDebugMessage('Input focus changed', attributeArticle[0]);
+  }
+
+  public setLoading()
+  {
+    (this._sidebarContainer.nativeElement as HTMLDivElement).classList.add('loading');
+  }
+
+  public setNotLoading()
+  {
+    (this._sidebarContainer.nativeElement as HTMLDivElement).classList.remove('loading');
   }
 
   public setAnnotationLoading(annotation: pdfAnnotation)
