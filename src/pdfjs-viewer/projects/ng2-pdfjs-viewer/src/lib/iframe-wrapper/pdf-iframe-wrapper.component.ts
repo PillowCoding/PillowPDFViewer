@@ -121,7 +121,6 @@ export class PdfIframeWrapperComponent implements OnInit
     const buttonids = this.toolBarTranslation[buttonType];
     return buttonids.map(x => {
       const element = this.pdfBehaviour.iframeDocument.getElementById(x)!;
-      console.log(element.ariaDisabled)
       return element.ariaDisabled === 'true';
     }).every(x => x == true);
   }

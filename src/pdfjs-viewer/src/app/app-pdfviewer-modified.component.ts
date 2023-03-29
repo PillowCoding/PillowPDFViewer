@@ -21,9 +21,9 @@ type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: A
             [enableDrawEditing]="false"
             [enableDownloading]="false"
 
-            [page]="1"
-            [zoom]="'auto'"
-            [pagemode]="'none'"
+            [page]="4"
+            [zoom]="'page-fit'"
+            [pagemode]="'thumbs'"
             [scrollMode]="'vertical'"
             [spreadMode]="'none'"
 

@@ -99,12 +99,10 @@ export class PdfAnnotationsSideBarComponent
 
   public get shownAnnotations()
   {
-    const a = this.shownAnnotationsFetcher();
-    if (a)
-    {
-      console.log(a[0]?.dateCreated);
-    }
-    return a;
+    return this.shownAnnotationsFetcher()
+      ?.slice()
+      ?.sort((a: pdfAnnotation, b: pdfAnnotation) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime())
+      ?.reverse();
   }
 
   /** A boolean to define if the annotations bar is expanded. */

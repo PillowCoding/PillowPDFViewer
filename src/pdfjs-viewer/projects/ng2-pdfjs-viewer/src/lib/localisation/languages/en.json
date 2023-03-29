@@ -3,6 +3,7 @@
     "sidebar.collapse": "Collapse",
     "annotation.textButton": "Annotate by text",
     "annotation.drawButton": "Annotate by drawing",
+    "annotations.loading": "Loading...",
     "annotations.singular": "{0} annotation",
     "annotations.plural": "{0} annotations",
     "annotations.nonePage": "There are no annotations on this page.",

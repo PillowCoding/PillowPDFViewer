@@ -3,6 +3,7 @@
     "sidebar.collapse": "Sluit",
     "annotation.textButton": "Selecteer annotatie",
     "annotation.drawButton": "Teken annotatie",
+    "annotations.loading": "Laden...",
     "annotations.singular": "{0} annotatie",
     "annotations.plural": "{0} annotaties",
     "annotations.nonePage": "Deze pagina bevat geen annotaties.",

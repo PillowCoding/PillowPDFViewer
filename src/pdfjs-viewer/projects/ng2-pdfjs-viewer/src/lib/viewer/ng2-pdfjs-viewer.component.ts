@@ -265,15 +265,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
   public getShownAnnotations()
   {
     const pageAnnotations = this._storedAnnotations.filter(x => x.page === this.page)[0]
-      ?.annotations
-      ?.slice()
-      ?.reverse();
-
-    if (pageAnnotations)
-    {
-      console.log(pageAnnotations[0]?.dateCreated);
-    }
-    
+      ?.annotations;
     return pageAnnotations;
   }
 
