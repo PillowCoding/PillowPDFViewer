@@ -298,8 +298,7 @@ export class pdfBehaviour
         });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private sendDebugMessage(message?: any, ...optionalParams: any[])
+    private sendDebugMessage(message?: unknown, ...optionalParams: unknown[])
     {
         if (!this.enableDebugConsoleLogging)
         {

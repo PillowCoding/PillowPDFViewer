@@ -34,7 +34,6 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     @ContentChildren(templateRefDirective)
     set setTemplate(value: QueryList<templateRefDirective>)
     {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const templates: {[key: string]: (val: TemplateRef<unknown>) => void} = {
             'metaDataHeader': (val) => { this._annotationMetaDataHeaderTemplate = val },
             'comment':        (val) => { this._annotationCommentTemplate = val }
@@ -54,15 +53,13 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         })
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _annotationMetaDataHeaderTemplate?: TemplateRef<any>;
+    private _annotationMetaDataHeaderTemplate?: TemplateRef<unknown>;
     public get annotationMetaDataHeaderTemplate()
     {
         return this._annotationMetaDataHeaderTemplate
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _annotationCommentTemplate?: TemplateRef<any>;
+    private _annotationCommentTemplate?: TemplateRef<unknown>;
     public get annotationCommentTemplate()
     {
         return this._annotationCommentTemplate

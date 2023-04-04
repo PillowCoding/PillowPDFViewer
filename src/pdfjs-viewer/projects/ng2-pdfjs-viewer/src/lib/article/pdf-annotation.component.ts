@@ -52,10 +52,8 @@ export class PdfAnnotationComponent
 
     @Input() annotation!: pdfAnnotation;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    @Input() metaDataHeaderTemplate?: TemplateRef<any>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    @Input() commentTemplate?: TemplateRef<any>;
+    @Input() metaDataHeaderTemplate?: TemplateRef<unknown>;
+    @Input() commentTemplate?: TemplateRef<unknown>;
 
     @Output() commentPosted = new EventEmitter<pdfAnnotationCommentSubmission>();
     @Output() clicked = new EventEmitter<pdfAnnotation>();

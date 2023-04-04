@@ -75,10 +75,8 @@ export class PdfAnnotationsSideBarComponent
     @Input() enableDebugMessages!: boolean;
     @Input() pendingAnnotation?: pdfAnnotation;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    @Input() annotationMetaDataHeaderTemplate?: TemplateRef<any>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    @Input() annotationCommentTemplate?: TemplateRef<any>;
+    @Input() annotationMetaDataHeaderTemplate?: TemplateRef<unknown>;
+    @Input() annotationCommentTemplate?: TemplateRef<unknown>;
 
     @Input() shownAnnotationsFetcher!: shownAnnotationsFetcherType;
 
