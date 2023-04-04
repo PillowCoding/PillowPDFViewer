@@ -7,7 +7,7 @@ import { pageChangingEventType, pdfBehaviour } from 'ng2-pdfjs-viewer/pdf-behavi
 import { templateRefDirective } from 'ng2-pdfjs-viewer/templateRef.directive';
 import { boundingBox, pdfAnnotation, pdfAnnotationComment } from './../pdf-annotation';
 import { pdfContext } from './../pdf-context';
-import { scrollModeTranslation, scrollModeType, spreadModeTranslation, spreadModeType, zoomType } from '../../types/PdfViewer';
+import { scrollModeTranslation, scrollModeType, spreadModeTranslation, spreadModeType, zoomType } from '../../types/PDFViewer';
 import { pageModeTranslations, pageModeType } from '../../types/PDFSidebar';
 
 export type annotationProviderRequest = { page: number };

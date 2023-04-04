@@ -1,8 +1,8 @@
 import { EventBus } from "./EventBus";
-import { PDFViewer } from "./PdfViewer";
 import { DownloadManager } from "./DownloadManager";
 import { PDFDocument } from "./PDFDocument";
 import { PDFSidebar } from "./PDFSidebar";
+import { PDFViewer } from "./PDFViewer";
 
 export interface PDFViewerApplication {
     pdfViewer: PDFViewer;
