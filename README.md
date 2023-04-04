@@ -47,8 +47,9 @@ This is a step-by-step instruction on how to install the application.
 ## Issues
 - Text search will overwrite annotation colors if you search text that has been annotated. This does not throw any errors as far as has been tested. Due to the fact that this is partially caused by internal code, there will probably not be a fix for it.
 - Certain shortcut keys still work even though their corresponding button is disabled.
+- Zooming in through window "Scale and Layout" results in invalid drawing on the PDF screen.
+- Increasing text size is weird since the css has a lot of 'rem' sizes that are not done properly.
 
 ## Todo
-- Add types to commonly used things such as pdfViewerApplication to ease development.
 - Add proper text annotation support for "structured PDF" types. Currently these do not have this feature enabled.
 - Add the ability to remove comments on the "modified" page.
