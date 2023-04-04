@@ -1,101 +1,101 @@
-@import './../common.scss';
+    @import './../common.scss';
 
 .annotation-container
 {
-  z-index: 0;
-  background-color: var(--toolbar-background-color);
-  border-left: solid 1px var(--toolbar-border-color);
-  position: relative;
+    z-index: 0;
+    background-color: var(--toolbar-background-color);
+    border-left: solid 1px var(--toolbar-border-color);
+    position: relative;
 
-  >.loading-indicator
-  {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-
-    color: var(--loading-color);
-    opacity: var(--loading-color-opacity);
-
-    // Flex items for when the div is visible.
-    justify-content: center;
-    align-items: center;
-    flex-wrap: nowrap;
-  }
-
-  >.header
-  {
-    display: flex;
-    height: 32px;
-
-    >.count
-    {
-      color: var(--text-color);
-      line-height: 35px;
-      margin-left: 2rem;
-    }
-  }
-
-  >.annotations
-  {
-    padding: .5rem 0 .5rem 0;
-    margin: 0;
-    overflow-y: auto;
-    max-height: calc(100% - 32px);
-
-    >.annotation
-    {
-      list-style: none;
-      margin-bottom: .2rem;
-      overflow-x: hidden;
-    }
-
-    >p.no-annotations
-    {
-      margin-left: .6rem;
-    }
-  }
-
-  &.loading
-  {
     >.loading-indicator
     {
-      display: flex;
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+
+        color: var(--loading-color);
+        opacity: var(--loading-color-opacity);
+
+        // Flex items for when the div is visible.
+        justify-content: center;
+        align-items: center;
+        flex-wrap: nowrap;
     }
-  }
+
+    >.header
+    {
+        display: flex;
+        height: 32px;
+
+        >.count
+        {
+        color: var(--text-color);
+        line-height: 35px;
+        margin-left: 2rem;
+        }
+    }
+
+    >.annotations
+    {
+        padding: .5rem 0 .5rem 0;
+        margin: 0;
+        overflow-y: auto;
+        max-height: calc(100% - 32px);
+
+        >.annotation
+        {
+        list-style: none;
+        margin-bottom: .2rem;
+        overflow-x: hidden;
+        }
+
+        >p.no-annotations
+        {
+        margin-left: .6rem;
+        }
+    }
+
+    &.loading
+    {
+        >.loading-indicator
+        {
+        display: flex;
+        }
+    }
 }
 
 .toolbar-button
 {
-  background: none;
-  width: 28px;
-  height: 28px;
-  margin: 2px 1px;
-  padding: 2px 6px 0;
-  outline: none;
-  border: none;
-  border-radius: 2px;
+    background: none;
+    width: 28px;
+    height: 28px;
+    margin: 2px 1px;
+    padding: 2px 6px 0;
+    outline: none;
+    border: none;
+    border-radius: 2px;
 
-  &:hover
-  {
-    background-color: var(--button-hover-background-color);
-  }
+    &:hover
+    {
+        background-color: var(--button-hover-background-color);
+    }
 
-  &.close-annotations
-  {
-    z-index: 1;
-    padding: 0px 6px 5px 10px
-  }
+    &.close-annotations
+    {
+        z-index: 1;
+        padding: 0px 6px 5px 10px
+    }
 
-  &.expand
-  {
-    mask-image: url(/assets/pdfjs/web/images/toolbarButton-secondaryToolbarToggle.svg);
-    mask-repeat: no-repeat;
-    mask-size: 16px 16px;
-    mask-position: center;
-    background-color: var(--icon-color);
-    transform: rotate(180deg);
-  }
+    &.expand
+    {
+        mask-image: url(/assets/pdfjs/web/images/toolbarButton-secondaryToolbarToggle.svg);
+        mask-repeat: no-repeat;
+        mask-size: 16px 16px;
+        mask-position: center;
+        background-color: var(--icon-color);
+        transform: rotate(180deg);
+    }
 }

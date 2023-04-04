@@ -4,8 +4,8 @@ export interface pdfAnnotationWriter
 {
     set enableDebugLogging(val: boolean);
 
-    focusAnnotation(annotation: pdfAnnotation, color: string): any;
-    unfocusAnnotation(annotation: pdfAnnotation, color: string): any;
+    focusAnnotation(annotation: pdfAnnotation, color: string): void;
+    unfocusAnnotation(annotation: pdfAnnotation, color: string): void;
 
     containsExistingAnnotation(selection: Selection): boolean;
 

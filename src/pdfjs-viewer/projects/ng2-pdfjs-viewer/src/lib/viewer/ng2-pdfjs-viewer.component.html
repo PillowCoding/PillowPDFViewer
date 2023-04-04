@@ -1,30 +1,30 @@
 <div class="display-flex full-height" *ngIf="pdfBehaviour">
 
-  <lib-ng2-pdfjs-viewer-iframe-wrapper #iframeWrapper
-    [(pendingAnnotation)]="_pendingAnnotation"
-    
-    [enableDebugMessages]="enableDebugMessages"
-    [pdfBehaviour]="pdfBehaviour"
+    <lib-ng2-pdfjs-viewer-iframe-wrapper #iframeWrapper
+        [(pendingAnnotation)]="_pendingAnnotation"
+        
+        [enableDebugMessages]="enableDebugMessages"
+        [pdfBehaviour]="pdfBehaviour"
 
-    (onAnnotationClick)="focusAnnotation($event)"
-    (onIframeClick)="onIframeClicked()"
-    (onStartNewAnnotation)="onStartNewAnnotation()"
-    (onPendingAnnotationTextSelected)="onPendingAnnotationTextSelected()"
-    (onPendingAnnotationBoundingBoxCreated)="onPendingAnnotationBoundingBoxCreated()">
-  </lib-ng2-pdfjs-viewer-iframe-wrapper>
+        (annotationClick)="focusAnnotation($event)"
+        (iframeClick)="onIframeClicked()"
+        (startNewAnnotation)="onStartNewAnnotation()"
+        (pendingAnnotationTextSelected)="onPendingAnnotationTextSelected()"
+        (pendingAnnotationBoundingBoxCreated)="onPendingAnnotationBoundingBoxCreated()">
+    </lib-ng2-pdfjs-viewer-iframe-wrapper>
 
-  <lib-ng2-pdfjs-viewer-annotations-sidebar #annotationsSidebar *ngIf="enableTextAnnotating || enableDrawAnnotating"
-    [enableDebugMessages]="enableDebugMessages"
-    [pendingAnnotation]="_pendingAnnotation"
+    <lib-ng2-pdfjs-viewer-annotations-sidebar #annotationsSidebar *ngIf="enableTextAnnotating || enableDrawAnnotating"
+        [enableDebugMessages]="enableDebugMessages"
+        [pendingAnnotation]="_pendingAnnotation"
 
-    [annotationMetaDataHeaderTemplate]="annotationMetaDataHeaderTemplate"
-    [annotationCommentTemplate]="annotationCommentTemplate"
+        [annotationMetaDataHeaderTemplate]="annotationMetaDataHeaderTemplate"
+        [annotationCommentTemplate]="annotationCommentTemplate"
 
-    [shownAnnotationsFetcher]="getShownAnnotations"
+        [shownAnnotationsFetcher]="getShownAnnotations"
 
-    (onSidebarCollapse)="onSidebarCollapse()"
-    (onClick)="focusAnnotation($event)"
-    (onInitialCommentPosted)="submitInitialAnnotationComment($event)"
-    (onCommentPosted)="commentPosted($event)">
-  </lib-ng2-pdfjs-viewer-annotations-sidebar>
+        (sidebarCollapse)="onSidebarCollapse()"
+        (clicked)="focusAnnotation($event)"
+        (initialCommentPosted)="submitInitialAnnotationComment($event)"
+        (commentPosted)="onCommentPosted($event)">
+    </lib-ng2-pdfjs-viewer-annotations-sidebar>
 </div>

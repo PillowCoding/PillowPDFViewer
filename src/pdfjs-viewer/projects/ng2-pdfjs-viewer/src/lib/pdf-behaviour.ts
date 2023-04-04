@@ -1,9 +1,12 @@
 import { Subject } from "rxjs";
 
-export type pageChangingEventType = { pageNumber: number, pageLabel: any };
+export type pageChangingEventType = { pageNumber: number, pageLabel: unknown };
 
 export class pdfBehaviour
 {
+    private readonly _documentNotLoadedError = 'PDF document is not yet loaded.';
+    private readonly _pdfApplicationNotLoadedError = 'PDF application is not yet loaded.';
+
     // Event outputs not related to the EventBus, called manually.
     onIframeLoading = new Subject<void>();
     onIframeLoaded = new Subject<void>();
@@ -16,51 +19,51 @@ export class pdfBehaviour
     onIframeMouseMove = new Subject<MouseEvent>();
 
     // EventBus events.
-    // TODO: properly implement the generic, instead of passing `Object`.
-    onEventBusDispatch = new Subject<Object>();
-    onNextPage = new Subject<Object>();
-    onPreviousPage = new Subject<Object>();
-    onFirstPage = new Subject<Object>();
-    onLastPage = new Subject<Object>();
-    onBeforePrint = new Subject<Object>();
-    onAfterPrint = new Subject<Object>();
-    onPrint = new Subject<Object>();
-    onDownload = new Subject<Object>();
-    onZoomIn = new Subject<Object>();
-    onZoomOut = new Subject<Object>();
-    onZoomReset = new Subject<Object>();
-    onPageNumberChanged = new Subject<Object>();
-    onScaleChanging = new Subject<Object>();
-    onScaleChanged = new Subject<Object>();
-    onResize = new Subject<Object>();
-    onHashChange = new Subject<Object>();
-    onPageRender = new Subject<Object>();
-    onPageRendered = new Subject<{args: Object, first: boolean}>();
-    onPagesdestroy = new Subject<Object>();
-    onUpdateViewArea = new Subject<Object>();
+    // TODO: properly implement the generic, instead of passing `object`.
+    onEventBusDispatch = new Subject<object>();
+    onNextPage = new Subject<object>();
+    onPreviousPage = new Subject<object>();
+    onFirstPage = new Subject<object>();
+    onLastPage = new Subject<object>();
+    onBeforePrint = new Subject<object>();
+    onAfterPrint = new Subject<object>();
+    onPrint = new Subject<object>();
+    onDownload = new Subject<object>();
+    onZoomIn = new Subject<object>();
+    onZoomOut = new Subject<object>();
+    onZoomReset = new Subject<object>();
+    onPageNumberChanged = new Subject<object>();
+    onScaleChanging = new Subject<object>();
+    onScaleChanged = new Subject<object>();
+    onResize = new Subject<object>();
+    onHashChange = new Subject<object>();
+    onPageRender = new Subject<object>();
+    onPageRendered = new Subject<{args: object, first: boolean}>();
+    onPagesdestroy = new Subject<object>();
+    onUpdateViewArea = new Subject<object>();
     onPageChanging = new Subject<pageChangingEventType>();
-    onRotationChanging = new Subject<Object>();
-    onSidebarViewChanged = new Subject<Object>();
-    onPageMode = new Subject<Object>();
-    onNamedAction = new Subject<Object>();
-    onPresentationModeChanged = new Subject<Object>();
-    onPresentationMode = new Subject<Object>();
-    onSwitchAnnotationEditorMode = new Subject<Object>();
-    onSwitchAnnotationEditorParams = new Subject<Object>();
-    onRotateClockWise = new Subject<Object>();
-    onRotateCounterClockWise = new Subject<Object>();
-    onOptionalContentConfig = new Subject<Object>();
-    onSwitchScrollMode = new Subject<Object>();
-    onScrollModeChanged = new Subject<Object>();
-    onSwitchSpreadMode = new Subject<Object>();
-    onSpreadModeChanged = new Subject<Object>();
-    onDocumentProperties = new Subject<Object>();
-    onFindFromUrlHash = new Subject<Object>();
-    onUpdateFindMatchesCount = new Subject<Object>();
-    onUpdateFindControlState = new Subject<Object>();
-    onFileInputChange = new Subject<Object>();
-    onOpenFile = new Subject<Object>();
-    onTextLayerRendered = new Subject<Object>();
+    onRotationChanging = new Subject<object>();
+    onSidebarViewChanged = new Subject<object>();
+    onPageMode = new Subject<object>();
+    onNamedAction = new Subject<object>();
+    onPresentationModeChanged = new Subject<object>();
+    onPresentationMode = new Subject<object>();
+    onSwitchAnnotationEditorMode = new Subject<object>();
+    onSwitchAnnotationEditorParams = new Subject<object>();
+    onRotateClockWise = new Subject<object>();
+    onRotateCounterClockWise = new Subject<object>();
+    onOptionalContentConfig = new Subject<object>();
+    onSwitchScrollMode = new Subject<object>();
+    onScrollModeChanged = new Subject<object>();
+    onSwitchSpreadMode = new Subject<object>();
+    onSpreadModeChanged = new Subject<object>();
+    onDocumentProperties = new Subject<object>();
+    onFindFromUrlHash = new Subject<object>();
+    onUpdateFindMatchesCount = new Subject<object>();
+    onUpdateFindControlState = new Subject<object>();
+    onFileInputChange = new Subject<object>();
+    onOpenFile = new Subject<object>();
+    onTextLayerRendered = new Subject<object>();
 
     public enableDebugConsoleLogging = false;
     public enableEventBusDebugConsoleLogging = false;
@@ -69,33 +72,38 @@ export class pdfBehaviour
 
     public get iframeReference()
     {
-        this.throwIfIframeMissing();
-        return this._iframeReference!;
+        if (!this._iframeReference) {
+            throw new Error('The iframe has not yet been assigned.');
+        }
+
+        return this._iframeReference;
     }
 
     /** Gets the PDF viewer application. */
     public get pdfViewerApplication()
     {
-        return (this.iframeWindow as any).PDFViewerApplication;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (<any>this.iframeWindow)?.PDFViewerApplication;
     }
 
     /** Gets the PDF viewer application options. */
     public get pdfViewerApplicationOptions()
     {
-        return (this.iframeWindow as any).PDFViewerApplicationOptions;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (<any>this.iframeWindow)?.PDFViewerApplicationOptions;
     }
 
     /** Gets the iframe native element. */
     public get iframeElement() { return this.iframeReference; }
 
     /** Gets the iframe window. */
-    public get iframeWindow() { return this.iframeElement.contentWindow!; }
+    public get iframeWindow() { return this.iframeElement.contentWindow; }
 
     /** Gets the iframe document. */
-    public get iframeDocument() { return this.iframeElement.contentDocument || this.iframeElement.contentWindow!.document; }
+    public get iframeDocument() { return this.iframeElement.contentDocument || this.iframeElement.contentWindow?.document; }
 
     /** Gets the container of the right toolbar. */
-    public get rightToolbarContainer() { return this.iframeDocument.getElementById('toolbarViewerRight') as HTMLDivElement;  }
+    public get rightToolbarContainer() { return this.iframeDocument?.getElementById('toolbarViewerRight') as HTMLDivElement;  }
 
     /** Returns true if the PDF has been initialized. */
     public get initialized() { return this.pdfViewerApplication.initialized === true; }
@@ -161,6 +169,10 @@ export class pdfBehaviour
 
     public getPageParent(page: number)
     {
+        if (!this.iframeDocument) {
+            throw new Error(this._documentNotLoadedError);
+        }
+
         return this.iframeDocument.querySelector(`.page[${this.pageParentPageAttribute}="${page}"]`) as HTMLDivElement;
     }
 
@@ -172,6 +184,10 @@ export class pdfBehaviour
 
     public getRenderedPages()
     {
+        if (!this.iframeDocument) {
+            throw new Error(this._documentNotLoadedError);
+        }
+
         const pageElements = Array.from(this.iframeDocument.querySelectorAll('.page')) as HTMLDivElement[];
         return pageElements.filter(x => {
             const page = this.getPageNumberFromParent(x);
@@ -192,6 +208,10 @@ export class pdfBehaviour
 
     private async iframeLoaded()
     {
+        if (!this.iframeDocument) {
+            throw new Error(this._documentNotLoadedError);
+        }
+
         this.iframeDocument.addEventListener('click', (e) => this.onIframeClicked.next(e));
         this.iframeDocument.addEventListener('mousemove', (e) => this.onIframeMouseMove.next(e));
         this.onIframeLoaded.next();
@@ -206,74 +226,71 @@ export class pdfBehaviour
      */
     private attachEventBusEvents()
     {
-        this.addEventBusListener("nextpage", (e: Object) => this.onNextPage.next(e));
-        this.addEventBusListener("previouspage", (e: Object) => this.onPreviousPage.next(e));
-        this.addEventBusListener("lastpage", (e: Object) => this.onLastPage.next(e));
-        this.addEventBusListener("firstpage", (e: Object) => this.onFirstPage.next(e));
-        this.addEventBusListener("beforeprint", (e: Object) => this.onBeforePrint.next(e));
-        this.addEventBusListener("afterprint", (e: Object) => this.onAfterPrint.next(e));
-        this.addEventBusListener("print", (e: Object) => this.onPrint.next(e));
-        this.addEventBusListener("download", (e: Object) => this.onDownload.next(e));
-        this.addEventBusListener("zoomin", (e: Object) => this.onZoomIn.next(e));
-        this.addEventBusListener("zoomout", (e: Object) => this.onZoomOut.next(e));
-        this.addEventBusListener("zoomreset", (e: Object) => this.onZoomReset.next(e));
-        this.addEventBusListener("pagenumberchanged", (e: Object) => this.onPageNumberChanged.next(e));
-        this.addEventBusListener("scalechanging", (e: Object) => this.onScaleChanging.next(e));
-        this.addEventBusListener("scalechanged", (e: Object) => this.onScaleChanged.next(e));
-        this.addEventBusListener("resize", (e: Object) => this.onResize.next(e));
-        this.addEventBusListener("hashchange", (e: Object) => this.onHashChange.next(e));
-        this.addEventBusListener("pagerender", (e: Object) => this.onPageRender.next(e));
-        this.addEventBusListener("pagerendered", (args: Object, first: boolean) => this.onPageRendered.next({args, first}), true);
-        this.addEventBusListener("pagesdestroy", (e: Object) => this.onPagesdestroy.next(e));
-        this.addEventBusListener("updateviewarea", (e: Object) => this.onUpdateViewArea.next(e));
+        this.addEventBusListener("nextpage", (e: object) => this.onNextPage.next(e));
+        this.addEventBusListener("previouspage", (e: object) => this.onPreviousPage.next(e));
+        this.addEventBusListener("lastpage", (e: object) => this.onLastPage.next(e));
+        this.addEventBusListener("firstpage", (e: object) => this.onFirstPage.next(e));
+        this.addEventBusListener("beforeprint", (e: object) => this.onBeforePrint.next(e));
+        this.addEventBusListener("afterprint", (e: object) => this.onAfterPrint.next(e));
+        this.addEventBusListener("print", (e: object) => this.onPrint.next(e));
+        this.addEventBusListener("download", (e: object) => this.onDownload.next(e));
+        this.addEventBusListener("zoomin", (e: object) => this.onZoomIn.next(e));
+        this.addEventBusListener("zoomout", (e: object) => this.onZoomOut.next(e));
+        this.addEventBusListener("zoomreset", (e: object) => this.onZoomReset.next(e));
+        this.addEventBusListener("pagenumberchanged", (e: object) => this.onPageNumberChanged.next(e));
+        this.addEventBusListener("scalechanging", (e: object) => this.onScaleChanging.next(e));
+        this.addEventBusListener("scalechanged", (e: object) => this.onScaleChanged.next(e));
+        this.addEventBusListener("resize", (e: object) => this.onResize.next(e));
+        this.addEventBusListener("hashchange", (e: object) => this.onHashChange.next(e));
+        this.addEventBusListener("pagerender", (e: object) => this.onPageRender.next(e));
+        this.addEventBusListener("pagerendered", (args: object, first: boolean) => this.onPageRendered.next({args, first}));
+        this.addEventBusListener("pagesdestroy", (e: object) => this.onPagesdestroy.next(e));
+        this.addEventBusListener("updateviewarea", (e: object) => this.onUpdateViewArea.next(e));
         this.addEventBusListener("pagechanging", (e: pageChangingEventType) => this.onPageChanging.next(e));
-        this.addEventBusListener("rotationchanging", (e: Object) => this.onRotationChanging.next(e));
-        this.addEventBusListener("sidebarviewchanged", (e: Object) => this.onSidebarViewChanged.next(e));
-        this.addEventBusListener("pagemode", (e: Object) => this.onPageMode.next(e));
-        this.addEventBusListener("namedaction", (e: Object) => this.onNamedAction.next(e));
-        this.addEventBusListener("presentationmodechanged", (e: Object) => this.onPresentationModeChanged.next(e));
-        this.addEventBusListener("presentationmode", (e: Object) => this.onPresentationMode.next(e));
-        this.addEventBusListener("switchannotationeditormode", (e: Object) => this.onSwitchAnnotationEditorMode.next(e));
-        this.addEventBusListener("switchannotationeditorparams", (e: Object) => this.onSwitchAnnotationEditorParams.next(e));
-        this.addEventBusListener("rotatecw", (e: Object) => this.onRotateClockWise.next(e));
-        this.addEventBusListener("rotateccw", (e: Object) => this.onRotateCounterClockWise.next(e));
-        this.addEventBusListener("optionalcontentconfig", (e: Object) => this.onOptionalContentConfig.next(e));
-        this.addEventBusListener("switchscrollmode", (e: Object) => this.onSwitchScrollMode.next(e));
-        this.addEventBusListener("scrollmodechanged", (e: Object) => this.onScrollModeChanged.next(e));
-        this.addEventBusListener("switchspreadmode", (e: Object) => this.onSwitchSpreadMode.next(e));
-        this.addEventBusListener("spreadmodechanged", (e: Object) => this.onSpreadModeChanged.next(e));
-        this.addEventBusListener("documentproperties", (e: Object) => this.onDocumentProperties.next(e));
-        this.addEventBusListener("findfromurlhash", (e: Object) => this.onFindFromUrlHash.next(e));
-        this.addEventBusListener("updatefindmatchescount", (e: Object) => this.onUpdateFindMatchesCount.next(e));
-        this.addEventBusListener("updatefindcontrolstate", (e: Object) => this.onUpdateFindControlState.next(e));
-        this.addEventBusListener("fileinputchange", (e: Object) => this.onFileInputChange.next(e));
-        this.addEventBusListener("openfile", (e: Object) => this.onOpenFile.next(e));
-        this.addEventBusListener("textlayerrendered", (e: Object) => this.onTextLayerRendered.next(e));
+        this.addEventBusListener("rotationchanging", (e: object) => this.onRotationChanging.next(e));
+        this.addEventBusListener("sidebarviewchanged", (e: object) => this.onSidebarViewChanged.next(e));
+        this.addEventBusListener("pagemode", (e: object) => this.onPageMode.next(e));
+        this.addEventBusListener("namedaction", (e: object) => this.onNamedAction.next(e));
+        this.addEventBusListener("presentationmodechanged", (e: object) => this.onPresentationModeChanged.next(e));
+        this.addEventBusListener("presentationmode", (e: object) => this.onPresentationMode.next(e));
+        this.addEventBusListener("switchannotationeditormode", (e: object) => this.onSwitchAnnotationEditorMode.next(e));
+        this.addEventBusListener("switchannotationeditorparams", (e: object) => this.onSwitchAnnotationEditorParams.next(e));
+        this.addEventBusListener("rotatecw", (e: object) => this.onRotateClockWise.next(e));
+        this.addEventBusListener("rotateccw", (e: object) => this.onRotateCounterClockWise.next(e));
+        this.addEventBusListener("optionalcontentconfig", (e: object) => this.onOptionalContentConfig.next(e));
+        this.addEventBusListener("switchscrollmode", (e: object) => this.onSwitchScrollMode.next(e));
+        this.addEventBusListener("scrollmodechanged", (e: object) => this.onScrollModeChanged.next(e));
+        this.addEventBusListener("switchspreadmode", (e: object) => this.onSwitchSpreadMode.next(e));
+        this.addEventBusListener("spreadmodechanged", (e: object) => this.onSpreadModeChanged.next(e));
+        this.addEventBusListener("documentproperties", (e: object) => this.onDocumentProperties.next(e));
+        this.addEventBusListener("findfromurlhash", (e: object) => this.onFindFromUrlHash.next(e));
+        this.addEventBusListener("updatefindmatchescount", (e: object) => this.onUpdateFindMatchesCount.next(e));
+        this.addEventBusListener("updatefindcontrolstate", (e: object) => this.onUpdateFindControlState.next(e));
+        this.addEventBusListener("fileinputchange", (e: object) => this.onFileInputChange.next(e));
+        this.addEventBusListener("openfile", (e: object) => this.onOpenFile.next(e));
+        this.addEventBusListener("textlayerrendered", (e: object) => this.onTextLayerRendered.next(e));
     }
 
-    private addEventBusListener(event: string, listener: Function, checkFirst?: boolean)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private addEventBusListener(event: string, listener: (e: any, first: boolean) => void)
     {
-        (this.iframeWindow as any).PDFViewerApplication.eventBus.on(
+        if (!this.pdfViewerApplication) {
+            throw new Error(this._pdfApplicationNotLoadedError);
+        }
+        this.pdfViewerApplication.eventBus.on(
         event,
-        (e: Object) => {
+        (e: object) => {
             if (this.enableEventBusDebugConsoleLogging)
             {
                 this.sendDebugMessage(`Dispatching event: ${event}...`);
             }
 
-            if (checkFirst)
-            {
-                const first = !this._emittedEvents.some(x => x.toLowerCase() === event.toLowerCase());
-                listener(e, first);
+            const first = !this._emittedEvents.some(x => x.toLowerCase() === event.toLowerCase());
+            listener(e, first);
 
-                if (first)
-                {
-                    this._emittedEvents.push(event);
-                }
-            }
-            else
+            if (first)
             {
-                listener(e);
+                this._emittedEvents.push(event);
             }
 
             
@@ -281,16 +298,7 @@ export class pdfBehaviour
         });
     }
 
-    private throwIfIframeMissing()
-    {
-        if (this._iframeReference)
-        {
-            return;
-        }
-
-        throw new Error('The iframe has not yet been assigned.');
-    }
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private sendDebugMessage(message?: any, ...optionalParams: any[])
     {
         if (!this.enableDebugConsoleLogging)

@@ -4,8 +4,11 @@ import { pdfAnnotation, textSelection } from "../../public-api";
 
 export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
 {
+    private readonly _iframeDocumentNotLoadedError = 'PDF viewer document is not loaded.';
+    private readonly _textSelectionInvalid = 'The current selection is not valid.';
+
     private _enableDebugLogging = false;
-    public set enableDebugLogging(val: boolean) { this._enableDebugLogging = val; };
+    public set enableDebugLogging(val: boolean) { this._enableDebugLogging = val; }
 
     constructor(
         private readonly _pdfBehaviour: pdfBehaviour)
@@ -14,16 +17,28 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
 
     focusAnnotation(annotation: pdfAnnotation, color: string)
     {
+        if (!this._pdfBehaviour.iframeDocument) {
+            throw new Error(this._iframeDocumentNotLoadedError);
+        }
+
         const pdfAttributes = this._pdfBehaviour.iframeDocument.querySelectorAll(`[data-annotation="${annotation.id}"]`);
-        if (pdfAttributes.length < 1) { throw new Error('Could not find annotation in the pdf.'); }
+        if (pdfAttributes.length < 1) {
+            throw new Error('Could not find annotation in the pdf.');
+        }
 
         pdfAttributes.forEach(x => (x as HTMLElement).style.backgroundColor = color);
     }
 
     unfocusAnnotation(annotation: pdfAnnotation, color: string)
     {
+        if (!this._pdfBehaviour.iframeDocument) {
+            throw new Error(this._iframeDocumentNotLoadedError);
+        }
+
         const pdfAttributes = this._pdfBehaviour.iframeDocument.querySelectorAll(`[data-annotation="${annotation.id}"]`);
-        if (pdfAttributes.length < 1) { throw new Error('Could not find annotation in the pdf.'); }
+        if (pdfAttributes.length < 1) {
+            throw new Error('Could not find annotation in the pdf.');
+        }
 
         pdfAttributes.forEach(x => (x as HTMLElement).style.backgroundColor = color);
     }
@@ -32,17 +47,26 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
     {
         // There is an existing annotation when any node contains children, indicating it has been modified with annotation colors.
 
-        let currentElement: Element | null = selection.anchorNode!.parentElement;
-        let endElement = selection.focusNode!.parentElement!;
+        let startElement = selection.anchorNode?.parentElement;
+        let endElement = selection.focusNode?.parentElement;
 
-        // We need to make sure what node comes earlier in the DOM tree. If we select backwards, we need to switch the nodes around.
-        const anchorNodePosition = selection.anchorNode!.compareDocumentPosition(selection.focusNode!);
-        if (anchorNodePosition & Node.DOCUMENT_POSITION_PRECEDING)
-        {
-            currentElement = selection.focusNode!.parentElement;
-            endElement = selection.anchorNode!.parentElement!;
+        if (!selection.anchorNode || !selection.focusNode) {
+            throw new Error(this._textSelectionInvalid);
         }
 
+        // We need to make sure what node comes earlier in the DOM tree. If we select backwards, we need to switch the nodes around.
+        const anchorNodePosition = selection.anchorNode.compareDocumentPosition(selection.focusNode);
+        if (anchorNodePosition & Node.DOCUMENT_POSITION_PRECEDING)
+        {
+            startElement = selection.focusNode?.parentElement;
+            endElement = selection.anchorNode?.parentElement;
+        }
+
+        if (!startElement || !endElement) {
+            throw new Error(this._textSelectionInvalid);
+        }
+
+        let currentElement: Element | null | undefined = startElement;
         while(currentElement)
         {
             // Check if we preceded the focused element, indicating we are passing the selected text.
@@ -75,15 +99,22 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
 
     colorAnnotation(annotation: pdfAnnotation, color: string)
     {
-        if (annotation.type !== 'text')
-        {
+        if (annotation.type !== 'text') {
             console.warn('Tried to color an annotation with no xpath.');
             return;
         }
 
+        if (!this._pdfBehaviour.iframeDocument) {
+            throw new Error(this._iframeDocumentNotLoadedError);
+        }
+
         const { xpath, selectedText, selectedTextOffset } = <textSelection>annotation.reference;
-        let nodeReference = this.getNodeReferenceByXpath(this._pdfBehaviour.iframeDocument, xpath);
-        this.colorAnnotationText(nodeReference!, selectedText, selectedTextOffset, color, annotation.id);
+        const nodeReference = this.getNodeReferenceByXpath(this._pdfBehaviour.iframeDocument, xpath);
+        if (!nodeReference) {
+            throw new Error(`Node reference was not found for '${xpath}'.`);
+        }
+
+        this.colorAnnotationText(nodeReference, selectedText, selectedTextOffset, color, annotation.id);
     }
 
     removeColorsFromAnnotation(annotation: pdfAnnotation)
@@ -101,10 +132,13 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
             return;
         }
 
+        if (!this._pdfBehaviour.iframeDocument) {
+            throw new Error(this._iframeDocumentNotLoadedError);
+        }
+
         // Ignore if there is no reference to work with.
         // This is possible if the annotate button was pressed twice.
-        if (!annotation.reference)
-        {
+        if (!annotation.reference) {
             return;
         }
 
@@ -118,7 +152,7 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
         while(nodeReference)
         {
             // Remove the font tags and put the inner text of them back.
-            const fontTagChildren = nodeReference.childNodes!;
+            const fontTagChildren = nodeReference.childNodes;
             const leftElement = fontTagChildren[0];
             const middleElement = fontTagChildren[1];
             const rightElement = fontTagChildren[2];
@@ -127,13 +161,13 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
 
             // Reduce the amount of text that has been reverted.
             // The middle element will always have the text that was supposed to be colored.
-            remainingTextLength -= middleElement.textContent!.length;
+            remainingTextLength -= middleElement.textContent?.length || 0;
 
             nodeReference.removeChild(leftElement);
             nodeReference.removeChild(middleElement);
             nodeReference.removeChild(rightElement);
 
-            nodeReference.textContent = leftElement.textContent! + middleElement.textContent! + rightElement.textContent!;
+            nodeReference.textContent = leftElement.textContent || '' + middleElement.textContent || '' + rightElement.textContent || '';
 
             this.sendDebugMessage('Annotations remove color: remaining text length', remainingTextLength);
             if (remainingTextLength == 0)
@@ -170,13 +204,21 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
 
     private getXpathBySelection(selection: Selection)
     {
-        let selectedElement = selection.anchorNode!.parentNode!;
+        if (!selection.anchorNode || !selection.focusNode) {
+            throw new Error(this._textSelectionInvalid);
+        }
+
+        let selectedElement = selection.anchorNode.parentNode;
 
         // We need to make sure what node comes earlier in the DOM tree. If we select backwards, we need to switch the nodes around.
-        const anchorNodePosition = selection.anchorNode!.compareDocumentPosition(selection.focusNode!);
+        const anchorNodePosition = selection.anchorNode.compareDocumentPosition(selection.focusNode);
         if (anchorNodePosition & Node.DOCUMENT_POSITION_PRECEDING)
         {
-            selectedElement = selection.focusNode!.parentNode!;
+            selectedElement = selection.focusNode.parentNode;
+        }
+
+        if (!selectedElement) {
+            throw new Error(this._textSelectionInvalid);
         }
         
         return this.getXpathByNode(selectedElement);
@@ -221,19 +263,19 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
         this.sendDebugMessage(`Annotations: start coloring ${id}...`);
 
         let currentNode: Node | null = startNode;
-        let remainingTextLength = selectedText!.length;
+        let remainingTextLength = selectedText.length;
 
         // Continue coloring until we break out of no references are left.
         while(currentNode)
         {
-            let innerText = currentNode.textContent!;
+            const innerText = currentNode.textContent || '';
 
             const textLengthToColor = Math.min(innerText.length - offset, remainingTextLength);
             const textStartOffset = offset;
             const textEndOffset = textLengthToColor + offset;
 
             // Get left part, middle part, right part.
-            let textParts = [
+            const textParts = [
                 innerText.slice(0, textStartOffset),
                 innerText.slice(textStartOffset, textStartOffset + textLengthToColor),
                 innerText.slice(textEndOffset, innerText.length),
@@ -285,7 +327,7 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
             .singleNodeValue;*/
     }
     
-    private sendDebugMessage(message?: any, ...optionalParams: any[])
+    private sendDebugMessage(message?: unknown, ...optionalParams: unknown[])
     {
         if (!this._enableDebugLogging)
         {

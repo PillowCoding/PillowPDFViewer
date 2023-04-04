@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import { pdfAnnotation, pdfContext } from 'ng2-pdfjs-viewer';
+import { pdfContext } from 'ng2-pdfjs-viewer';
 
 @Component({
-    selector: 'app-pdfviewer-simple',
+    selector: 'lib-pdfviewer-simple',
     template: `
         <lib-ng2-pdfjs-viewer
             [fileSource]="'/assets/compressed.tracemonkey-pldi-09.pdf'"
@@ -24,7 +24,7 @@ import { pdfAnnotation, pdfContext } from 'ng2-pdfjs-viewer';
         </lib-ng2-pdfjs-viewer>
     `,
 })
-export class appPdfViewerDownloadComponent
+export class pdfViewerDownloadComponent
 {
     onDownload(context: pdfContext)
     {
@@ -34,7 +34,7 @@ export class appPdfViewerDownloadComponent
         // TODO: this file is invalid.
         setTimeout(() => {
             const a = document.createElement("a");
-            a.href = context.blobUrl!;
+            a.href = context.blobUrl;
             a.target = '_parent';
             a.download = `${context.title}.pdf`;
             (document.body || document.documentElement).append(a);

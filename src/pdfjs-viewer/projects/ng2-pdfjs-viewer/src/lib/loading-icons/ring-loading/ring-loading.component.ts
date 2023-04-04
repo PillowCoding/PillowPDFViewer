@@ -5,6 +5,4 @@ import { Component } from '@angular/core';
 	templateUrl: './ring-loading.component.html',
 	styleUrls: ['./ring-loading.component.scss']
 })
-export class RingLoadingComponent
-{
-}
+export class RingLoadingComponent {}

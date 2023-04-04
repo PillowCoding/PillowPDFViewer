@@ -1,8 +1,9 @@
 import { Directive, Input, TemplateRef } from "@angular/core";
 
-@Directive({ selector: '[templateRef]' })
+@Directive({ selector: '[libTemplateRef]' })
 export class templateRefDirective
 {
-    @Input('templateRef') type?: string;
-    constructor(public template: TemplateRef<any>) {}
+    // eslint-disable-next-line @angular-eslint/no-input-rename
+    @Input('libTemplateRef') type?: string;
+    constructor(public template: TemplateRef<unknown>) {}
 }

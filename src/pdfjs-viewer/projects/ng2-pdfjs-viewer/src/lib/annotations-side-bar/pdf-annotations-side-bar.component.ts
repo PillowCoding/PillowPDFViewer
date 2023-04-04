@@ -6,271 +6,272 @@ import { pdfAnnotation } from 'ng2-pdfjs-viewer/pdf-annotation';
 export type shownAnnotationsFetcherType = () => Array<pdfAnnotation>;
 
 @Component({
-  selector: 'lib-ng2-pdfjs-viewer-annotations-sidebar',
-  template: `
+selector: 'lib-ng2-pdfjs-viewer-annotations-sidebar',
+template: `
     <div #sidebarContainer
-      class="annotation-container full-height" [@expandInOut]="sidebarExpanded ? 'expand' : 'collapse'">
+        class="annotation-container full-height" [@expandInOut]="isSidebarExpanded ? 'expand' : 'collapse'">
 
-      <div *ngIf="sidebarExpanded"
-        class="loading-indicator">
-        <lib-ng2-pdfjs-viewer-loading-ring></lib-ng2-pdfjs-viewer-loading-ring>
-      </div>
+        <div *ngIf="isSidebarExpanded"
+            class="loading-indicator">
 
-      <div class="header">
-        <a
-          *ngIf="sidebarExpanded"
-          class="toolbar-button close close-annotations" [title]="'sidebar.collapse' | translate"
-          (click)="collapseAnnotations()">
-        </a>
-        <button
-        *ngIf="!sidebarExpanded"
-          class="toolbar-button expand" [title]="'sidebar.expand' | translate"
-          (click)="expandAnnotations()">
-        </button>
+            <lib-ng2-pdfjs-viewer-loading-ring></lib-ng2-pdfjs-viewer-loading-ring>
+        </div>
 
-        <span class="count" *ngIf="sidebarExpanded && loading">{{'annotations.loading' | translate}}</span>
-        <span class="count" *ngIf="sidebarExpanded && shownAnnotations && shownAnnotations.length == 1">{{'annotations.singular' | translate: shownAnnotations.length.toString()}}</span>
-        <span class="count" *ngIf="sidebarExpanded && shownAnnotations && shownAnnotations.length != 1">{{'annotations.plural' | translate: shownAnnotations.length.toString()}}</span>
-      </div>
-      <ol class="annotations" *ngIf="sidebarExpanded">
-        <p class="warning no-annotations" *ngIf="!loading && shownAnnotations?.length == 0 && !pendingAnnotation">{{'annotations.nonePage' | translate}}</p>
+        <div class="header">
+            <a *ngIf="isSidebarExpanded"
+                class="toolbar-button close close-annotations" [title]="'sidebar.collapse' | translate"
+                (click)="collapseAnnotations()">
+            </a>
+            <button *ngIf="!isSidebarExpanded"
+                class="toolbar-button expand" [title]="'sidebar.expand' | translate"
+                (click)="expandAnnotations()">
+            </button>
 
-        <li *ngIf="pendingAnnotation" class="annotation">
-          <lib-ng2-pdfjs-viewer-annotation
-            [annotation]="pendingAnnotation"
-            (onCommentPosted)="submitInitialAnnotationComment($event)">
-          </lib-ng2-pdfjs-viewer-annotation>
-        </li>
+            <span class="count" *ngIf="isSidebarExpanded && loading">{{'annotations.loading' | translate}}</span>
+            <span class="count" *ngIf="isSidebarExpanded && shownAnnotations && shownAnnotations.length === 1">{{'annotations.singular' | translate: shownAnnotations.length.toString()}}</span>
+            <span class="count" *ngIf="isSidebarExpanded && shownAnnotations && shownAnnotations.length !== 1">{{'annotations.plural' | translate: shownAnnotations.length.toString()}}</span>
+        </div>
+        <ol class="annotations" *ngIf="isSidebarExpanded">
+            <p class="warning no-annotations" *ngIf="!loading && shownAnnotations?.length === 0 && !pendingAnnotation">{{'annotations.nonePage' | translate}}</p>
 
-        <li *ngFor="let annotation of shownAnnotations" class="annotation">
-          <lib-ng2-pdfjs-viewer-annotation
-            [annotation]="annotation"
-            [metaDataHeaderTemplate]="annotationMetaDataHeaderTemplate"
-            [commentTemplate]="annotationCommentTemplate"
+            <li *ngIf="pendingAnnotation" class="annotation">
+                <lib-ng2-pdfjs-viewer-annotation
+                    [annotation]="pendingAnnotation"
+                    (commentPosted)="submitInitialAnnotationComment($event)">
+                </lib-ng2-pdfjs-viewer-annotation>
+            </li>
 
-            (onClick)="clickAnnotation($event)"
-            (onCommentPosted)="submitAnnotationComment($event)">
-          </lib-ng2-pdfjs-viewer-annotation>
-        </li>
-      </ol>
+            <li *ngFor="let annotation of shownAnnotations" class="annotation">
+                <lib-ng2-pdfjs-viewer-annotation
+                    [annotation]="annotation"
+                    [metaDataHeaderTemplate]="annotationMetaDataHeaderTemplate"
+                    [commentTemplate]="annotationCommentTemplate"
+
+                    (clicked)="clickAnnotation($event)"
+                    (commentPosted)="submitAnnotationComment($event)">
+                </lib-ng2-pdfjs-viewer-annotation>
+            </li>
+        </ol>
     </div>
-  `,
-  styleUrls: ['pdf-annotations-side-bar.component.scss'],
-  animations: [
+`,
+styleUrls: ['pdf-annotations-side-bar.component.scss'],
+animations: [
     trigger('expandInOut', [
-      state('expand', style({
+    state('expand', style({
         width: '30rem'
-      })),
-      state('collapse', style({
+    })),
+    state('collapse', style({
         width: '28px'
-      })),
-      transition('expand => collapse', animate('100ms ease-out')),
-      transition('collapse => expand', animate('100ms ease-out'))
+    })),
+    transition('expand => collapse', animate('100ms ease-out')),
+    transition('collapse => expand', animate('100ms ease-out'))
     ])
-  ]
+]
 })
 export class PdfAnnotationsSideBarComponent
 {
-  @ViewChild('sidebarContainer') private _sidebarContainer!: ElementRef;
-  
-  @Input() enableDebugMessages!: boolean;
-  @Input() pendingAnnotation?: pdfAnnotation;
+    @ViewChild('sidebarContainer') private _sidebarContainer!: ElementRef;
+    
+    @Input() enableDebugMessages!: boolean;
+    @Input() pendingAnnotation?: pdfAnnotation;
 
-  @Input() annotationMetaDataHeaderTemplate?: TemplateRef<any>;
-  @Input() annotationCommentTemplate?: TemplateRef<any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    @Input() annotationMetaDataHeaderTemplate?: TemplateRef<any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    @Input() annotationCommentTemplate?: TemplateRef<any>;
 
-  @Input() shownAnnotationsFetcher!: shownAnnotationsFetcherType;
+    @Input() shownAnnotationsFetcher!: shownAnnotationsFetcherType;
 
-  @Output() onSidebarExpand = new EventEmitter();
-  @Output() onSidebarExpanded = new EventEmitter();
-  @Output() onSidebarCollapse = new EventEmitter();
-  @Output() onSidebarCollapsed = new EventEmitter();
-  @Output() onClick = new EventEmitter<pdfAnnotation>();
-  @Output() onInitialCommentPosted = new EventEmitter<pdfAnnotationCommentSubmission>();
-  @Output() onCommentPosted = new EventEmitter<pdfAnnotationCommentSubmission>();
+    @Output() sidebarExpand = new EventEmitter();
+    @Output() sidebarExpanded = new EventEmitter();
+    @Output() sidebarCollapse = new EventEmitter();
+    @Output() sidebarCollapsed = new EventEmitter();
+    @Output() clicked = new EventEmitter<pdfAnnotation>();
+    @Output() initialCommentPosted = new EventEmitter<pdfAnnotationCommentSubmission>();
+    @Output() commentPosted = new EventEmitter<pdfAnnotationCommentSubmission>();
 
-  /** If true, the sidebar is loading. */
-  protected loading = false;
+    /** If true, the sidebar is loading. */
+    public loading = false;
 
-  /** Represents the current focussed annotation, if any are focused on. */
-  private _currentAnnotationFocus?: pdfAnnotation;
-  
-  private _sidebarExpanded = false;
+    /** Represents the current focussed annotation, if any are focused on. */
+    private _currentAnnotationFocus?: pdfAnnotation;
+    
+    private _isSidebarExpanded = false;
 
-  public get shownAnnotations()
-  {
-    return this.shownAnnotationsFetcher()
-      ?.slice()
-      ?.sort((a: pdfAnnotation, b: pdfAnnotation) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime())
-      ?.reverse();
-  }
-
-  /** A boolean to define if the annotations bar is expanded. */
-  public get sidebarExpanded()
-  {
-    return this._sidebarExpanded;
-  }
-
-  constructor(
-    private changeDetector: ChangeDetectorRef)
-  {
-  }
-
-  public ensureExpanded()
-  {
-    if (!this._sidebarExpanded)
+    public get shownAnnotations()
     {
-      this.expandAnnotations();
-    }
-  }
-
-  public focusAnnotation(annotation: pdfAnnotation)
-  {
-    this.ensureExpanded();
-    this.sendDebugMessage(`Start focus on annotation ${annotation.id}...`);
-
-    const attributeArticle = document.querySelectorAll(`[data-annotation="${annotation.id}"]`);
-
-    if (attributeArticle.length != 1)
-    {
-      throw new Error('Could not find the annotation comments.');
+        return this.shownAnnotationsFetcher()
+        ?.slice()
+        ?.sort((a: pdfAnnotation, b: pdfAnnotation) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime())
+        ?.reverse();
     }
 
-    attributeArticle[0].classList.add('focus');
-    this._currentAnnotationFocus = annotation;
-  }
-
-  public unfocusAnnotation()
-  {
-    this.sendDebugMessage(`Start unfocus...`);
-
-    if (!this._currentAnnotationFocus)
+    /** A boolean to define if the annotations bar is expanded. */
+    public get isSidebarExpanded()
     {
-      throw new Error('Expected a focussed annotation.');
+        return this._isSidebarExpanded;
     }
 
-    const attributeArticle = document.querySelectorAll(`[data-annotation="${this._currentAnnotationFocus.id}"]`);
-
-    if (attributeArticle.length != 1)
+    constructor(
+        private changeDetector: ChangeDetectorRef)
     {
-      throw new Error('Could not find the annotation comments.');
     }
 
-    attributeArticle[0].classList.remove('focus');
-    delete(this._currentAnnotationFocus);
-  }
-
-  public focusAnnotationInput(annotation: pdfAnnotation)
-  {
-    this.ensureExpanded();
-    this.sendDebugMessage(`Start focus on annotation input for ${annotation.id}...`);
-
-    const attributeArticle = document.querySelectorAll(`[data-annotation-input="${annotation.id}"]`);
-
-    if (attributeArticle.length != 1)
+    public ensureExpanded()
     {
-      throw new Error('Could not find the annotation comment input to focus.');
+        if (!this._isSidebarExpanded)
+        {
+            this.expandAnnotations();
+        }
     }
 
-    (attributeArticle[0] as HTMLElement).focus();
-    this.sendDebugMessage('Input focus changed', attributeArticle[0]);
-  }
-
-  public setLoading()
-  {
-    (this._sidebarContainer.nativeElement as HTMLDivElement).classList.add('loading');
-    this.loading = true;
-  }
-
-  public setNotLoading()
-  {
-    (this._sidebarContainer.nativeElement as HTMLDivElement).classList.remove('loading');
-    this.loading = false;
-  }
-
-  public setAnnotationLoading(annotation: pdfAnnotation)
-  {
-    const annotationContainer = document.querySelectorAll(`[data-annotation="${annotation.id}"]`);
-
-    if (annotationContainer.length != 1)
+    public focusAnnotation(annotation: pdfAnnotation)
     {
-      throw new Error('Could not find the annotation to mark as loading.');
+        this.ensureExpanded();
+        this.sendDebugMessage(`Start focus on annotation ${annotation.id}...`);
+
+        const attributeArticle = document.querySelectorAll(`[data-annotation="${annotation.id}"]`);
+
+        if (attributeArticle.length != 1)
+        {
+            throw new Error('Could not find the annotation comments.');
+        }
+
+        attributeArticle[0].classList.add('focus');
+        this._currentAnnotationFocus = annotation;
     }
 
-    annotationContainer[0].classList.add('loading');
-  }
-
-  public setAnnotationNotLoading(annotation: pdfAnnotation)
-  {
-    const annotationContainer = document.querySelectorAll(`[data-annotation="${annotation.id}"]`);
-
-    if (annotationContainer.length != 1)
+    public unfocusAnnotation()
     {
-      throw new Error('Could not find the annotation to mark as loading.');
+        this.sendDebugMessage(`Start unfocus...`);
+
+        if (!this._currentAnnotationFocus)
+        {
+            throw new Error('Expected a focussed annotation.');
+        }
+
+        const attributeArticle = document.querySelectorAll(`[data-annotation="${this._currentAnnotationFocus.id}"]`);
+
+        if (attributeArticle.length != 1)
+        {
+            throw new Error('Could not find the annotation comments.');
+        }
+
+        attributeArticle[0].classList.remove('focus');
+        delete(this._currentAnnotationFocus);
     }
 
-    annotationContainer[0].classList.remove('loading');
-  }
-
-  protected expandAnnotations()
-  {
-    if (this._sidebarExpanded)
+    public focusAnnotationInput(annotation: pdfAnnotation)
     {
-      throw new Error('Tried to expand the annotations whilst expanded.');
+        this.ensureExpanded();
+        this.sendDebugMessage(`Start focus on annotation input for ${annotation.id}...`);
+
+        const attributeArticle = document.querySelectorAll(`[data-annotation-input="${annotation.id}"]`);
+
+        if (attributeArticle.length != 1)
+        {
+            throw new Error('Could not find the annotation comment input to focus.');
+        }
+
+        (attributeArticle[0] as HTMLElement).focus();
+        this.sendDebugMessage('Input focus changed', attributeArticle[0]);
     }
 
-    this.onSidebarExpand.emit();
-    this._sidebarExpanded = true;
-    this.changeDetector.detectChanges();
-    this.onSidebarExpanded.emit();
-  }
-
-  protected collapseAnnotations()
-  {
-    if (!this._sidebarExpanded)
+    public setLoading()
     {
-      throw new Error('Tried to collapse the annotations whilst collapsed.');
+        (this._sidebarContainer.nativeElement as HTMLDivElement).classList.add('loading');
+        this.loading = true;
     }
 
-    this.onSidebarCollapse.emit();
-    this._sidebarExpanded = false;
-    this.changeDetector.detectChanges();
-    this.onSidebarCollapsed.emit();
-  }
-
-  protected clickAnnotation(annotation: pdfAnnotation)
-  {
-    this.onClick.emit(annotation);
-  }
-
-  protected submitInitialAnnotationComment(event: pdfAnnotationCommentSubmission)
-  {
-    this.sendDebugMessage('Submitting initial comment', event);
-    this.onInitialCommentPosted.emit(event);
-  }
-
-  protected submitAnnotationComment(event: pdfAnnotationCommentSubmission)
-  {
-    const { annotation, comment } = event;
-    annotation.comments.push(comment);
-
-    this.sendDebugMessage('Submitting comment', event);
-    this.onCommentPosted.emit(event);
-    this.changeDetector.detectChanges();
-  }
-
-  /**
-   * Sends the given message when debug messages are enabled.
-   * @param message The message to send.
-   * @param optionalParams Optional parameters to send with the message.
-   */
-  private sendDebugMessage(message?: any, ...optionalParams: any[])
-  {
-    if (!this.enableDebugMessages)
+    public setNotLoading()
     {
-      return;
+        (this._sidebarContainer.nativeElement as HTMLDivElement).classList.remove('loading');
+        this.loading = false;
     }
 
-    console.log(`Side bar - ${message}`, ...optionalParams);
-  }
+    public setAnnotationLoading(annotation: pdfAnnotation)
+    {
+        const annotationContainer = document.querySelectorAll(`[data-annotation="${annotation.id}"]`);
+
+        if (annotationContainer.length != 1)
+        {
+            throw new Error('Could not find the annotation to mark as loading.');
+        }
+
+        annotationContainer[0].classList.add('loading');
+    }
+
+    public setAnnotationNotLoading(annotation: pdfAnnotation)
+    {
+        const annotationContainer = document.querySelectorAll(`[data-annotation="${annotation.id}"]`);
+
+        if (annotationContainer.length != 1)
+        {
+            throw new Error('Could not find the annotation to mark as loading.');
+        }
+
+        annotationContainer[0].classList.remove('loading');
+    }
+
+    protected expandAnnotations()
+    {
+        if (this._isSidebarExpanded)
+        {
+            throw new Error('Tried to expand the annotations whilst expanded.');
+        }
+
+        this.sidebarExpand.emit();
+        this._isSidebarExpanded = true;
+        this.changeDetector.detectChanges();
+        this.sidebarExpanded.emit();
+    }
+
+    protected collapseAnnotations()
+    {
+        if (!this._isSidebarExpanded)
+        {
+            throw new Error('Tried to collapse the annotations whilst collapsed.');
+        }
+
+        this.sidebarCollapse.emit();
+        this._isSidebarExpanded = false;
+        this.changeDetector.detectChanges();
+        this.sidebarCollapsed.emit();
+    }
+
+    protected clickAnnotation(annotation: pdfAnnotation)
+    {
+        this.clicked.emit(annotation);
+    }
+
+    protected submitInitialAnnotationComment(event: pdfAnnotationCommentSubmission)
+    {
+        this.sendDebugMessage('Submitting initial comment', event);
+        this.initialCommentPosted.emit(event);
+    }
+
+    protected submitAnnotationComment(event: pdfAnnotationCommentSubmission)
+    {
+        const { annotation, comment } = event;
+        annotation.comments.push(comment);
+
+        this.sendDebugMessage('Submitting comment', event);
+        this.commentPosted.emit(event);
+        this.changeDetector.detectChanges();
+    }
+
+    /**
+     * Sends the given message when debug messages are enabled.
+     * @param message The message to send.
+     * @param optionalParams Optional parameters to send with the message.
+     */
+    private sendDebugMessage(message?: unknown, ...optionalParams: unknown[])
+    {
+        if (!this.enableDebugMessages)
+        {
+        return;
+        }
+
+        console.log(`Side bar - ${message}`, ...optionalParams);
+    }
 }

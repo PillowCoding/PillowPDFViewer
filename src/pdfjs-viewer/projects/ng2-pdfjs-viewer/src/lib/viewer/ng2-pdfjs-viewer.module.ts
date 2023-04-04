@@ -27,15 +27,15 @@ import { RingLoadingComponent } from "../loading-icons/ring-loading/ring-loading
 })
 export class Ng2PdfjsViewerModule
 {
-  static forRoot(configuration: LocalisationConfiguration): ModuleWithProviders<Ng2PdfjsViewerModule>
-  {
+static forRoot(configuration: LocalisationConfiguration): ModuleWithProviders<Ng2PdfjsViewerModule>
+{
     return {
-      ngModule: Ng2PdfjsViewerModule,
-      providers: [
-        LocalisationService, {
-          provide: 'configuration',
-          useValue: configuration
-        }]
-    };
-  }
+        ngModule: Ng2PdfjsViewerModule,
+        providers: [
+            LocalisationService, {
+                provide: 'configuration',
+                useValue: configuration
+            }]
+        };
+    }
 }

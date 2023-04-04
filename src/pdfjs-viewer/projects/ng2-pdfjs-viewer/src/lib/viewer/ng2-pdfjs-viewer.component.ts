@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ContentChild, ContentChildren, EventEmitter, Input, OnInit, Output, QueryList, TemplateRef, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ContentChildren, EventEmitter, Input, OnInit, Output, QueryList, TemplateRef, ViewChild } from '@angular/core';
 import { PdfAnnotationsSideBarComponent } from 'ng2-pdfjs-viewer/annotations-side-bar/pdf-annotations-side-bar.component';
 import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
 import { pageModeType, PdfIframeWrapperComponent, scrollModeType, spreadModeType, zoomType } from 'ng2-pdfjs-viewer/iframe-wrapper/pdf-iframe-wrapper.component';
@@ -20,667 +20,724 @@ export type behaviourOnCommentPostedDelegateType = (submission: pdfAnnotationCom
 export type annotationFilterReference = annotationProviderRequest & { annotations: Array<pdfAnnotation> };
 
 @Component({
-  selector: 'lib-ng2-pdfjs-viewer',
-  templateUrl: 'ng2-pdfjs-viewer.component.html',
-  styleUrls: ['ng2-pdfjs-viewer.component.scss']
+    selector: 'lib-ng2-pdfjs-viewer',
+    templateUrl: 'ng2-pdfjs-viewer.component.html',
+    styleUrls: ['ng2-pdfjs-viewer.component.scss']
 })
 export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
-  @ViewChild('iframeWrapper') private _iframeWrapper!: PdfIframeWrapperComponent;
-  @ViewChild('annotationsSidebar') private _annotationsSidebar?: PdfAnnotationsSideBarComponent;
-  
-  @ContentChildren(templateRefDirective)
-  set setTemplate(value: QueryList<templateRefDirective>)
-  {
-    const templates: {[key: string]: (val: TemplateRef<any>) => void} = {
-      'metaDataHeader': (val) => { this._annotationMetaDataHeaderTemplate = val },
-      'comment':        (val) => { this._annotationCommentTemplate = val }
-    }
+    private readonly _sidebarDisabledButCalledError = 'Tried to use the sidebar despite it being disabled.';
+    private readonly _annotationHasNoPageError = 'Expected the annotation to contain a page.';
 
-    value.forEach(x =>
+    @ViewChild('iframeWrapper') private _iframeWrapper!: PdfIframeWrapperComponent;
+    @ViewChild('annotationsSidebar') private _annotationsSidebar?: PdfAnnotationsSideBarComponent;
+
+    @ContentChildren(templateRefDirective)
+    set setTemplate(value: QueryList<templateRefDirective>)
     {
-      if (!x.type) {
-        throw new Error('Template is missing a type.');
-      }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const templates: {[key: string]: (val: TemplateRef<unknown>) => void} = {
+            'metaDataHeader': (val) => { this._annotationMetaDataHeaderTemplate = val },
+            'comment':        (val) => { this._annotationCommentTemplate = val }
+        }
 
-      if (!templates[x.type]) {
-        throw new Error(`Template ${x.type} is not valid.`);
-      }
+        value.forEach(x =>
+        {
+            if (!x.type) {
+                throw new Error('Template is missing a type.');
+            }
 
-      templates[x.type](x.template);
-    })
-  };
+            if (!templates[x.type]) {
+                throw new Error(`Template ${x.type} is not valid.`);
+            }
 
-  private _annotationMetaDataHeaderTemplate?: TemplateRef<any>;
-  public get annotationMetaDataHeaderTemplate()
-  {
-    return this._annotationMetaDataHeaderTemplate
-  }
+            templates[x.type](x.template);
+        })
+    }
 
-  private _annotationCommentTemplate?: TemplateRef<any>;
-  public get annotationCommentTemplate()
-  {
-    return this._annotationCommentTemplate
-  }
-
-  // General inputs.
-  @Input() fileSource?: string | Blob | Uint8Array;
-  @Input() viewerRelativePath?: string;
-  @Input() annotationsProvider?: annotationProviderDelegateType;
-  @Input() enableDebugMessages = false;
-  @Input() enableEventBusDebugMessages = false;
-  @Input() defaultPendingAnnotationDrawColor = '#00FF00';
-  @Input() defaultAnnotationDrawColor = '#FFA500';
-  @Input() defaultAnnotationDrawFocusColor = '#ff4500';
-  @Input() defaultPendingAnnotationTextColor = '#00FF00';
-  @Input() defaultAnnotationTextColor = '#FFA500';
-  @Input() defaultAnnotationTextFocusColor = '#ff4500';
-  
-  // Document state.
-  // https://github.com/mozilla/pdf.js/wiki/Viewer-options
-  // https://github.com/mozilla/pdf.js/wiki/Debugging-PDF.js#url-parameters
-  // https://github.com/mozilla/pdf.js/tree/master/l10n
-  @Input()  page = 1;
-  @Output() pageChange = new EventEmitter<number>();
-
-  @Input() enableTextAnnotating = true;
-  @Input() enableDrawAnnotating = true;
-  @Input() enableFileSelect = true;
-  @Input() enablePrinting = true;
-  @Input() enableDownloading = true;
-  @Input() enableTextEditing = true;
-  @Input() enableDrawEditing = true;
-  
-  @Input() scrollMode?: scrollModeType;
-  @Input() spreadMode?: spreadModeType;
-  @Input() rotation?: number;
-  @Input() zoom?: zoomType;
-  @Input() pagemode?: pageModeType;
-  @Input() scale?: number;
-
-  /** This value will replace the default download behaviour if set. */
-  @Input() behaviourOnDownload?: behaviourOnDownloadDelegateType;
-
-  /** This value represents the behaviour when a new annotation is posted. */
-  @Input() behaviourOnAnnotationPosted?: behaviourOnAnnotationPostedDelegateType;
-
-  /** This value represents the behaviour when a new comment is posted. */
-  @Input() behaviourOnCommentPosted?: behaviourOnCommentPostedDelegateType;
-
-  // Outputs
-  @Output() onInitialized = new EventEmitter<void>();
-  @Output() onAnnotationPosted = new EventEmitter<pdfAnnotation>();
-  @Output() onCommentPosted = new EventEmitter<pdfAnnotationCommentSubmission>();
-  @Output() onAnnotationDeleted = new EventEmitter<pdfAnnotation>();
-
-  // These exist because the actual value is supposed to be an enum. Since enums in angular can be funky, we'll just translate the string.
-  private scrollModeTranslation: { [key in scrollModeType] : number; } = {
-    'vertical': 0,
-    'horizontal': 1,
-    'wrapped': 2,
-    'page': 3
-  };
-  private spreadModeTranslation: { [key in spreadModeType] : number; } = {
-    'none': 0,
-    'odd': 1,
-    'even': 2
-  };
-  private pageModeTranslations: { [key in pageModeType] : number; } = {
-    'none': 0,
-    'thumbs': 1,
-    'outline': 2,
-    'attachments': 3,
-    'layers': 4
-  };
-
-  /** Represents the current focussed annotation, if any are focused on. */
-  private _currentAnnotationFocus?: pdfAnnotation;
-
-  /** If something is in the process of being annotated, this annotation specifies the pending data. */
-  protected _pendingAnnotation?: pdfAnnotation;
-
-  /** Represents an array of annotations that are fetched and stored into memory, so be used in the application. Each array of annotations have their filtered reference with them. */
-  protected _storedAnnotations: Array<annotationFilterReference> = [];
-
-  private _initialized = false;
-
-  /** The pdf behaviour of the current context that is used to hook onto pdf events that can occur. */
-  protected _pdfBehaviour?: pdfBehaviour;
-  public get pdfBehaviour()
-  {
-    if (!this._pdfBehaviour)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private _annotationMetaDataHeaderTemplate?: TemplateRef<any>;
+    public get annotationMetaDataHeaderTemplate()
     {
-      throw new Error('No pdf behaviour found!');
+        return this._annotationMetaDataHeaderTemplate
     }
 
-    return this._pdfBehaviour;
-  }
-
-  /** Gets the fileName of the current file that has been opened. */
-  public get fileName(): string
-  {
-    return this.pdfBehaviour.pdfViewerApplication._title;
-  }
-
-  /** Gets the base url of the current file that has been opened. */
-  public get baseUrl(): string
-  {
-    return this.pdfBehaviour.pdfViewerApplication.baseUrl;
-  }
-
-  public get markInfo(): Promise<any>
-  {
-    return this.pdfBehaviour.pdfViewerApplication.pdfDocument.getMarkInfo();
-  }
-
-  constructor(
-    private readonly localisationService: LocalisationService,
-    private readonly changeDetector: ChangeDetectorRef)
-  {
-    this.getShownAnnotations = this.getShownAnnotations.bind(this);
-  }
-
-  ngOnInit()
-  {
-    this._pdfBehaviour = new pdfBehaviour(this.viewerRelativePath);
-    this.pdfBehaviour.enableDebugConsoleLogging = this.enableDebugMessages;
-    this.pdfBehaviour.enableEventBusDebugConsoleLogging = this.enableEventBusDebugMessages;
-  }
-
-  ngAfterViewInit()
-  {
-    // This has been moved from `ngOnInit` to `ngAfterViewInit` because the text layer had a bug where drawn annotations would disappear.
-    // The cause is the drawer which changes the width of the canvas, which causes the annotation to disappear if they were already drawn.
-    // By subscribing later, we change the order of execution.
-    this.pdfBehaviour.onPageChanging.subscribe((e) => this.onPageChange(e));
-    this.pdfBehaviour.onTextLayerRendered.subscribe(() => this.onPdfTextLayerRendered());
-    this.pdfBehaviour.onPageRendered.subscribe(({ first }) => this.onPageRendered(first));
-
-    this._iframeWrapper.onInitialized.subscribe(() => this.onWrapperLoaded());
-    this._iframeWrapper.loadIframe();
-  }
-
-  public setPage(pageNumber: number)
-  {
-    this.pdfBehaviour.pdfViewerApplication.pdfViewer.currentPageNumber = pageNumber;
-  }
-
-  public setZoom(zoom: zoomType)
-  {
-    this.pdfBehaviour.pdfViewerApplication.pdfViewer.currentScaleValue = zoom;
-  }
-
-  public setRotation(rotation: number)
-  {
-    this.pdfBehaviour.pdfViewerApplication.pdfViewer.pagesRotation = rotation;
-  }
-
-  public setScale(scale: number)
-  {
-    this.pdfBehaviour.pdfViewerApplication.pdfViewer.currentScale = scale;
-  }
-
-  public switchView(view: pageModeType, forceOpen = false)
-  {
-    const translation = this.pageModeTranslations[view];
-    this.pdfBehaviour.pdfViewerApplication.pdfSidebar.switchView(translation, forceOpen);
-  }
-
-  public openSideBar()
-  {
-    this.pdfBehaviour.pdfViewerApplication.pdfSidebar.open();
-  }
-
-  public closeSideBar()
-  {
-    this.pdfBehaviour.pdfViewerApplication.pdfSidebar.close();
-  }
-
-  public toggleSideBar()
-  {
-    this.pdfBehaviour.pdfViewerApplication.pdfSidebar.toggle();
-  }
-
-  public deleteAnnotation(annotation: pdfAnnotation)
-  {
-    const annotationsIndex = this._storedAnnotations.findIndex(x => x.page === annotation.page);
-    const newAnnotations = this._storedAnnotations[annotationsIndex]
-      .annotations
-      .filter(x => x.id !== annotation.id);
-
-    this._storedAnnotations[annotationsIndex]
-      .annotations = newAnnotations;
-
-    if (annotation.type === 'text')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private _annotationCommentTemplate?: TemplateRef<any>;
+    public get annotationCommentTemplate()
     {
-      this._iframeWrapper.pdfAnnotationWriter.removeColorsFromAnnotation(annotation);
+        return this._annotationCommentTemplate
     }
 
-    if (annotation.type === 'draw')
+    // General inputs.
+    @Input() fileSource?: string | Blob | Uint8Array;
+    @Input() viewerRelativePath?: string;
+    @Input() annotationsProvider?: annotationProviderDelegateType;
+    @Input() enableDebugMessages = false;
+    @Input() enableEventBusDebugMessages = false;
+    @Input() defaultPendingAnnotationDrawColor = '#00FF00';
+    @Input() defaultAnnotationDrawColor = '#FFA500';
+    @Input() defaultAnnotationDrawFocusColor = '#ff4500';
+    @Input() defaultPendingAnnotationTextColor = '#00FF00';
+    @Input() defaultAnnotationTextColor = '#FFA500';
+    @Input() defaultAnnotationTextFocusColor = '#ff4500';
+
+    // Document state.
+    // https://github.com/mozilla/pdf.js/wiki/Viewer-options
+    // https://github.com/mozilla/pdf.js/wiki/Debugging-PDF.js#url-parameters
+    // https://github.com/mozilla/pdf.js/tree/master/l10n
+    @Input()  page = 1;
+    @Output() pageChange = new EventEmitter<number>();
+
+    @Input() enableTextAnnotating = true;
+    @Input() enableDrawAnnotating = true;
+    @Input() enableFileSelect = true;
+    @Input() enablePrinting = true;
+    @Input() enableDownloading = true;
+    @Input() enableTextEditing = true;
+    @Input() enableDrawEditing = true;
+
+    @Input() scrollMode?: scrollModeType;
+    @Input() spreadMode?: spreadModeType;
+    @Input() rotation?: number;
+    @Input() zoom?: zoomType;
+    @Input() pagemode?: pageModeType;
+    @Input() scale?: number;
+
+    /** This value will replace the default download behaviour if set. */
+    @Input() behaviourOnDownload?: behaviourOnDownloadDelegateType;
+
+    /** This value represents the behaviour when a new annotation is posted. */
+    @Input() behaviourOnAnnotationPosted?: behaviourOnAnnotationPostedDelegateType;
+
+    /** This value represents the behaviour when a new comment is posted. */
+    @Input() behaviourOnCommentPosted?: behaviourOnCommentPostedDelegateType;
+
+    // Outputs
+    @Output() initialized = new EventEmitter<void>();
+    @Output() annotationPosted = new EventEmitter<pdfAnnotation>();
+    @Output() commentPosted = new EventEmitter<pdfAnnotationCommentSubmission>();
+    @Output() annotationDeleted = new EventEmitter<pdfAnnotation>();
+
+    // These exist because the actual value is supposed to be an enum. Since enums in angular can be funky, we'll just translate the string.
+    private scrollModeTranslation: { [key in scrollModeType] : number; } = {
+        'vertical': 0,
+        'horizontal': 1,
+        'wrapped': 2,
+        'page': 3
+    };
+    private spreadModeTranslation: { [key in spreadModeType] : number; } = {
+        'none': 0,
+        'odd': 1,
+        'even': 2
+    };
+    private pageModeTranslations: { [key in pageModeType] : number; } = {
+        'none': 0,
+        'thumbs': 1,
+        'outline': 2,
+        'attachments': 3,
+        'layers': 4
+    };
+
+    /** Represents the current focussed annotation, if any are focused on. */
+    private _currentAnnotationFocus?: pdfAnnotation;
+
+    /** If something is in the process of being annotated, this annotation specifies the pending data. */
+    protected _pendingAnnotation?: pdfAnnotation;
+
+    /** Represents an array of annotations that are fetched and stored into memory, so be used in the application. Each array of annotations have their filtered reference with them. */
+    protected _storedAnnotations: Array<annotationFilterReference> = [];
+
+    private _initialized = false;
+
+    /** The pdf behaviour of the current context that is used to hook onto pdf events that can occur. */
+    protected _pdfBehaviour?: pdfBehaviour;
+    public get pdfBehaviour()
     {
-      this.drawAnnotationsOnPage(annotation.page!);
+        if (!this._pdfBehaviour)
+        {
+            throw new Error('No pdf behaviour found!');
+        }
+
+        return this._pdfBehaviour;
     }
-    
-    this.changeDetector.detectChanges();
-    this.onAnnotationDeleted.emit(annotation);
-  }
 
-  public getShownAnnotations()
-  {
-    const pageAnnotations = this._storedAnnotations.filter(x => x.page === this.page)[0]
-      ?.annotations;
-    return pageAnnotations;
-  }
-
-  private async onWrapperLoaded()
-  {
-    // Set button availability based on settings.
-    this._iframeWrapper.disableButton('openFile', !this.enableFileSelect);
-    this._iframeWrapper.disableButton('printing', true);
-    this._iframeWrapper.disableButton('downloadPdf', true);
-
-    document.addEventListener('mouseup', (e) => this.onMouseUp());
-
-    if (!this.fileSource)
+    /** Gets the fileName of the current file that has been opened. */
+    public get fileName(): string
     {
-      return;
+        return this.pdfBehaviour.pdfViewerApplication._title;
     }
 
-    await this.pdfBehaviour.loadFile(this.fileSource);
-  }
-
-  private async onPdfTextLayerRendered()
-  {
-    // Custom download behaviour
-    if(this.behaviourOnDownload)
+    /** Gets the base url of the current file that has been opened. */
+    public get baseUrl(): string
     {
-      this.setDownloadBehaviour(this.behaviourOnDownload);
+        return this.pdfBehaviour.pdfViewerApplication.baseUrl;
     }
 
-    // Currently there is no support for "structured content" in PDFs.
-    // These type of PDFs have a different structure on the textlayer.
-    // The "Marked" value in the PDFs markinfo indicates if the PDF has this feature enabled.
-    // Until this is supported, we disable the button on these.
-    const markInfo = await this.markInfo;
-    const marked = markInfo && markInfo.Marked === true;
-    if (marked)
+    public get markInfo(): Promise<object>
     {
-      this._iframeWrapper.disableButton('textAnnotate', true);
-      this._iframeWrapper.setButtonTitle('textAnnotate', this.localisationService.Translate('textAnnotate.disabledNotSupported'));
+        return this.pdfBehaviour.pdfViewerApplication.pdfDocument.getMarkInfo();
     }
 
-    const allAnnotations = this._storedAnnotations
-      .map(x => x.annotations)
-      .reduce((accumulator, value) => accumulator.concat(value), []);
-
-    const textAnnotations = allAnnotations
-      .filter(x => x.type === 'text');
-
-    const drawAnnotations = allAnnotations
-      .filter(x => x.type === 'draw');
-
-    textAnnotations.forEach(annotation =>
+    constructor(
+        private readonly localisationService: LocalisationService,
+        private readonly changeDetector: ChangeDetectorRef)
     {
-      // Ensure the focussed annotation retains its focus color.
-      const color = this._currentAnnotationFocus === annotation ?
-        this.defaultAnnotationTextFocusColor :
-        this.defaultAnnotationTextColor;
-      
-      this._iframeWrapper.enableAnnotationColor(
-        annotation,
-        color);
-    });
+        this.getShownAnnotations = this.getShownAnnotations.bind(this);
+    }
 
-    this.drawAnnotations(drawAnnotations);
-    this.sendDebugMessage('Text layer rendered.');
-  }
-
-  private onPageRendered(first: boolean)
-  {
-    // Set text and draw editing availability based on settings.
-    // These are checked every render because the internal PDFJS code enables some at a later state than we can check.
-    this._iframeWrapper.disableButton('textEditor', !this.enableTextEditing);
-    this._iframeWrapper.disableButton('drawEditor', !this.enableDrawEditing);
-    this._iframeWrapper.disableButton('textAnnotate', !this.enableTextAnnotating);
-    this._iframeWrapper.disableButton('drawAnnotate', !this.enableDrawAnnotating);
-    this._iframeWrapper.disableButton('printing', !this.enablePrinting);
-    this._iframeWrapper.disableButton('downloadPdf', !this.enableDownloading);
-
-    if (!first)
+    ngOnInit()
     {
-      return;
+        this._pdfBehaviour = new pdfBehaviour(this.viewerRelativePath);
+        this.pdfBehaviour.enableDebugConsoleLogging = this.enableDebugMessages;
+        this.pdfBehaviour.enableEventBusDebugConsoleLogging = this.enableEventBusDebugMessages;
     }
 
-    this.sendDebugMessage('Window context.', this.pdfBehaviour.iframeWindow);
-
-    // Set scroll, spread mode and page.
-    if (this.scrollMode)
+    ngAfterViewInit()
     {
-      this.pdfBehaviour.pdfViewerApplication.pdfViewer.scrollMode = this.scrollModeTranslation[this.scrollMode];
+        // This has been moved from `ngOnInit` to `ngAfterViewInit` because the text layer had a bug where drawn annotations would disappear.
+        // The cause is the drawer which changes the width of the canvas, which causes the annotation to disappear if they were already drawn.
+        // By subscribing later, we change the order of execution.
+        this.pdfBehaviour.onPageChanging.subscribe((e) => this.onPageChange(e));
+        this.pdfBehaviour.onTextLayerRendered.subscribe(() => this.onPdfTextLayerRendered());
+        this.pdfBehaviour.onPageRendered.subscribe(({ first }) => this.onPageRendered(first));
+
+        this._iframeWrapper.initialized.subscribe(() => this.onWrapperLoaded());
+        this._iframeWrapper.loadIframe();
     }
-    if (this.spreadMode)
+
+    public setPage(pageNumber: number)
     {
-      this.pdfBehaviour.pdfViewerApplication.pdfViewer.spreadMode = this.spreadModeTranslation[this.spreadMode];
+        this.pdfBehaviour.pdfViewerApplication.pdfViewer.currentPageNumber = pageNumber;
     }
-    
-    this.setPage(this.page);
 
-    if (this.zoom) { this.setZoom(this.zoom); }
-    if (this.rotation) { this.setRotation(this.rotation); }
-    if (this.scale) { this.setScale(this.scale); }
-    if (this.pagemode) { this.switchView(this.pagemode, true); }
-
-    this.fetchAnnotationsForPage(this.page);
-    this._initialized = true;
-    this.onInitialized.emit();
-  }
-
-  private onPageChange(event: pageChangingEventType)
-  {
-    // Make sure the pdf if initialized before setting new pages.
-    if (!this._initialized)
+    public setZoom(zoom: zoomType)
     {
-      return;
+        this.pdfBehaviour.pdfViewerApplication.pdfViewer.currentScaleValue = zoom;
     }
 
-    this.page = event.pageNumber;
-    this.pageChange.emit(this.page);
-
-    this.fetchAnnotationsForPage(this.page);
-    this.changeDetector.detectChanges();
-  }
-
-  private async fetchAnnotationsForPage(page: number)
-  {
-    if (!this.annotationsProvider)
+    public setRotation(rotation: number)
     {
-      return;
+        this.pdfBehaviour.pdfViewerApplication.pdfViewer.pagesRotation = rotation;
     }
 
-    if (this._storedAnnotations.some(x => x.page == this.page))
+    public setScale(scale: number)
     {
-      return;
+        this.pdfBehaviour.pdfViewerApplication.pdfViewer.currentScale = scale;
     }
 
-    this.sendDebugMessage(`Start fetch annotations. { page: ${page} }`);
-
-    this._annotationsSidebar!.setLoading();
-
-    const response = await this.annotationsProvider({ page });
-
-    this._annotationsSidebar!.setNotLoading();
-
-    const annotationResponse: annotationFilterReference = {
-      page,
-      annotations: response.annotations || []
-    }
-    this._storedAnnotations.push(annotationResponse);
-
-    this.sendDebugMessage('Response', response);
-
-    // Render the annotations if the page is rendered.
-    // Since this might happen after the textlayer has been rendered, this check ensures the annotations are still rendered.
-    const canvasRendered = this._iframeWrapper.pdfAnnotationDrawer.canvasRendered(page);
-    if (canvasRendered) {
-      this.drawAnnotationsOnPage(page);
-    }
-
-    this.changeDetector.detectChanges();
-  }
-
-  private setDownloadBehaviour(delegate: behaviourOnDownloadDelegateType)
-  {
-    this.pdfBehaviour.pdfViewerApplication.downloadManager.download =
-      (blob: Blob, url: string, fileName: string) =>
-      {
-        const blobUrl = URL.createObjectURL(blob);
-        delegate(new pdfContext(fileName, url, blobUrl, blob));
-      };
-
-    this.pdfBehaviour.pdfViewerApplication.downloadManager.downloadData =
-      (data: any, url: string, fileName: string) =>
-      {
-        const blobUrl = URL.createObjectURL(new Blob([data], {
-          type: 'application/pdf'
-        }));
-        delegate(new pdfContext(fileName, url, blobUrl, data));
-      };
-
-    this.pdfBehaviour.pdfViewerApplication.downloadManager.downloadUrl =
-      (url: string, fileName: string) =>
-      {
-        delegate(new pdfContext(fileName, url, url, null));
-      };
-  }
-
-  /**
-   * The behaviour when the a mouse press was registered in the iframe.
-   */
-  protected onIframeClicked()
-  {
-    // Check for annotation focus.
-    if (this._currentAnnotationFocus)
+    public switchView(view: pageModeType, forceOpen = false)
     {
-      this.unFocusAnnotation(this._currentAnnotationFocus);
+        const translation = this.pageModeTranslations[view];
+        this.pdfBehaviour.pdfViewerApplication.pdfSidebar.switchView(translation, forceOpen);
     }
-  }
 
-  /**
-   * The behaviour when the a mouse press was registered in the main document.
-   */
-  private onMouseUp()
-  {
-    // Check for annotation focus.
-    if (this._currentAnnotationFocus)
+    public openSideBar()
     {
-      this.unFocusAnnotation(this._currentAnnotationFocus);
+        this.pdfBehaviour.pdfViewerApplication.pdfSidebar.open();
     }
-  }
 
-  protected onStartNewAnnotation()
-  {
-    // Make sure the annotations bar is expanded.
-    this._annotationsSidebar!.ensureExpanded();
-  }
-
-  protected onPendingAnnotationTextSelected()
-  {
-    if (!this._pendingAnnotation || !(this._pendingAnnotation.type === 'text'))
+    public closeSideBar()
     {
-      throw new Error('Expected the pending annotation to be a text annotation.');
+        this.pdfBehaviour.pdfViewerApplication.pdfSidebar.close();
     }
 
-    this._iframeWrapper.pdfAnnotationWriter.colorAnnotation(this._pendingAnnotation, this.defaultPendingAnnotationTextColor);
-    this.changeDetector.detectChanges();
-    this._annotationsSidebar!.focusAnnotationInput(this._pendingAnnotation!);
-  }
-
-  protected onPendingAnnotationBoundingBoxCreated()
-  {
-    if (!this._pendingAnnotation || !(this._pendingAnnotation.type === 'draw'))
+    public toggleSideBar()
     {
-      throw new Error('Expected the pending annotation to be a draw annotation.');
+        this.pdfBehaviour.pdfViewerApplication.pdfSidebar.toggle();
     }
 
-    this.changeDetector.detectChanges();
-    this._iframeWrapper.drawRectangle(<boundingBox>this._pendingAnnotation.reference, this._pendingAnnotation.page!, this.defaultPendingAnnotationDrawColor, true);
-    this._iframeWrapper.pdfAnnotationDrawer.disableLayer();
-    this._annotationsSidebar!.focusAnnotationInput(this._pendingAnnotation!);
-  }
-
-  /**
-   * Posts a pending annotation.
-   * @param initialComment The initial comment supplied with the annotation.
-   */
-  private async postAnnotation(initialComment: pdfAnnotationComment)
-  {
-    if (!this._pendingAnnotation)
+    public deleteAnnotation(annotation: pdfAnnotation)
     {
-      throw new Error('Could not find the pending annotation.');
+        const annotationsIndex = this._storedAnnotations.findIndex(x => x.page === annotation.page);
+        const newAnnotations = this._storedAnnotations[annotationsIndex]
+            .annotations
+            .filter(x => x.id !== annotation.id);
+
+        this._storedAnnotations[annotationsIndex]
+            .annotations = newAnnotations;
+
+        if (annotation.type === 'text')
+        {
+            this._iframeWrapper.pdfAnnotationWriter.removeColorsFromAnnotation(annotation);
+        }
+
+        if (annotation.type === 'draw')
+        {
+            if (!annotation.page) {
+                throw new Error('Expected annotation to contain a page whilst deleting.');
+            }
+            this.drawAnnotationsOnPage(annotation.page);
+        }
+        
+        this.changeDetector.detectChanges();
+        this.annotationDeleted.emit(annotation);
     }
 
-    // Switch the pending annotation to a local variable.
-    // This will remove any indication to the pending annotation.
-    const annotation = this._pendingAnnotation;
-    this._pendingAnnotation = undefined;
-
-    annotation.comments.push(initialComment);
-
-    const annotationsIndex = this._storedAnnotations.findIndex(x => x.page === annotation.page);
-    this._storedAnnotations[annotationsIndex].annotations.push(annotation);
-
-    // Push a change so that the list of annotations is redrawn. This way the "loading" indication below works properly.
-    this.changeDetector.detectChanges();
-
-    // Color the annotation.
-    if (annotation.type === 'text')
+    public getShownAnnotations()
     {
-      this._iframeWrapper.pdfAnnotationWriter.removeColorsFromAnnotation(
-        annotation);
-
-      this._iframeWrapper.enableAnnotationColor(
-        annotation,
-        this.defaultAnnotationTextColor);
+        const pageAnnotations = this._storedAnnotations.filter(x => x.page === this.page)[0]
+        ?.annotations;
+        return pageAnnotations;
     }
 
-    // Draw the bounding box rectangle.
-    if (annotation.type === 'draw')
+    private async onWrapperLoaded()
     {
-      this._iframeWrapper.pdfAnnotationDrawer.clearCanvas(annotation.page!, true);
-      this.drawAnnotationsOnPage(annotation.page!);
+        // Set button availability based on settings.
+        this._iframeWrapper.disableButton('openFile', !this.enableFileSelect);
+        this._iframeWrapper.disableButton('printing', true);
+        this._iframeWrapper.disableButton('downloadPdf', true);
+
+        document.addEventListener('mouseup', () => this.onMouseUp());
+
+        if (!this.fileSource)
+        {
+        return;
+        }
+
+        await this.pdfBehaviour.loadFile(this.fileSource);
     }
 
-    if (this.behaviourOnAnnotationPosted)
+    private async onPdfTextLayerRendered()
     {
-      this._annotationsSidebar!.setAnnotationLoading(annotation);
-      await this.behaviourOnAnnotationPosted(annotation);
-      this._annotationsSidebar!.setAnnotationNotLoading(annotation);
+        // Custom download behaviour
+        if(this.behaviourOnDownload)
+        {
+            this.setDownloadBehaviour(this.behaviourOnDownload);
+        }
+
+        // Currently there is no support for "structured content" in PDFs.
+        // These type of PDFs have a different structure on the textlayer.
+        // The "Marked" value in the PDFs markinfo indicates if the PDF has this feature enabled.
+        // Until this is supported, we disable the button on these.
+        // TODO: improve check.
+        const markInfo = await this.markInfo;
+        const marked = markInfo && 'Marked' in markInfo && markInfo.Marked === true;
+        if (marked)
+        {
+            this._iframeWrapper.disableButton('textAnnotate', true);
+            this._iframeWrapper.setButtonTitle('textAnnotate', this.localisationService.Translate('textAnnotate.disabledNotSupported'));
+        }
+
+        const allAnnotations = this._storedAnnotations
+            .map(x => x.annotations)
+            .reduce((accumulator, value) => accumulator.concat(value), []);
+
+        const textAnnotations = allAnnotations
+            .filter(x => x.type === 'text');
+
+        const drawAnnotations = allAnnotations
+            .filter(x => x.type === 'draw');
+
+        textAnnotations.forEach(annotation =>
+        {
+            // Ensure the focussed annotation retains its focus color.
+            const color = this._currentAnnotationFocus === annotation ?
+                this.defaultAnnotationTextFocusColor :
+                this.defaultAnnotationTextColor;
+            
+            this._iframeWrapper.enableAnnotationColor(
+                annotation,
+                color);
+        });
+
+        this.drawAnnotations(drawAnnotations);
+        this.sendDebugMessage('Text layer rendered.');
     }
 
-    // Emit the addedannotation.
-    this.sendDebugMessage('Annotation posted', annotation);
-    this.onAnnotationPosted.emit(annotation);
-    
-    this.changeDetector.detectChanges();
-  }
-
-  private drawAnnotationsOnPage(page: number)
-  {
-    this._iframeWrapper.pdfAnnotationDrawer.clearCanvas(page!, false);
-
-    const annotationsIndex = this._storedAnnotations.findIndex(x => x.page === page);
-    const annotations = this._storedAnnotations[annotationsIndex]
-      .annotations
-      .filter(x => x.page === page && x.type === 'draw');
-    this.drawAnnotations(annotations);
-  }
-
-  private drawAnnotations(annotations: Array<pdfAnnotation>)
-  {
-    annotations.forEach(x => this.drawAnnotation(x));
-  }
-
-  private drawAnnotation(annotation: pdfAnnotation)
-  {
-    const color = this._currentAnnotationFocus === annotation ?
-      this.defaultAnnotationDrawFocusColor :
-      this.defaultAnnotationDrawColor;
-    this._iframeWrapper.drawRectangle(<boundingBox>annotation.reference, annotation.page!, color);
-  }
-
-  protected onSidebarCollapse()
-  {
-    // Check for a pending annotation when collapsing the sidebar.
-    // Remove it if it exists.
-    if (!this._pendingAnnotation)
+    private onPageRendered(first: boolean)
     {
-      return;
+        // Set text and draw editing availability based on settings.
+        // These are checked every render because the internal PDFJS code enables some at a later state than we can check.
+        this._iframeWrapper.disableButton('textEditor', !this.enableTextEditing);
+        this._iframeWrapper.disableButton('drawEditor', !this.enableDrawEditing);
+        this._iframeWrapper.disableButton('textAnnotate', !this.enableTextAnnotating);
+        this._iframeWrapper.disableButton('drawAnnotate', !this.enableDrawAnnotating);
+        this._iframeWrapper.disableButton('printing', !this.enablePrinting);
+        this._iframeWrapper.disableButton('downloadPdf', !this.enableDownloading);
+
+        if (!first)
+        {
+        return;
+        }
+
+        this.sendDebugMessage('Window context.', this.pdfBehaviour.iframeWindow);
+
+        // Set scroll, spread mode and page.
+        if (this.scrollMode)
+        {
+        this.pdfBehaviour.pdfViewerApplication.pdfViewer.scrollMode = this.scrollModeTranslation[this.scrollMode];
+        }
+        if (this.spreadMode)
+        {
+        this.pdfBehaviour.pdfViewerApplication.pdfViewer.spreadMode = this.spreadModeTranslation[this.spreadMode];
+        }
+        
+        this.setPage(this.page);
+
+        if (this.zoom) { this.setZoom(this.zoom); }
+        if (this.rotation) { this.setRotation(this.rotation); }
+        if (this.scale) { this.setScale(this.scale); }
+        if (this.pagemode) { this.switchView(this.pagemode, true); }
+
+        this.fetchAnnotationsForPage(this.page);
+        this._initialized = true;
+        this.initialized.emit();
     }
 
-    this._iframeWrapper.deletePendingAnnotation();
-    this.changeDetector.detectChanges();
-  }
-
-  protected focusAnnotation(annotation: pdfAnnotation)
-  {
-    // Ignore if an annotation already has focus.
-    if (this._currentAnnotationFocus)
+    private onPageChange(event: pageChangingEventType)
     {
-      return;
+        // Make sure the pdf if initialized before setting new pages.
+        if (!this._initialized)
+        {
+        return;
+        }
+
+        this.page = event.pageNumber;
+        this.pageChange.emit(this.page);
+
+        this.fetchAnnotationsForPage(this.page);
+        this.changeDetector.detectChanges();
     }
 
-    this._annotationsSidebar!.focusAnnotation(annotation);
-    this._currentAnnotationFocus = annotation;
-
-    if (annotation.type === 'text')
+    private async fetchAnnotationsForPage(page: number)
     {
-      this._iframeWrapper.pdfAnnotationWriter.focusAnnotation(annotation, this.defaultAnnotationTextFocusColor)
+        if (!this.annotationsProvider) {
+            return;
+        }
+
+        if (!this._annotationsSidebar) {
+            throw new Error(this._sidebarDisabledButCalledError);
+        }
+
+        if (this._storedAnnotations.some(x => x.page == this.page)) {
+            return;
+        }
+
+        this.sendDebugMessage(`Start fetch annotations. { page: ${page} }`);
+
+        this._annotationsSidebar.setLoading();
+
+        const response = await this.annotationsProvider({ page });
+
+        this._annotationsSidebar.setNotLoading();
+
+        const annotationResponse: annotationFilterReference = {
+            page,
+            annotations: response.annotations || []
+        }
+        this._storedAnnotations.push(annotationResponse);
+
+        this.sendDebugMessage('Response', response);
+
+        // Render the annotations if the page is rendered.
+        // Since this might happen after the textlayer has been rendered, this check ensures the annotations are still rendered.
+        const canvasRendered = this._iframeWrapper.pdfAnnotationDrawer.canvasRendered(page);
+        if (canvasRendered) {
+            this.drawAnnotationsOnPage(page);
+        }
+
+        this.changeDetector.detectChanges();
     }
 
-    if (annotation.type === 'draw')
+    private setDownloadBehaviour(delegate: behaviourOnDownloadDelegateType)
     {
-      this.drawAnnotationsOnPage(annotation.page!);
-    }
-  }
+        this.pdfBehaviour.pdfViewerApplication.downloadManager.download =
+            (blob: Blob, url: string, fileName: string) =>
+            {
+                const blobUrl = URL.createObjectURL(blob);
+                delegate(new pdfContext(fileName, url, blobUrl, blob));
+            };
 
-  private unFocusAnnotation(annotation: pdfAnnotation)
-  {
-    if (!this._currentAnnotationFocus)
+        this.pdfBehaviour.pdfViewerApplication.downloadManager.downloadData =
+            (data: Uint8Array, url: string, fileName: string) =>
+            {
+                const blob = new Blob([data], {
+                    type: 'application/pdf'
+                });
+                const blobUrl = URL.createObjectURL(blob);
+                delegate(new pdfContext(fileName, url, blobUrl, blob));
+            };
+
+        this.pdfBehaviour.pdfViewerApplication.downloadManager.downloadUrl =
+            (url: string, fileName: string) =>
+            {
+                delegate(new pdfContext(fileName, url, url, null));
+            };
+    }
+
+    /**
+     * The behaviour when the a mouse press was registered in the iframe.
+     */
+    protected onIframeClicked()
     {
-      throw new Error('Expected a focussed annotation.');
+        // Check for annotation focus.
+        if (this._currentAnnotationFocus)
+        {
+            this.unFocusAnnotation(this._currentAnnotationFocus);
+        }
     }
 
-    this._annotationsSidebar!.unfocusAnnotation();
-    delete(this._currentAnnotationFocus);
-
-    if (annotation.type === 'text')
+    /**
+     * The behaviour when the a mouse press was registered in the main document.
+     */
+    private onMouseUp()
     {
-      this._iframeWrapper.pdfAnnotationWriter.unfocusAnnotation(annotation, this.defaultAnnotationTextColor);
+        // Check for annotation focus.
+        if (this._currentAnnotationFocus)
+        {
+            this.unFocusAnnotation(this._currentAnnotationFocus);
+        }
     }
 
-    if (annotation.type === 'draw')
+    protected onStartNewAnnotation()
     {
-      this.drawAnnotationsOnPage(annotation.page!);
+        if (!this._annotationsSidebar) {
+            throw new Error(this._sidebarDisabledButCalledError);
+        }
+        // Make sure the annotations bar is expanded.
+        this._annotationsSidebar.ensureExpanded();
     }
-  }
 
-  /**
-   * Called when an the initial annotation comment was submitted for a pending annotation.
-   */
-  protected async submitInitialAnnotationComment(event: pdfAnnotationCommentSubmission)
-  {
-    await this.postAnnotation(event.comment);
-  }
-
-  /**
-   * Called when a new comment was posted on an annotation.
-   */
-  protected async commentPosted(submission: pdfAnnotationCommentSubmission)
-  {
-    if (this.behaviourOnCommentPosted)
+    protected onPendingAnnotationTextSelected()
     {
-      this._annotationsSidebar!.setAnnotationLoading(submission.annotation);
-      await this.behaviourOnCommentPosted(submission);
-      this._annotationsSidebar!.setAnnotationNotLoading(submission.annotation);
+        if (!this._annotationsSidebar) {
+            throw new Error(this._sidebarDisabledButCalledError);
+        }
+
+        if (!this._pendingAnnotation || !(this._pendingAnnotation.type === 'text')) {
+            throw new Error('Expected the pending annotation to be a text annotation.');
+        }
+
+        this._iframeWrapper.pdfAnnotationWriter.colorAnnotation(this._pendingAnnotation, this.defaultPendingAnnotationTextColor);
+        this.changeDetector.detectChanges();
+        this._annotationsSidebar.focusAnnotationInput(this._pendingAnnotation);
     }
 
-    this.onCommentPosted.emit(submission);
-    this.changeDetector.detectChanges();
-  }
-
-  /**
-   * Sends the given message when debug messages are enabled.
-   * @param message The message to send.
-   * @param optionalParams Optional parameters to send with the message.
-   */
-  private sendDebugMessage(message?: any, ...optionalParams: any[])
-  {
-    if (!this.enableDebugMessages)
+    protected onPendingAnnotationBoundingBoxCreated()
     {
-      return;
+        if (!this._annotationsSidebar) {
+            throw new Error(this._sidebarDisabledButCalledError);
+        }
+
+        if (!this._pendingAnnotation || !(this._pendingAnnotation.type === 'draw')) {
+            throw new Error('Expected the pending annotation to be a draw annotation.');
+        }
+
+        if (!this._pendingAnnotation.page) {
+            throw new Error(this._annotationHasNoPageError);
+        }
+
+        this.changeDetector.detectChanges();
+        this._iframeWrapper.drawRectangle(<boundingBox>this._pendingAnnotation.reference, this._pendingAnnotation.page, this.defaultPendingAnnotationDrawColor, true);
+        this._iframeWrapper.pdfAnnotationDrawer.disableLayer();
+        this._annotationsSidebar.focusAnnotationInput(this._pendingAnnotation);
     }
 
-    console.log(`Viewer - ${message}`, ...optionalParams);
-  }
+    /**
+     * Posts a pending annotation.
+     * @param initialComment The initial comment supplied with the annotation.
+     */
+    private async postAnnotation(initialComment: pdfAnnotationComment)
+    {
+        if (!this._annotationsSidebar) {
+            throw new Error(this._sidebarDisabledButCalledError);
+        }
+
+        if (!this._pendingAnnotation) {
+            throw new Error('Could not find the pending annotation.');
+        }
+
+        // Switch the pending annotation to a local variable.
+        // This will remove any indication to the pending annotation.
+        const annotation = this._pendingAnnotation;
+
+        if (!annotation.page) {
+            throw new Error(this._annotationHasNoPageError);
+        }
+
+        this._pendingAnnotation = undefined;
+        annotation.comments.push(initialComment);
+
+        const annotationsIndex = this._storedAnnotations.findIndex(x => x.page === annotation.page);
+        this._storedAnnotations[annotationsIndex].annotations.push(annotation);
+
+        // Push a change so that the list of annotations is redrawn. This way the "loading" indication below works properly.
+        this.changeDetector.detectChanges();
+
+        // Color the annotation.
+        if (annotation.type === 'text')
+        {
+            this._iframeWrapper.pdfAnnotationWriter.removeColorsFromAnnotation(
+                annotation);
+
+            this._iframeWrapper.enableAnnotationColor(
+                annotation,
+                this.defaultAnnotationTextColor);
+        }
+
+        // Draw the bounding box rectangle.
+        if (annotation.type === 'draw')
+        {
+            this._iframeWrapper.pdfAnnotationDrawer.clearCanvas(annotation.page, true);
+            this.drawAnnotationsOnPage(annotation.page);
+        }
+
+        if (this.behaviourOnAnnotationPosted)
+        {
+            this._annotationsSidebar.setAnnotationLoading(annotation);
+            await this.behaviourOnAnnotationPosted(annotation);
+            this._annotationsSidebar.setAnnotationNotLoading(annotation);
+        }
+
+        // Emit the addedannotation.
+        this.sendDebugMessage('Annotation posted', annotation);
+        this.annotationPosted.emit(annotation);
+        
+        this.changeDetector.detectChanges();
+    }
+
+    private drawAnnotationsOnPage(page: number)
+    {
+        this._iframeWrapper.pdfAnnotationDrawer.clearCanvas(page, false);
+
+        const annotationsIndex = this._storedAnnotations.findIndex(x => x.page === page);
+        const annotations = this._storedAnnotations[annotationsIndex]
+            .annotations
+            .filter(x => x.page === page && x.type === 'draw');
+        this.drawAnnotations(annotations);
+    }
+
+    private drawAnnotations(annotations: Array<pdfAnnotation>)
+    {
+        annotations.forEach(x => this.drawAnnotation(x));
+    }
+
+    private drawAnnotation(annotation: pdfAnnotation)
+    {
+        if (!annotation.page) {
+            throw new Error(this._annotationHasNoPageError);
+        }
+
+        const color = this._currentAnnotationFocus === annotation ?
+        this.defaultAnnotationDrawFocusColor :
+        this.defaultAnnotationDrawColor;
+        this._iframeWrapper.drawRectangle(<boundingBox>annotation.reference, annotation.page, color);
+    }
+
+    protected onSidebarCollapse()
+    {
+        // Check for a pending annotation when collapsing the sidebar.
+        // Remove it if it exists.
+        if (!this._pendingAnnotation)
+        {
+            return;
+        }
+
+        this._iframeWrapper.deletePendingAnnotation();
+        this.changeDetector.detectChanges();
+    }
+
+    protected focusAnnotation(annotation: pdfAnnotation)
+    {
+        if (!this._annotationsSidebar) {
+            throw new Error(this._sidebarDisabledButCalledError);
+        }
+
+        if (!annotation.page) {
+            throw new Error(this._annotationHasNoPageError);
+        }
+
+        // Ignore if an annotation already has focus.
+        if (this._currentAnnotationFocus)
+        {
+            return;
+        }
+
+        this._annotationsSidebar.focusAnnotation(annotation);
+        this._currentAnnotationFocus = annotation;
+
+        if (annotation.type === 'text')
+        {
+        this._iframeWrapper.pdfAnnotationWriter.focusAnnotation(annotation, this.defaultAnnotationTextFocusColor)
+        }
+
+        if (annotation.type === 'draw')
+        {
+            this.drawAnnotationsOnPage(annotation.page);
+        }
+    }
+
+    private unFocusAnnotation(annotation: pdfAnnotation)
+    {
+        if (!this._annotationsSidebar) {
+            throw new Error(this._sidebarDisabledButCalledError);
+        }
+
+        if (!annotation.page) {
+            throw new Error(this._annotationHasNoPageError);
+        }
+
+        if (!this._currentAnnotationFocus)
+        {
+            throw new Error('Expected a focussed annotation.');
+        }
+
+        this._annotationsSidebar.unfocusAnnotation();
+        delete(this._currentAnnotationFocus);
+
+        if (annotation.type === 'text')
+        {
+            this._iframeWrapper.pdfAnnotationWriter.unfocusAnnotation(annotation, this.defaultAnnotationTextColor);
+        }
+
+        if (annotation.type === 'draw')
+        {
+            this.drawAnnotationsOnPage(annotation.page);
+        }
+    }
+
+    /**
+     * Called when an the initial annotation comment was submitted for a pending annotation.
+     */
+    protected async submitInitialAnnotationComment(event: pdfAnnotationCommentSubmission)
+    {
+        await this.postAnnotation(event.comment);
+    }
+
+    /**
+     * Called when a new comment was posted on an annotation.
+     */
+    protected async onCommentPosted(submission: pdfAnnotationCommentSubmission)
+    {
+        if (!this._annotationsSidebar) {
+            throw new Error(this._sidebarDisabledButCalledError);
+        }
+
+        if (this.behaviourOnCommentPosted)
+        {
+            this._annotationsSidebar.setAnnotationLoading(submission.annotation);
+            await this.behaviourOnCommentPosted(submission);
+            this._annotationsSidebar.setAnnotationNotLoading(submission.annotation);
+        }
+
+        this.commentPosted.emit(submission);
+        this.changeDetector.detectChanges();
+    }
+
+    /**
+     * Sends the given message when debug messages are enabled.
+     * @param message The message to send.
+     * @param optionalParams Optional parameters to send with the message.
+     */
+    private sendDebugMessage(message?: unknown, ...optionalParams: unknown[])
+    {
+        if (!this.enableDebugMessages)
+        {
+            return;
+        }
+
+        console.log(`Viewer - ${message}`, ...optionalParams);
+    }
 }
 
 // interface PdfJsWindow extends Window {

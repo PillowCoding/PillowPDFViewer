@@ -8,7 +8,7 @@ export class pdfAnnotationComment
     public readonly dateCreated: Date;
 
     constructor(
-        public readonly text: string)
+        public readonly content: string)
     {
         this.dateCreated = new Date();
     }

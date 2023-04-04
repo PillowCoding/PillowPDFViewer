@@ -5,11 +5,13 @@ import { Subject } from "rxjs";
 
 export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
 {
+    private readonly _drawLayer2dContextNotFound = 'Draw layer 2d context was not found.';
+
     onClickDrawLayer = new Subject<MouseEvent>();
     boundingBoxCreated = new Subject<{ bounds: boundingBox, page: number }>();
 
     private _enableDebugLogging = false;
-    public set enableDebugLogging(val: boolean) { this._enableDebugLogging = val; };
+    public set enableDebugLogging(val: boolean) { this._enableDebugLogging = val; }
 
     private readonly _layerBaseClass = 'annotationDrawLayer';
     private readonly _canvasBaseClass = 'annotationDrawCanvas';
@@ -52,9 +54,13 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
         });
 
         // Fail safe to ensure there's no more pending annotations
-        if (this._pendingAnnotationBoundingBoxStart)
+        if (this._pendingAnnotationBoundingBoxStart || this._pendingAnnotationPage)
         {
-            this.clearCanvas(this._pendingAnnotationPage!, true);
+            if (!this._pendingAnnotationBoundingBoxStart || !this._pendingAnnotationPage) {
+                throw new Error('Expected pending annotation bounds and page to exist.');
+            }
+
+            this.clearCanvas(this._pendingAnnotationPage, true);
             delete(this._pendingAnnotationPage);
             delete(this._pendingAnnotationBoundingBoxStart);
         }
@@ -76,7 +82,10 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
             return;
         }
 
-        const context = canvas.getContext('2d')!;
+        const context = canvas.getContext('2d');
+        if (!context) {
+            throw new Error(this._drawLayer2dContextNotFound);
+        }
 
         // Determine x and y position, and the width and height of the rectangle.
         // The value is a percentage, and therefore we must multiply the result with the canvas resolution.
@@ -100,7 +109,11 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
     clearCanvas(page: number, pending: boolean)
     {
         const canvas = this.getCanvas(page, pending);
-        const context = canvas.getContext('2d')!;
+        const context = canvas.getContext('2d');
+        if (!context) {
+            throw new Error(this._drawLayer2dContextNotFound);
+        }
+
         context.clearRect(0, 0, canvas.width, canvas.height);
     }
 
@@ -130,7 +143,7 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
 
     private getCanvasOrNull(page: number, pending: boolean)
     {
-        const pageElement = this._pdfBehaviour.getPageParent(page)!;
+        const pageElement = this._pdfBehaviour.getPageParent(page);
         const canvasClass = pending ? this._pendingCanvasBaseClass : this._actualCanvasBaseClass;
         const canvas = pageElement.querySelector(`.canvasWrapper > .${canvasClass}`) as HTMLCanvasElement;
 
@@ -235,14 +248,14 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
         const pageParent = (event.target as Element).closest('.page') as HTMLDivElement;
         const page = this._pdfBehaviour.getPageNumberFromParent(pageParent);
 
+        // Ensure that bounds do not exceed to a different page
         if (this._pendingAnnotationPage && this._pendingAnnotationPage !== page)
         {
             return;
         }
 
-        const pendingAnnotationBoundingBoxStartPage = this._pendingAnnotationPage;
-        const pendingAnnotationBoundingBoxStart = this._pendingAnnotationBoundingBoxStart;
-        const drawAsStart = !pendingAnnotationBoundingBoxStartPage && !pendingAnnotationBoundingBoxStart;
+        // Check if we draw the initial bounds point and not the end.
+        const drawAsStart = !this._pendingAnnotationPage || !this._pendingAnnotationBoundingBoxStart;
 
         // Check if the start press is mouse down.
         if (drawAsStart && !mouseDown)
@@ -260,6 +273,11 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
             return;
         }
 
+        // Ensure the variables are set properly
+        if (!this._pendingAnnotationPage || !this._pendingAnnotationBoundingBoxStart) {
+            throw new Error('Expected pending annotation page and pending annotation start bounds to both be set.');
+        }
+
         // Check if the end press is mouse up.
         if (mouseDown)
         {
@@ -267,11 +285,11 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
         }
 
         const bounds: boundingBox = {
-            start: pendingAnnotationBoundingBoxStart!,
+            start: this._pendingAnnotationBoundingBoxStart,
             end: position,
         }
 
-        this.clearCanvas(this._pendingAnnotationPage!, true);
+        this.clearCanvas(this._pendingAnnotationPage, true);
         delete(this._pendingAnnotationPage);
         delete(this._pendingAnnotationBoundingBoxStart);
 
@@ -287,9 +305,14 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
         if (!this._canvasElementBase)
         {
             this.sendDebugMessage('Creating base draw canvas...');
-            this._canvasElementBase = document.createElement('canvas');
-            (<any>this._canvasElementBase).role = 'presentation';
-            this._canvasElementBase.classList.add(this._canvasBaseClass);
+            const canvasElementBase = document.createElement('canvas');
+
+            // Set canvas role (must be `any` because role is not standard with a canvas, apparently.)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (<any>canvasElementBase).role = 'presentation';
+            canvasElementBase.classList.add(this._canvasBaseClass);
+
+            this._canvasElementBase = canvasElementBase;
         }
 
         this._pdfBehaviour.getRenderedPages()
@@ -308,7 +331,13 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
                 this.sendDebugMessage(`Creating new draw canvasses for page ${pageNumber}...`);
                 
                 const createCanvasElement = (layerName: string, zIndex: number) => {
-                    const element = wrapper.insertAdjacentElement('beforeend', this._canvasElementBase!.cloneNode(true) as HTMLCanvasElement) as HTMLCanvasElement;
+
+                    // Despite is being impossible, this check needs to exist _should_ the base somehow disappear again.
+                    if (this._canvasElementBase == undefined) {
+                        throw new Error('Espected the canvas base to exist.');
+                    }
+
+                    const element = wrapper.insertAdjacentElement('beforeend', this._canvasElementBase.cloneNode(true) as HTMLCanvasElement) as HTMLCanvasElement;
                     element.classList.add(layerName);
                     element.style.position = 'absolute';
                     element.style.pointerEvents = 'none';
@@ -329,7 +358,10 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
     private setCanvasWidth(canvas: HTMLCanvasElement)
     {
         // This is the build in canvas which we will get the width and height from.
-        const referenceCanvas = canvas.parentElement!.children[0] as HTMLCanvasElement;
+        const referenceCanvas = <HTMLCanvasElement | undefined>canvas.parentElement?.children[0];
+        if (!referenceCanvas) {
+            throw new Error('canvas parent could not be found.');
+        }
 
         canvas.width = referenceCanvas.width;
         canvas.style.width = `${referenceCanvas.width}px`;
@@ -351,7 +383,7 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
         return canvasParent;
     }
     
-    private sendDebugMessage(message?: any, ...optionalParams: any[])
+    private sendDebugMessage(message?: unknown, ...optionalParams: unknown[])
     {
         if (!this._enableDebugLogging)
         {

@@ -1,6 +1,6 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 @Component({
-  selector: 'app-root',
+  selector: 'lib-root',
   template: `
     <div class="main-container">
       <div class="pdf-toolbar">

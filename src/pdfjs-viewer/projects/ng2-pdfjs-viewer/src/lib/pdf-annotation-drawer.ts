@@ -10,7 +10,7 @@ export interface pdfAnnotationDrawer
 
     enableLayer(): void;
     disableLayer(): void;
-    clearCanvas(page: number, pending: boolean): any;
+    clearCanvas(page: number, pending: boolean): void;
     canvasRendered(page: number): boolean;
-    drawRectangle(bounds: boundingBox, page: number, color: string, borderWidth: number, pending: boolean): any;
+    drawRectangle(bounds: boundingBox, page: number, color: string, borderWidth: number, pending: boolean): void;
 }

@@ -1,11 +1,11 @@
 import { Component, ViewChild } from '@angular/core';
-import { annotationProviderRequest, annotationProviderResponse, Ng2PdfjsViewerComponent, pdfAnnotation, pdfContext } from 'ng2-pdfjs-viewer';
+import { annotationProviderRequest, annotationProviderResponse, Ng2PdfjsViewerComponent, pdfAnnotation } from 'ng2-pdfjs-viewer';
 import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
 
 type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: Array<pdfAnnotation> };
 
 @Component({
-    selector: 'app-pdfviewer-simple',
+    selector: 'lib-pdfviewer-simple',
     template: `
         <lib-ng2-pdfjs-viewer
             #pdfViewer
@@ -30,9 +30,9 @@ type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: A
             [annotationsProvider]="annotationsProvider"
             [behaviourOnAnnotationPosted]="onAnnotationPost"
             [behaviourOnCommentPosted]="onCommentPost"
-            (onAnnotationDeleted)="onAnnotationDeleted($event)">
+            (annotationDeleted)="onAnnotationDeleted($event)">
 
-            <ng-template let-annotation="annotation" templateRef="metaDataHeader">
+            <ng-template let-annotation="annotation" libTemplateRef="metaDataHeader">
                 <div class="annotation-metadata">
                     <p><span class="font-bold">By:</span><span> {{annotation.creator}}</span></p>
                     <p class="font-bold">{{annotation.dateCreated | date: 'short'}}</p>
@@ -42,7 +42,7 @@ type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: A
                 <a type="button" class="close" aria-label="Close" (click)="this.clickDeleteAnnotation($event, annotation)"></a>
             </ng-template>
 
-            <ng-template let-comment="comment" templateRef="comment">
+            <ng-template let-comment="comment" libTemplateRef="comment">
                 <span class="font-bold">{{comment.creator}}:</span><span> {{comment.text}}</span>
             </ng-template>
         </lib-ng2-pdfjs-viewer>
@@ -91,9 +91,9 @@ type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: A
         }
     `]
 })
-export class appPdfViewerModifiedComponent
+export class pdfViewerModifiedComponent
 {
-    @ViewChild('pdfViewer') private _pdfViewer?: Ng2PdfjsViewerComponent;
+    @ViewChild('pdfViewer') private _pdfViewer!: Ng2PdfjsViewerComponent;
     
     private readonly _annotationStorageKey = 'storedFileAnnotations';
     private readonly delay = (ms: number) => { return new Promise( resolve => setTimeout(resolve, ms) ); }
@@ -111,7 +111,7 @@ export class appPdfViewerModifiedComponent
     async annotationsProvider(request: annotationProviderRequest): Promise<annotationProviderResponse>
     {
         // Considering this is a test, we just fetch all stored annotations which is easier than filtering.
-        if (this._annotations === undefined)
+        if (!this._annotations)
         {
             const allStoredFileAnnotationsUnparsed = localStorage.getItem(this._annotationStorageKey);
             if (!allStoredFileAnnotationsUnparsed)
@@ -120,7 +120,7 @@ export class appPdfViewerModifiedComponent
             }
             else
             {
-                const baseUrl = this._pdfViewer!.baseUrl;
+                const baseUrl = this._pdfViewer.baseUrl;
                 const allStoredFileAnnotations: Array<storedFileAnnotations> = JSON.parse(allStoredFileAnnotationsUnparsed);
 
                 this._annotations = allStoredFileAnnotations
@@ -132,12 +132,12 @@ export class appPdfViewerModifiedComponent
         await this.delay(1000);
 
         // Determine the right annotations based on file source.
-        const annotations = this._annotations!
+        const annotations = this._annotations
             .filter(x => x.page == request.page);
         return {
             annotations,
             totalPage: annotations.length,
-            total: this._annotations!.length
+            total: this._annotations.length
         }
     }
 
@@ -148,8 +148,8 @@ export class appPdfViewerModifiedComponent
             return;
         }
 
-        const fileName = this._pdfViewer!.fileName;
-        const baseUrl = this._pdfViewer!.baseUrl;
+        const fileName = this._pdfViewer.fileName;
+        const baseUrl = this._pdfViewer.baseUrl;
 
         // Get existing annotations.
         // We will push a new entry to the array.
@@ -182,14 +182,26 @@ export class appPdfViewerModifiedComponent
 
     async onAnnotationPost(annotation: pdfAnnotation)
     {
-        await this.delay(1000);
-        const comment = annotation.comments.pop()!;
+        if (!this._annotations)
+        {
+            throw new Error('Expected annotations to exist.');
+        }
 
+        await this.delay(1000);
+        const comment = annotation.comments.pop();
+
+        if (!comment)
+        {
+            throw new Error('Expected a comment.');
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (<any>comment).creator = 'me';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (<any>annotation).creator = 'me';
 
         annotation.comments.push(comment);
-        this._annotations!.push(annotation);
+        this._annotations.push(annotation);
         console.log("Annotation was posted.");
 
         await this.saveAnnotations();
@@ -199,21 +211,27 @@ export class appPdfViewerModifiedComponent
     {
         // Delays simulate a database call in this case.
         await this.delay(1000);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (<any>submission.comment).creator = 'me';
         console.log("Comment was posted.");
 
         await this.saveAnnotations();
     }
 
-    protected clickDeleteAnnotation(event: any, annotation: pdfAnnotation)
+    protected clickDeleteAnnotation(event: MouseEvent, annotation: pdfAnnotation)
     {
         event.stopPropagation();
-        this._pdfViewer!.deleteAnnotation(annotation);
+        this._pdfViewer.deleteAnnotation(annotation);
     }
 
     async onAnnotationDeleted(annotation: pdfAnnotation)
     {
-        this._annotations = this._annotations!.filter(x => x.id != annotation.id);
+        if (!this._annotations)
+        {
+            throw new Error('Expected annotations to exist.');
+        }
+
+        this._annotations = this._annotations.filter(x => x.id != annotation.id);
         console.log("Annotation was deleted.");
         await this.saveAnnotations();
     }

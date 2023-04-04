@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { annotationProviderRequest, annotationProviderResponse, pdfAnnotation, pdfContext } from 'ng2-pdfjs-viewer';
 
 @Component({
-    selector: 'app-pdfviewer-simple',
+    selector: 'lib-pdfviewer-simple',
     template: `
         <lib-ng2-pdfjs-viewer
             [fileSource]="'/assets/compressed.tracemonkey-pldi-09.pdf'"
@@ -22,12 +22,12 @@ import { annotationProviderRequest, annotationProviderResponse, pdfAnnotation, p
 
             [annotationsProvider]="annotationsProvider"
             [behaviourOnDownload]="onDownloadBehaviour"
-            (onAnnotationPosted)="onAnnotationPosted($event)"
-            (onAnnotationDeleted)="onAnnotationDeleted($event)">
+            (annotationPosted)="onAnnotationPosted($event)"
+            (annotationDeleted)="onAnnotationDeleted($event)">
         </lib-ng2-pdfjs-viewer>
     `,
 })
-export class appPdfViewerAnnotateComponent
+export class pdfViewerAnnotateComponent
 {
     private _annotations?: Array<pdfAnnotation>;
 
@@ -43,14 +43,15 @@ export class appPdfViewerAnnotateComponent
     {
         if (!this._annotations)
         {
-            this._annotations = JSON.parse(localStorage.getItem('pdfAnnotations') ?? '[]');
+            const annotations: Array<pdfAnnotation> = JSON.parse(localStorage.getItem('pdfAnnotations') || '[]');
+            this._annotations = annotations;
         }
 
-        const annotations = this._annotations!.filter(x => x.page == request.page);
+        const annotations = this._annotations.filter(x => x.page == request.page);
         return {
             annotations,
             totalPage: annotations.length,
-            total: this._annotations!.length
+            total: this._annotations.length
         }
     }
 
@@ -72,13 +73,23 @@ export class appPdfViewerAnnotateComponent
 
     onAnnotationPosted(annotation: pdfAnnotation)
     {
-        this._annotations!.push(annotation);
+        if (!this._annotations)
+        {
+            throw new Error("Expected a list of annotations to push to.")
+        }
+
+        this._annotations.push(annotation);
         console.log("PDF annotation was posted.", annotation);
     }
 
     onAnnotationDeleted(annotation: pdfAnnotation)
     {
-        this._annotations = this._annotations!.filter(x => x.id != annotation.id);
+        if (!this._annotations)
+        {
+            throw new Error("Expected a list of annotations to delete from.")
+        }
+
+        this._annotations = this._annotations.filter(x => x.id != annotation.id);
         console.log("PDF annotation was deleted.", annotation);
     }
 }
