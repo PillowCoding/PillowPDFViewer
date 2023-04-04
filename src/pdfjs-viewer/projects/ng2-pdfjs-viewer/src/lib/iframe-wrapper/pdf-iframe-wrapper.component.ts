@@ -8,10 +8,6 @@ import { defaultPdfAnnotationDrawer } from './default-pdf-annotation-drawer';
 import { defaultPdfAnnotationWriter } from './default-pdf-annotation-writer';
 
 export type toolbarButtonType = 'textAnnotate' | 'drawAnnotate' | 'openFile' | 'printing' | 'downloadPdf' | 'textEditor' | 'drawEditor';
-export type zoomType = { zoom: number; leftOffset: number; topOffset: number; } | 'page-width' | 'page-height' | 'page-fit' | 'auto';
-export type pageModeType = 'none' | 'thumbs' | 'outline' | 'attachments' | 'layers';
-export type scrollModeType = 'vertical' | 'horizontal' | 'wrapped' | 'page';
-export type spreadModeType = 'none' | 'odd' | 'even';
 
 @Component({
     selector: 'lib-ng2-pdfjs-viewer-iframe-wrapper',

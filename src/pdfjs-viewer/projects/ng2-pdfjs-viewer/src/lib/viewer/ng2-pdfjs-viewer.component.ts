@@ -1,12 +1,14 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ContentChildren, EventEmitter, Input, OnInit, Output, QueryList, TemplateRef, ViewChild } from '@angular/core';
 import { PdfAnnotationsSideBarComponent } from 'ng2-pdfjs-viewer/annotations-side-bar/pdf-annotations-side-bar.component';
 import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
-import { pageModeType, PdfIframeWrapperComponent, scrollModeType, spreadModeType, zoomType } from 'ng2-pdfjs-viewer/iframe-wrapper/pdf-iframe-wrapper.component';
+import { PdfIframeWrapperComponent } from 'ng2-pdfjs-viewer/iframe-wrapper/pdf-iframe-wrapper.component';
 import { LocalisationService } from 'ng2-pdfjs-viewer/localisation/localisation.service';
 import { pageChangingEventType, pdfBehaviour } from 'ng2-pdfjs-viewer/pdf-behaviour';
 import { templateRefDirective } from 'ng2-pdfjs-viewer/templateRef.directive';
 import { boundingBox, pdfAnnotation, pdfAnnotationComment } from './../pdf-annotation';
 import { pdfContext } from './../pdf-context';
+import { scrollModeTranslation, scrollModeType, spreadModeTranslation, spreadModeType, zoomType } from '../../types/PdfViewer';
+import { pageModeTranslations, pageModeType } from '../../types/PDFSidebar';
 
 export type annotationProviderRequest = { page: number };
 export type annotationProviderResponse = { annotations: Array<pdfAnnotation>, totalPage: number, total: number; };
@@ -115,26 +117,6 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     @Output() commentPosted = new EventEmitter<pdfAnnotationCommentSubmission>();
     @Output() annotationDeleted = new EventEmitter<pdfAnnotation>();
 
-    // These exist because the actual value is supposed to be an enum. Since enums in angular can be funky, we'll just translate the string.
-    private scrollModeTranslation: { [key in scrollModeType] : number; } = {
-        'vertical': 0,
-        'horizontal': 1,
-        'wrapped': 2,
-        'page': 3
-    };
-    private spreadModeTranslation: { [key in spreadModeType] : number; } = {
-        'none': 0,
-        'odd': 1,
-        'even': 2
-    };
-    private pageModeTranslations: { [key in pageModeType] : number; } = {
-        'none': 0,
-        'thumbs': 1,
-        'outline': 2,
-        'attachments': 3,
-        'layers': 4
-    };
-
     /** Represents the current focussed annotation, if any are focused on. */
     private _currentAnnotationFocus?: pdfAnnotation;
 
@@ -159,18 +141,18 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     }
 
     /** Gets the fileName of the current file that has been opened. */
-    public get fileName(): string
+    public get fileName()
     {
         return this.pdfBehaviour.pdfViewerApplication._title;
     }
 
     /** Gets the base url of the current file that has been opened. */
-    public get baseUrl(): string
+    public get baseUrl()
     {
         return this.pdfBehaviour.pdfViewerApplication.baseUrl;
     }
 
-    public get markInfo(): Promise<object>
+    public get markInfo()
     {
         return this.pdfBehaviour.pdfViewerApplication.pdfDocument.getMarkInfo();
     }
@@ -224,7 +206,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
 
     public switchView(view: pageModeType, forceOpen = false)
     {
-        const translation = this.pageModeTranslations[view];
+        const translation = pageModeTranslations[view];
         this.pdfBehaviour.pdfViewerApplication.pdfSidebar.switchView(translation, forceOpen);
     }
 
@@ -354,7 +336,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
 
         if (!first)
         {
-        return;
+            return;
         }
 
         this.sendDebugMessage('Window context.', this.pdfBehaviour.iframeWindow);
@@ -362,11 +344,11 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         // Set scroll, spread mode and page.
         if (this.scrollMode)
         {
-        this.pdfBehaviour.pdfViewerApplication.pdfViewer.scrollMode = this.scrollModeTranslation[this.scrollMode];
+            this.pdfBehaviour.pdfViewerApplication.pdfViewer.scrollMode = scrollModeTranslation[this.scrollMode];
         }
         if (this.spreadMode)
         {
-        this.pdfBehaviour.pdfViewerApplication.pdfViewer.spreadMode = this.spreadModeTranslation[this.spreadMode];
+            this.pdfBehaviour.pdfViewerApplication.pdfViewer.spreadMode = spreadModeTranslation[this.spreadMode];
         }
         
         this.setPage(this.page);
@@ -736,11 +718,3 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         console.log(`Viewer - ${message}`, ...optionalParams);
     }
 }
-
-// interface PdfJsWindow extends Window {
-//   PDFViewerApplication: {
-//     eventBus: {
-//       on: (name: string, event: (e: any) => void) => void
-//     }
-//   }
-// }

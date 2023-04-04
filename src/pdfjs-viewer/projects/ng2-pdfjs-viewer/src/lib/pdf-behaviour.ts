@@ -1,12 +1,10 @@
 import { Subject } from "rxjs";
+import { PdfJsWindow } from "../types/PDFJSWindow";
 
 export type pageChangingEventType = { pageNumber: number, pageLabel: unknown };
 
 export class pdfBehaviour
 {
-    private readonly _documentNotLoadedError = 'PDF document is not yet loaded.';
-    private readonly _pdfApplicationNotLoadedError = 'PDF application is not yet loaded.';
-
     // Event outputs not related to the EventBus, called manually.
     onIframeLoading = new Subject<void>();
     onIframeLoaded = new Subject<void>();
@@ -82,31 +80,46 @@ export class pdfBehaviour
     /** Gets the PDF viewer application. */
     public get pdfViewerApplication()
     {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (<any>this.iframeWindow)?.PDFViewerApplication;
+        const application = this.pdfViewerApplicationOrNone;
+        if (!application) {
+            throw new Error('PDF application is not yet loaded.');
+        }
+        return application;
     }
 
-    /** Gets the PDF viewer application options. */
-    public get pdfViewerApplicationOptions()
+    /** Gets the PDF viewer application or undefined. */
+    public get pdfViewerApplicationOrNone()
     {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (<any>this.iframeWindow)?.PDFViewerApplicationOptions;
+        return this.iframeWindow?.PDFViewerApplication;
     }
 
     /** Gets the iframe native element. */
     public get iframeElement() { return this.iframeReference; }
 
     /** Gets the iframe window. */
-    public get iframeWindow() { return this.iframeElement.contentWindow; }
+    public get iframeWindow(): PdfJsWindow | null { return this.iframeElement.contentWindow as PdfJsWindow; }
 
     /** Gets the iframe document. */
-    public get iframeDocument() { return this.iframeElement.contentDocument || this.iframeElement.contentWindow?.document; }
+    public get iframeDocument() {
+        const doc = this.iframeDocumentOrNone;
+        if (!doc) {
+            throw new Error('PDF document is not yet loaded.');
+        }
+        
+        return doc;
+    }
+
+    /** Gets the iframe document. */
+    public get iframeDocumentOrNone() {
+        'PDF document is not yet loaded.'
+        return this.iframeElement.contentDocument || this.iframeElement.contentWindow?.document;
+    }
 
     /** Gets the container of the right toolbar. */
     public get rightToolbarContainer() { return this.iframeDocument?.getElementById('toolbarViewerRight') as HTMLDivElement;  }
 
     /** Returns true if the PDF has been initialized. */
-    public get initialized() { return this.pdfViewerApplication.initialized === true; }
+    public get initialized() { return this.pdfViewerApplication?.initialized === true; }
 
     /** The reference to the iframe containing the pdf context. If null, nothing is loaded. */
     private _iframeReference?: HTMLIFrameElement;
@@ -169,10 +182,6 @@ export class pdfBehaviour
 
     public getPageParent(page: number)
     {
-        if (!this.iframeDocument) {
-            throw new Error(this._documentNotLoadedError);
-        }
-
         return this.iframeDocument.querySelector(`.page[${this.pageParentPageAttribute}="${page}"]`) as HTMLDivElement;
     }
 
@@ -184,10 +193,6 @@ export class pdfBehaviour
 
     public getRenderedPages()
     {
-        if (!this.iframeDocument) {
-            throw new Error(this._documentNotLoadedError);
-        }
-
         const pageElements = Array.from(this.iframeDocument.querySelectorAll('.page')) as HTMLDivElement[];
         return pageElements.filter(x => {
             const page = this.getPageNumberFromParent(x);
@@ -208,10 +213,6 @@ export class pdfBehaviour
 
     private async iframeLoaded()
     {
-        if (!this.iframeDocument) {
-            throw new Error(this._documentNotLoadedError);
-        }
-
         this.iframeDocument.addEventListener('click', (e) => this.onIframeClicked.next(e));
         this.iframeDocument.addEventListener('mousemove', (e) => this.onIframeMouseMove.next(e));
         this.onIframeLoaded.next();
@@ -274,9 +275,6 @@ export class pdfBehaviour
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private addEventBusListener(event: string, listener: (e: any, first: boolean) => void)
     {
-        if (!this.pdfViewerApplication) {
-            throw new Error(this._pdfApplicationNotLoadedError);
-        }
         this.pdfViewerApplication.eventBus.on(
         event,
         (e: object) => {
