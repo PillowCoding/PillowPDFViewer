@@ -39,7 +39,6 @@ export class PdfIframeWrapperComponent implements OnInit
     @Output() pendingAnnotationTextSelected = new EventEmitter<void>();
     @Output() pendingAnnotationBoundingBoxCreated = new EventEmitter<void>();
     @Output() annotationClick = new EventEmitter<pdfAnnotation>();
-    @Output() iframeClick = new EventEmitter<void>();
 
     /** The translations for the tool bar button types. A key will return one or more button ids that can be used to enable/disable the button(s). */
     private toolBarTranslation: { [key in toolbarButtonType] : string[]; } = {
@@ -281,17 +280,15 @@ export class PdfIframeWrapperComponent implements OnInit
         this.disableButton('textAnnotate', true);
         this.disableButton('drawAnnotate', true);
 
-        this.pdfBehaviour.iframeDocument.addEventListener('mouseup', () => this.onIframeClicked());
+        this.pdfBehaviour.onIframeMouseUp.subscribe(() => this.onIframeMouseUp());
         this.initialized.emit();
     }
 
-    private onIframeClicked()
+    private onIframeMouseUp()
     {
         if (!this.pdfBehaviour.iframeDocument) {
             throw new Error(this._iframeDocumentNotLoadedError);
         }
-
-        this.iframeClick.emit();
         
         if (!this.pendingAnnotation || this.pendingAnnotation.type !== 'text')
         {

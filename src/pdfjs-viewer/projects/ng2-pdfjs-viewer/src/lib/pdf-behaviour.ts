@@ -13,7 +13,8 @@ export class pdfBehaviour
     onPdfInitialized = new Subject<void>();
 
     // General events
-    onIframeClicked = new Subject<MouseEvent>();
+    onIframeMouseDown = new Subject<MouseEvent>();
+    onIframeMouseUp = new Subject<MouseEvent>();
     onIframeMouseMove = new Subject<MouseEvent>();
 
     // EventBus events.
@@ -225,7 +226,8 @@ export class pdfBehaviour
 
     private async iframeLoaded()
     {
-        this.iframeDocument.addEventListener('click', (e) => this.onIframeClicked.next(e));
+        this.iframeDocument.addEventListener('mousedown', (e) => this.onIframeMouseDown.next(e));
+        this.iframeDocument.addEventListener('mouseup', (e) => this.onIframeMouseUp.next(e));
         this.iframeDocument.addEventListener('mousemove', (e) => this.onIframeMouseMove.next(e));
         this.onIframeLoaded.next();
 

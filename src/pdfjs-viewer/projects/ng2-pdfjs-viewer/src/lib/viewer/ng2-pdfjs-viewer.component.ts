@@ -266,7 +266,8 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         this._iframeWrapper.disableButton('printing', true);
         this._iframeWrapper.disableButton('downloadPdf', true);
 
-        document.addEventListener('mouseup', () => this.onMouseUp());
+        document.addEventListener('mousedown', () => this.onMouseDown());
+        this.pdfBehaviour.onIframeMouseDown.subscribe(() => this.onIframeMouseDown());
 
         if (!this.fileSource)
         {
@@ -440,7 +441,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     /**
      * The behaviour when the a mouse press was registered in the iframe.
      */
-    protected onIframeClicked()
+    protected onIframeMouseDown()
     {
         // Check for annotation focus.
         if (this._currentAnnotationFocus)
@@ -452,7 +453,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     /**
      * The behaviour when the a mouse press was registered in the main document.
      */
-    private onMouseUp()
+    private onMouseDown()
     {
         // Check for annotation focus.
         if (this._currentAnnotationFocus)
