@@ -379,24 +379,25 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
             throw new Error(this._sidebarDisabledButCalledError);
         }
 
+        // Do not fetch if we fetched the annotations for that page.
         if (this._storedAnnotations.some(x => x.page == this.page)) {
             return;
         }
 
+        // Insert the base object into the list.
+        // This avoids the provider triggering multiple times on different threads due to not being finished yet.
+        const annotationsPage: annotationFilterReference = {
+            page,
+            annotations: []
+        }
+        this._storedAnnotations.push(annotationsPage);
         this.sendDebugMessage(`Start fetch annotations. { page: ${page} }`);
 
         this._annotationsSidebar.setLoading();
-
         const response = await this.annotationsProvider({ page });
-
         this._annotationsSidebar.setNotLoading();
 
-        const annotationResponse: annotationFilterReference = {
-            page,
-            annotations: response.annotations || []
-        }
-        this._storedAnnotations.push(annotationResponse);
-
+        annotationsPage.annotations = response.annotations || [];
         this.sendDebugMessage('Response', response);
 
         // Render the annotations if the page is rendered.
