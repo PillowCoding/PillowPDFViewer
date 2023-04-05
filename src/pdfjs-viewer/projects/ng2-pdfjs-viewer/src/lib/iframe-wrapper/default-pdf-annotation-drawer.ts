@@ -164,8 +164,8 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
         }
 
         // Check if we are on the correct page.
-        const pageParent = event.target as HTMLDivElement;
-        const pageAttribute = pageParent?.parentElement?.getAttribute(this._pdfBehaviour.pageParentPageAttribute);
+        const layer = event.target as HTMLDivElement;
+        const pageAttribute = layer?.parentElement?.getAttribute(this._pdfBehaviour.pageParentPageAttribute);
         if (!pageAttribute)
         {
             return;
@@ -177,7 +177,7 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
         }
 
         this.clearCanvas(this._pendingAnnotationPage, true);
-        const position = this.getPositionRelativeToDiv(event, pageParent);
+        const position = this.getPositionRelativeToDiv(event, layer);
         const bounds: boundingBox = { start: this._pendingAnnotationBoundingBoxStart, end: position };
         this.drawRectangle(bounds, this._pendingAnnotationPage, '#808080', 2, true);
     }
@@ -263,7 +263,11 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
             return;
         }
 
-        const position = this.getPositionRelativeToDiv(event, pageParent);
+        const layer = pageParent.querySelector('.annotationDrawLayer');
+        if (!layer) {
+            throw new Error('layer not found.');
+        }
+        const position = this.getPositionRelativeToDiv(event, layer as HTMLDivElement);
 
         if (drawAsStart)
         {
@@ -363,11 +367,11 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
             throw new Error('canvas parent could not be found.');
         }
 
-        canvas.width = referenceCanvas.width;
-        canvas.style.width = `${referenceCanvas.width}px`;
+        canvas.width = referenceCanvas.offsetWidth;
+        canvas.style.width = `${referenceCanvas.offsetWidth}px`;
 
-        canvas.height = referenceCanvas.height;
-        canvas.style.height = `${referenceCanvas.height}px`;
+        canvas.height = referenceCanvas.offsetHeight;
+        canvas.style.height = `${referenceCanvas.offsetHeight}px`;
     }
 
     private getCanvasParentFromPageParent(parent: HTMLDivElement)
