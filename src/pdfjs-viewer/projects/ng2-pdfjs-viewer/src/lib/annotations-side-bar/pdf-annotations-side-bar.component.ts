@@ -130,12 +130,18 @@ export class PdfAnnotationsSideBarComponent
 
         const attributeArticle = document.querySelectorAll(`[data-annotation="${annotation.id}"]`);
 
-        if (attributeArticle.length != 1)
+        if (attributeArticle.length > 1)
         {
-            throw new Error('Could not find the annotation comments.');
+            throw new Error(`Multiple annotations found matching predicate [data-annotation="${annotation.id}"].`);
         }
 
-        attributeArticle[0].classList.add('focus');
+        // It is possible that the annotation no longer exists because the page is out of focus.
+        if (attributeArticle[0])
+        {
+            //throw new Error('Could not find the annotation comments.');
+            attributeArticle[0].classList.add('focus');
+        }
+        
         this._currentAnnotationFocus = annotation;
     }
 
@@ -150,12 +156,18 @@ export class PdfAnnotationsSideBarComponent
 
         const attributeArticle = document.querySelectorAll(`[data-annotation="${this._currentAnnotationFocus.id}"]`);
 
-        if (attributeArticle.length != 1)
+        if (attributeArticle.length > 1)
         {
-            throw new Error('Could not find the annotation comments.');
+            throw new Error(`Multiple annotations found matching predicate [data-annotation="${this._currentAnnotationFocus.id}"].`);
         }
 
-        attributeArticle[0].classList.remove('focus');
+        // It is possible that the annotation no longer exists because the page is out of focus.
+        if (attributeArticle[0])
+        {
+            //throw new Error('Could not find the annotation comments.');
+            attributeArticle[0].classList.remove('focus');
+        }
+
         delete(this._currentAnnotationFocus);
     }
 
