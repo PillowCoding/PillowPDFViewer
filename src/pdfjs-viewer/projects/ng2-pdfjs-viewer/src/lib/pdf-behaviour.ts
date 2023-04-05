@@ -200,6 +200,18 @@ export class pdfBehaviour
         });
     }
 
+    public getRenderedPageNumbers()
+    {
+        const pageElements = Array.from(this.iframeDocument.querySelectorAll('.page')) as HTMLDivElement[];
+        const pageNumbers = pageElements.map(x => {
+            return this.getPageNumberFromParent(x);
+        });
+
+        return pageNumbers.filter(x => {
+            return this.isPageRendered(x);
+        })
+    }
+
     public getPageNumberFromParent(parent: HTMLDivElement)
     {
         const attributeValue = parent.getAttribute(this.pageParentPageAttribute);

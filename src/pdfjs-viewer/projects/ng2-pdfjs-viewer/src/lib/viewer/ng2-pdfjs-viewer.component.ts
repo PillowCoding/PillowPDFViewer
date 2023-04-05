@@ -297,9 +297,12 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
             this._iframeWrapper.setButtonTitle('textAnnotate', this.localisationService.Translate('textAnnotate.disabledNotSupported'));
         }
 
+        const renderedPages = this.pdfBehaviour.getRenderedPageNumbers();
+
         const allAnnotations = this._storedAnnotations
             .map(x => x.annotations)
-            .reduce((accumulator, value) => accumulator.concat(value), []);
+            .reduce((accumulator, value) => accumulator.concat(value), [])
+            .filter(x => renderedPages.some(y => y == x.page));
 
         const textAnnotations = allAnnotations
             .filter(x => x.type === 'text');
