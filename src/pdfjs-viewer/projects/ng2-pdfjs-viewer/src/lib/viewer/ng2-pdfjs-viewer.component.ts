@@ -245,7 +245,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
             if (!annotation.page) {
                 throw new Error('Expected annotation to contain a page whilst deleting.');
             }
-            this.drawAnnotationsOnPage(annotation.page);
+            this.addDrawAnnotationsToPage(annotation.page);
         }
         
         this.changeDetector.detectChanges();
@@ -310,19 +310,8 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         const drawAnnotations = allAnnotations
             .filter(x => x.type === 'draw');
 
-        textAnnotations.forEach(annotation =>
-        {
-            // Ensure the focussed annotation retains its focus color.
-            const color = this._currentAnnotationFocus === annotation ?
-                this.defaultAnnotationTextFocusColor :
-                this.defaultAnnotationTextColor;
-            
-            this._iframeWrapper.enableAnnotationColor(
-                annotation,
-                color);
-        });
-
-        this.drawAnnotations(drawAnnotations);
+        this.addTextAnnotations(textAnnotations);
+        this.addDrawAnnotations(drawAnnotations);
         this.sendDebugMessage('Text layer rendered.');
     }
 
@@ -415,7 +404,8 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         // Since this might happen after the textlayer has been rendered, this check ensures the annotations are still rendered.
         const canvasRendered = this._iframeWrapper.pdfAnnotationDrawer.canvasRendered(page);
         if (canvasRendered) {
-            this.drawAnnotationsOnPage(page);
+            this.addDrawAnnotationsToPage(page);
+            this.addTextAnnotationsToPage(page);
         }
 
         this.changeDetector.detectChanges();
@@ -561,7 +551,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         if (annotation.type === 'draw')
         {
             this._iframeWrapper.pdfAnnotationDrawer.clearCanvas(annotation.page, true);
-            this.drawAnnotationsOnPage(annotation.page);
+            this.addDrawAnnotationsToPage(annotation.page);
         }
 
         if (this.behaviourOnAnnotationPosted)
@@ -578,7 +568,37 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         this.changeDetector.detectChanges();
     }
 
-    private drawAnnotationsOnPage(page: number)
+    private addTextAnnotationsToPage(page: number)
+    {
+        const annotationsIndex = this._storedAnnotations.findIndex(x => x.page === page);
+        const annotations = this._storedAnnotations[annotationsIndex]
+            .annotations
+            .filter(x => x.page === page && x.type === 'text');
+        this.addTextAnnotations(annotations);
+    }
+
+    private addTextAnnotations(annotations: Array<pdfAnnotation>)
+    {
+        annotations.forEach(x => this.addTextAnnotation(x));
+    }
+
+    private addTextAnnotation(annotation: pdfAnnotation)
+    {
+        if (!annotation.page) {
+            throw new Error(this._annotationHasNoPageError);
+        }
+
+        // Ensure the focussed annotation retains its focus color.
+        const color = this._currentAnnotationFocus === annotation ?
+        this.defaultAnnotationTextFocusColor :
+        this.defaultAnnotationTextColor;
+    
+        this._iframeWrapper.enableAnnotationColor(
+            annotation,
+            color);
+    }
+
+    private addDrawAnnotationsToPage(page: number)
     {
         this._iframeWrapper.pdfAnnotationDrawer.clearCanvas(page, false);
 
@@ -586,15 +606,15 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         const annotations = this._storedAnnotations[annotationsIndex]
             .annotations
             .filter(x => x.page === page && x.type === 'draw');
-        this.drawAnnotations(annotations);
+        this.addDrawAnnotations(annotations);
     }
 
-    private drawAnnotations(annotations: Array<pdfAnnotation>)
+    private addDrawAnnotations(annotations: Array<pdfAnnotation>)
     {
-        annotations.forEach(x => this.drawAnnotation(x));
+        annotations.forEach(x => this.addDrawAnnotation(x));
     }
 
-    private drawAnnotation(annotation: pdfAnnotation)
+    private addDrawAnnotation(annotation: pdfAnnotation)
     {
         if (!annotation.page) {
             throw new Error(this._annotationHasNoPageError);
@@ -645,7 +665,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
 
         if (annotation.type === 'draw')
         {
-            this.drawAnnotationsOnPage(annotation.page);
+            this.addDrawAnnotationsToPage(annotation.page);
         }
     }
 
@@ -674,7 +694,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
 
         if (annotation.type === 'draw')
         {
-            this.drawAnnotationsOnPage(annotation.page);
+            this.addDrawAnnotationsToPage(annotation.page);
         }
     }
 
