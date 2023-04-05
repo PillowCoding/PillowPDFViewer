@@ -110,8 +110,11 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
 
         const { xpath, selectedText, selectedTextOffset } = <textSelection>annotation.reference;
         const nodeReference = this.getNodeReferenceByXpath(this._pdfBehaviour.iframeDocument, xpath);
+
+        // Very fast scrolling makes it possible for this to fail.
         if (!nodeReference) {
-            throw new Error(`Node reference was not found for '${xpath}'.`);
+            //throw new Error(`Node reference was not found for '${xpath}'.`);
+            return;
         }
 
         this.colorAnnotationText(nodeReference, selectedText, selectedTextOffset, color, annotation.id);
