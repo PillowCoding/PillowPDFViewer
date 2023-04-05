@@ -16,20 +16,20 @@ export type pdfAnnotationCommentSubmission = {annotation: pdfAnnotation, comment
             </header>
             <div class="annotation-content">
                 <ng-container *ngIf="annotation.type === 'text'">
-                <blockquote *ngIf="$any(annotation.reference)?.selectedText">
-                    <p>{{$any(annotation.reference).selectedText}}</p>
-                </blockquote>
-                <blockquote *ngIf="!$any(annotation.reference)?.selectedText">
-                    <p>...</p>
-                </blockquote>
+                    <blockquote *ngIf="$any(annotation.reference)?.selectedText">
+                        <p>{{$any(annotation.reference).selectedText}}</p>
+                    </blockquote>
+                    <blockquote *ngIf="!$any(annotation.reference)?.selectedText">
+                        <p>...</p>
+                    </blockquote>
                 </ng-container>
-                <div class="form" *ngIf="annotation.reference">
-                <input #annotationComment type="text" aria-label="Annotation input" attr.data-annotation-input="{{annotation.id}}" />
-                <input type="submit" role="button" (click)="onSubmitAnnotationComment()" [value]="'annotations.post' | translate" />
-                </div>
+                <form class="form" *ngIf="annotation.reference">
+                    <input #annotationComment type="text" aria-label="Annotation input" attr.data-annotation-input="{{annotation.id}}" />
+                    <input type="submit" role="button" (click)="onSubmitAnnotationComment()" [value]="'annotations.post' | translate" />
+                </form>
 
                 <div *ngFor="let comment of annotation.comments">
-                <ng-container *ngTemplateOutlet="commentTemplate || defaultCommentTemplate; context: { comment: comment }"></ng-container>
+                    <ng-container *ngTemplateOutlet="commentTemplate || defaultCommentTemplate; context: { comment: comment }"></ng-container>
                 </div>
             </div>
         </article>

@@ -8,6 +8,7 @@ import { LocalisationConfiguration } from 'ng2-pdfjs-viewer/localisation/localis
 import { LocalisationService } from 'ng2-pdfjs-viewer/localisation/localisation.service';
 import { TranslatePipe } from "../localisation/translate.pipe";
 import { RingLoadingComponent } from "../loading-icons/ring-loading/ring-loading.component";
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
     declarations: [
@@ -22,6 +23,7 @@ import { RingLoadingComponent } from "../loading-icons/ring-loading/ring-loading
         Ng2PdfjsViewerComponent,
     ],
     imports: [
+        FormsModule,
         CommonModule,
     ]
 })
