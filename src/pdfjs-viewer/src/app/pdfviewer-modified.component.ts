@@ -43,7 +43,7 @@ type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: A
             </ng-template>
 
             <ng-template let-comment="comment" libTemplateRef="comment">
-                <span class="font-bold">{{comment.creator}}:</span><span> {{comment.text}}</span>
+                <span class="font-bold">{{comment.creator}}:</span><span> {{comment.content}}</span>
             </ng-template>
         </lib-ng2-pdfjs-viewer>
     `,
@@ -211,10 +211,11 @@ export class pdfViewerModifiedComponent
     {
         // Delays simulate a database call in this case.
         await this.delay(1000);
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (<any>submission.comment).creator = 'me';
-        console.log("Comment was posted.");
-
+        
+        console.log("Comment was posted.", submission);
         await this.saveAnnotations();
     }
 

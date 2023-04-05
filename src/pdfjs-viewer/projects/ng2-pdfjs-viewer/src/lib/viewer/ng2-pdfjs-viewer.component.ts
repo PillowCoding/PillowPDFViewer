@@ -52,7 +52,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
             }
 
             templates[x.type](x.template);
-        })
+        });
     }
 
     private _annotationMetaDataHeaderTemplate?: TemplateRef<unknown>;
@@ -270,7 +270,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
 
         if (!this.fileSource)
         {
-        return;
+            return;
         }
 
         await this.pdfBehaviour.loadFile(this.fileSource);

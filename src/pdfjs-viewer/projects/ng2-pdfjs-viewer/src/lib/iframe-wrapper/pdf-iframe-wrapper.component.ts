@@ -230,30 +230,30 @@ export class PdfIframeWrapperComponent implements OnInit
         // Insert custom css
         const styleContainer = this.pdfBehaviour.iframeDocument.createElement("style");
         styleContainer.textContent = `
-        #draw-annotate::before
-        {
-            -webkit-mask-image: var(--toolbarButton-editorInk-icon);
-        }
-        #text-annotate::before
-        {
-            -webkit-mask-image: var(--toolbarButton-editorFreeText-icon);
-        }
-        #draw-annotate::after, #text-annotate::after
-        {
-            content: 'A';
-            font-size: 8px;
-            position: absolute;
-            left: 4px;
-            top: 4px;
+            #draw-annotate::before
+            {
+                -webkit-mask-image: var(--toolbarButton-editorInk-icon);
+            }
+            #text-annotate::before
+            {
+                -webkit-mask-image: var(--toolbarButton-editorFreeText-icon);
+            }
+            #draw-annotate::after, #text-annotate::after
+            {
+                content: 'A';
+                font-size: 8px;
+                position: absolute;
+                left: 4px;
+                top: 4px;
 
-            color: var(--main-color);
-            opacity: var(--toolbar-icon-opacity);
-        }
-        #draw-annotate::before, #text-annotate::before
-        {
-            color: var(--main-color);
-            opacity: var(--toolbar-icon-opacity);
-        }
+                color: var(--main-color);
+                opacity: var(--toolbar-icon-opacity);
+            }
+            #draw-annotate::before, #text-annotate::before
+            {
+                color: var(--main-color);
+                opacity: var(--toolbar-icon-opacity);
+            }
         `;
         this.pdfBehaviour.iframeDocument.head.appendChild(styleContainer);
 
