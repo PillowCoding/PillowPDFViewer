@@ -6,7 +6,7 @@ article
     border: 1px solid var(--card-border-color);
     border-radius: 5px;
     margin: 0 .25rem 0 .25rem;
-    padding: .5rem .5rem 1rem 1rem;
+    padding: 0 0.5rem 0 1rem;
     cursor: pointer;
     max-width: 28rem;
     position: relative;
@@ -14,6 +14,11 @@ article
     *
     {
         color: var(--text-color);
+    }
+
+    &.expanded
+    {
+        padding: .5rem .5rem 1rem 1rem;
     }
 
     >.loading-indicator

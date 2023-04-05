@@ -266,8 +266,8 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         this._iframeWrapper.disableButton('printing', true);
         this._iframeWrapper.disableButton('downloadPdf', true);
 
-        document.addEventListener('mousedown', () => this.onMouseDown());
-        this.pdfBehaviour.onIframeMouseDown.subscribe(() => this.onIframeMouseDown());
+        document.addEventListener('mouseup', (event: MouseEvent) => this.onMouseUp(event));
+        this.pdfBehaviour.onIframeMouseUp.subscribe(() => this.onIframeMouseUp());
 
         if (!this.fileSource)
         {
@@ -441,25 +441,38 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
     /**
      * The behaviour when the a mouse press was registered in the iframe.
      */
-    protected onIframeMouseDown()
+    protected onIframeMouseUp()
     {
         // Check for annotation focus.
-        if (this._currentAnnotationFocus)
+        if (!this._currentAnnotationFocus)
         {
-            this.unFocusAnnotation(this._currentAnnotationFocus);
+            return;
         }
+
+        this.unFocusAnnotation(this._currentAnnotationFocus);
+        this.changeDetector.detectChanges();
     }
 
     /**
      * The behaviour when the a mouse press was registered in the main document.
      */
-    private onMouseDown()
+    private onMouseUp(event: MouseEvent)
     {
         // Check for annotation focus.
-        if (this._currentAnnotationFocus)
+        if (!this._currentAnnotationFocus)
         {
-            this.unFocusAnnotation(this._currentAnnotationFocus);
+            return;
         }
+
+        // Only unfocus if we aren't pressing the focused annotation.
+        if (event.target instanceof HTMLElement &&
+            event.target.closest(`[data-annotation="${this._currentAnnotationFocus.id}"]`))
+        {
+            return;
+        }
+
+        this.unFocusAnnotation(this._currentAnnotationFocus);
+        this.changeDetector.detectChanges();
     }
 
     protected onStartNewAnnotation()
@@ -661,13 +674,15 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
 
         if (annotation.type === 'text')
         {
-        this._iframeWrapper.pdfAnnotationWriter.focusAnnotation(annotation, this.defaultAnnotationTextFocusColor)
+            this._iframeWrapper.pdfAnnotationWriter.focusAnnotation(annotation, this.defaultAnnotationTextFocusColor)
         }
 
         if (annotation.type === 'draw')
         {
             this.addDrawAnnotationsToPage(annotation.page);
         }
+
+        this.changeDetector.detectChanges();
     }
 
     private unFocusAnnotation(annotation: pdfAnnotation)

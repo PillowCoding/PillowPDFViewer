@@ -1,6 +1,6 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { ChangeDetectorRef, Component, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
-import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output, QueryList, TemplateRef, ViewChildren } from '@angular/core';
+import { PdfAnnotationComponent, pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
 import { pdfAnnotation } from 'ng2-pdfjs-viewer/pdf-annotation';
 
 export type shownAnnotationsFetcherType = () => Array<pdfAnnotation>;
@@ -42,7 +42,7 @@ template: `
             </li>
 
             <li *ngFor="let annotation of shownAnnotations" class="annotation">
-                <lib-ng2-pdfjs-viewer-annotation
+                <lib-ng2-pdfjs-viewer-annotation #annotation
                     [annotation]="annotation"
                     [metaDataHeaderTemplate]="annotationMetaDataHeaderTemplate"
                     [commentTemplate]="annotationCommentTemplate"
@@ -57,19 +57,21 @@ template: `
 styleUrls: ['pdf-annotations-side-bar.component.scss'],
 animations: [
     trigger('expandInOut', [
-    state('expand', style({
-        width: '30rem'
-    })),
-    state('collapse', style({
-        width: '28px'
-    })),
-    transition('expand => collapse', animate('100ms ease-out')),
-    transition('collapse => expand', animate('100ms ease-out'))
+        state('expand', style({
+            width: '30rem'
+        })),
+        state('collapse', style({
+            width: '28px'
+        })),
+        transition('expand => collapse', animate('100ms ease-out')),
+        transition('collapse => expand', animate('100ms ease-out'))
     ])
 ]
 })
 export class PdfAnnotationsSideBarComponent
 {
+    @ViewChildren('annotation') annotationComponents!: QueryList<PdfAnnotationComponent>;
+
     @Input() enableDebugMessages!: boolean;
     @Input() pendingAnnotation?: pdfAnnotation;
 
@@ -97,9 +99,9 @@ export class PdfAnnotationsSideBarComponent
     public get shownAnnotations()
     {
         return this.shownAnnotationsFetcher()
-        ?.slice()
-        ?.sort((a: pdfAnnotation, b: pdfAnnotation) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime())
-        ?.reverse();
+            ?.slice()
+            ?.sort((a: pdfAnnotation, b: pdfAnnotation) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime())
+            ?.reverse();
     }
 
     /** A boolean to define if the annotations bar is expanded. */
@@ -146,6 +148,9 @@ export class PdfAnnotationsSideBarComponent
             attributeArticle[0].classList.add('focus');
         }
         
+        const annotationComponent = this.annotationComponents.filter(x => x.annotation == annotation)[0];
+        annotationComponent.expand();
+        
         this._currentAnnotationFocus = annotation;
     }
 
@@ -170,6 +175,13 @@ export class PdfAnnotationsSideBarComponent
         {
             //throw new Error('Could not find the annotation comments.');
             attributeArticle[0].classList.remove('focus');
+        }
+
+        const annotationComponent = this.annotationComponents.filter(x => x.annotation == this._currentAnnotationFocus)[0];
+
+        // It is possible the annotation no longer exists due to scrolling.
+        if (annotationComponent) {
+            annotationComponent.collapse();
         }
 
         delete(this._currentAnnotationFocus);

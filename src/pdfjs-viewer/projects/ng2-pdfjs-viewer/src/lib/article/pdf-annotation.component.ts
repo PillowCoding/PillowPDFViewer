@@ -6,7 +6,7 @@ export type pdfAnnotationCommentSubmission = {annotation: pdfAnnotation, comment
 @Component({
     selector: 'lib-ng2-pdfjs-viewer-annotation',
     template: `
-        <article (click)="clickAnnotation()" attr.data-annotation="{{annotation.id}}">
+        <article (click)="onAnnotationClicked()" attr.data-annotation="{{annotation.id}}" [class.expanded]="isExpanded">
             <div class="loading-indicator">
                 <lib-ng2-pdfjs-viewer-loading-ring></lib-ng2-pdfjs-viewer-loading-ring>
             </div>
@@ -14,7 +14,8 @@ export type pdfAnnotationCommentSubmission = {annotation: pdfAnnotation, comment
             <header>
                 <ng-container *ngTemplateOutlet="metaDataHeaderTemplate || defaultMetaDataHeaderTemplate; context: { annotation: annotation }"></ng-container>
             </header>
-            <div class="annotation-content">
+            <div *ngIf="isExpanded"
+                class="annotation-content">
                 <ng-container *ngIf="annotation.type === 'text'">
                     <blockquote *ngIf="$any(annotation.reference)?.selectedText">
                         <p>{{$any(annotation.reference).selectedText}}</p>
@@ -58,7 +59,34 @@ export class PdfAnnotationComponent
     @Output() commentPosted = new EventEmitter<pdfAnnotationCommentSubmission>();
     @Output() clicked = new EventEmitter<pdfAnnotation>();
 
-    public clickAnnotation()
+    private _isExpanded = false;
+    public get isExpanded() {
+        return this._isExpanded;
+    }
+
+    public expand()
+    {
+        if (this.isExpanded) {
+            // Warning removed since the collapse warning can happen under normal behaviour.
+            //console.warn(`Annotation ${this.annotation.id} is already expanded.`);
+            return;
+        }
+
+        this._isExpanded = true;
+    }
+
+    public collapse()
+    {
+        // This can happen, when a rerender happends due to scrolling.
+        if (!this.isExpanded) {
+            //console.warn(`Annotation ${this.annotation.id} is already collapsed.`);
+            return;
+        }
+
+        this._isExpanded = false;
+    }
+
+    protected onAnnotationClicked()
     {
         this.clicked.emit(this.annotation);
     }
