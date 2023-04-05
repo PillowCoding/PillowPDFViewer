@@ -39,7 +39,12 @@ type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: A
                 </div>
                 
                 <!-- In your case you could add a check to this to ensure you can delete annotations, for example. -->
-                <a type="button" class="close" aria-label="Close" (click)="this.clickDeleteAnnotation($event, annotation)"></a>
+                <svg (click)="this.clickDeleteAnnotation($event, annotation)"
+                    type="button" class="close" aria-label="Close"
+                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <title>Close</title>
+                    <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+                </svg>
             </ng-template>
 
             <ng-template let-comment="comment" libTemplateRef="comment">
@@ -49,14 +54,11 @@ type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: A
     `,
     styles: [`
 
-        $close-button-height: 40px;
-        $close-button-width: 40px;
-
         .annotation-metadata
         {
             display: inline-flex;
             justify-content: space-between;
-            width: calc(100% - $close-button-width);
+            width: calc(100% - 40px);
             margin-right: .5rem;
         }
 
@@ -66,27 +68,11 @@ type storedFileAnnotations = { fileName: string, baseUrl: string, annotations: A
         }
 
         .close {
-            width: $close-button-width;
-            height: $close-button-height;
-            opacity: 0.6;
+            opacity: .4;
+            width: 25px;
 
             &:hover {
                 opacity: 1;
-            }
-
-            &:before, &:after {
-                position: absolute;
-                content: ' ';
-                height: calc($close-button-height / 2);
-                width: 2px;
-                background-color: var(--icon-color);
-            }
-
-            &:before {
-                transform: rotate(45deg) translateX(calc($close-button-width / 2));
-            }
-            &:after {
-                transform: rotate(-45deg) translate(0, calc($close-button-width / 2));
             }
         }
     `]

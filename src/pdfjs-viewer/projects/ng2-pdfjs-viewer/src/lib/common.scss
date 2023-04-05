@@ -81,32 +81,6 @@
     color: goldenrod;
 }
 
-$close-button-height: 28px;
-$close-button-width: 28px;
-.close {
-    width: $close-button-width;
-    height: $close-button-height;
-
-    &:hover {
-        opacity: 1;
-    }
-
-    &:before, &:after {
-        position: absolute;
-        content: ' ';
-        height: calc($close-button-height / 2);
-        width: 2px;
-        background-color: var(--icon-color);
-    }
-
-    &:before {
-        transform: rotate(45deg) translateX(calc($close-button-width / 2));
-    }
-    &:after {
-        transform: rotate(-45deg) translate(0, calc($close-button-width / 2));
-    }
-}
-
 .form
 {
     input[type="text"] {

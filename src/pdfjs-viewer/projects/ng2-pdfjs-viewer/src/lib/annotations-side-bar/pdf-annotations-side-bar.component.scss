@@ -59,6 +59,16 @@
     }
 }
 
+.close {
+
+    opacity: .4;
+    z-index: 1;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
 .toolbar-button
 {
     background: none;
@@ -73,12 +83,6 @@
     &:hover
     {
         background-color: var(--button-hover-background-color);
-    }
-
-    &.close-annotations
-    {
-        z-index: 1;
-        padding: 0px 6px 5px 10px
     }
 
     &.expand
