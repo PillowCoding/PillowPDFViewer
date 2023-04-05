@@ -31,7 +31,6 @@ export class pdfViewerDownloadComponent
         console.log("Downloading the file in 3 seconds...");
         console.log(context);
 
-        // TODO: this file is invalid.
         setTimeout(() => {
             const a = document.createElement("a");
             a.href = context.blobUrl;

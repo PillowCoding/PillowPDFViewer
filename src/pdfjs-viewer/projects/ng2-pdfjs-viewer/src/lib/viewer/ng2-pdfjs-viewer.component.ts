@@ -288,7 +288,6 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         // These type of PDFs have a different structure on the textlayer.
         // The "Marked" value in the PDFs markinfo indicates if the PDF has this feature enabled.
         // Until this is supported, we disable the button on these.
-        // TODO: improve check.
         const markInfo = await this.markInfo;
         const marked = markInfo && 'Marked' in markInfo && markInfo.Marked === true;
         if (marked)
