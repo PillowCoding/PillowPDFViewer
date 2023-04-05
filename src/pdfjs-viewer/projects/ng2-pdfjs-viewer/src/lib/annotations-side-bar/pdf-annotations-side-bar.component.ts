@@ -1,5 +1,5 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Output, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
 import { pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
 import { pdfAnnotation } from 'ng2-pdfjs-viewer/pdf-annotation';
 
@@ -8,10 +8,10 @@ export type shownAnnotationsFetcherType = () => Array<pdfAnnotation>;
 @Component({
 selector: 'lib-ng2-pdfjs-viewer-annotations-sidebar',
 template: `
-    <div #sidebarContainer
+    <div
         class="annotation-container full-height" [@expandInOut]="isSidebarExpanded ? 'expand' : 'collapse'">
 
-        <div *ngIf="isSidebarExpanded"
+        <div *ngIf="isSidebarExpanded && isLoading"
             class="loading-indicator">
 
             <lib-ng2-pdfjs-viewer-loading-ring></lib-ng2-pdfjs-viewer-loading-ring>
@@ -27,12 +27,12 @@ template: `
                 (click)="expandAnnotations()">
             </button>
 
-            <span class="count" *ngIf="isSidebarExpanded && loading">{{'annotations.loading' | translate}}</span>
+            <span class="count" *ngIf="isSidebarExpanded && isLoading">{{'annotations.loading' | translate}}</span>
             <span class="count" *ngIf="isSidebarExpanded && shownAnnotations && shownAnnotations.length === 1">{{'annotations.singular' | translate: shownAnnotations.length.toString()}}</span>
             <span class="count" *ngIf="isSidebarExpanded && shownAnnotations && shownAnnotations.length !== 1">{{'annotations.plural' | translate: shownAnnotations.length.toString()}}</span>
         </div>
-        <ol class="annotations" *ngIf="isSidebarExpanded">
-            <p class="warning no-annotations" *ngIf="!loading && shownAnnotations?.length === 0 && !pendingAnnotation">{{'annotations.nonePage' | translate}}</p>
+        <ol class="annotations" *ngIf="isSidebarExpanded && !isLoading">
+            <p class="warning no-annotations" *ngIf="shownAnnotations?.length === 0 && !pendingAnnotation">{{'annotations.nonePage' | translate}}</p>
 
             <li *ngIf="pendingAnnotation" class="annotation">
                 <lib-ng2-pdfjs-viewer-annotation
@@ -70,8 +70,6 @@ animations: [
 })
 export class PdfAnnotationsSideBarComponent
 {
-    @ViewChild('sidebarContainer') private _sidebarContainer!: ElementRef;
-    
     @Input() enableDebugMessages!: boolean;
     @Input() pendingAnnotation?: pdfAnnotation;
 
@@ -88,8 +86,8 @@ export class PdfAnnotationsSideBarComponent
     @Output() initialCommentPosted = new EventEmitter<pdfAnnotationCommentSubmission>();
     @Output() commentPosted = new EventEmitter<pdfAnnotationCommentSubmission>();
 
-    /** If true, the sidebar is loading. */
-    public loading = false;
+    // A number representing if the sidebar is loading. Multiple things may load at the same time, and each concurrent loading page can add to it.
+    private _loadingCount = 0;
 
     /** Represents the current focussed annotation, if any are focused on. */
     private _currentAnnotationFocus?: pdfAnnotation;
@@ -108,6 +106,12 @@ export class PdfAnnotationsSideBarComponent
     public get isSidebarExpanded()
     {
         return this._isSidebarExpanded;
+    }
+
+    /** If true, the sidebar is loading. */
+    public get isLoading()
+    {
+        return this._loadingCount > 0;
     }
 
     constructor(
@@ -189,14 +193,12 @@ export class PdfAnnotationsSideBarComponent
 
     public setLoading()
     {
-        (this._sidebarContainer.nativeElement as HTMLDivElement).classList.add('loading');
-        this.loading = true;
+        this._loadingCount++;
     }
 
     public setNotLoading()
     {
-        (this._sidebarContainer.nativeElement as HTMLDivElement).classList.remove('loading');
-        this.loading = false;
+        this._loadingCount--;
     }
 
     public setAnnotationLoading(annotation: pdfAnnotation)
