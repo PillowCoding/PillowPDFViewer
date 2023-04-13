@@ -37,9 +37,8 @@ template: `
                     (click)="expandAnnotations()">
                 </button>
 
-                <span class="count" *ngIf="isSidebarExpanded && isLoading">{{'annotations.loading' | translate}}</span>
-                <span class="count" *ngIf="isSidebarExpanded && shownAnnotations && shownAnnotations.length === 1">{{'annotations.singular' | translate: shownAnnotations.length.toString()}}</span>
-                <span class="count" *ngIf="isSidebarExpanded && shownAnnotations && shownAnnotations.length !== 1">{{'annotations.plural' | translate: shownAnnotations.length.toString()}}</span>
+                <span class="header count" *ngIf="isSidebarExpanded && !isLoading && shownAnnotations && shownAnnotations.length === 1">{{'annotations.singular' | translate: shownAnnotations.length.toString()}}</span>
+                <span class="header count" *ngIf="isSidebarExpanded && !isLoading && shownAnnotations && shownAnnotations.length > 1">{{'annotations.plural' | translate: shownAnnotations.length.toString()}}</span>
             </div>
             <ol class="annotations" *ngIf="isSidebarExpanded && !isLoading">
                 <p class="warning no-annotations" *ngIf="shownAnnotations?.length === 0 && !pendingAnnotation">{{'annotations.nonePage' | translate}}</p>
@@ -107,7 +106,7 @@ export class PdfAnnotationsSideBarComponent
     
     private _isSidebarExpanded = false;
 
-    private readonly _minSidebarWidth = 300;
+    private readonly _minSidebarWidth = 325;
     private readonly _maxSidebarWidth = 800;
     sidebarWidth = 480;
 

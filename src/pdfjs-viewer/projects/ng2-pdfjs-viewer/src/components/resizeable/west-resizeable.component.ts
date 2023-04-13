@@ -6,8 +6,8 @@ template: `
     <div class="container">
        <ng-content></ng-content> 
         <span *ngIf="enabled">
-            <div class="draggableAnchor east">
-                <div class="handle" (mousedown)="onMouseDown($event)">
+            <div class="draggableAnchor east" (mousedown)="onMouseDown($event)">
+                <div class="handle">
                     <span></span>
                 </div>
             </div>
@@ -56,7 +56,7 @@ export class WestResizeableComponent
         if (this.shouldResize && !this.shouldResize(difference)) {
             return;
         }
-        
+
         this.lastMousePosition = event.pageX;
         this.widthChanged.emit(difference);
     }
