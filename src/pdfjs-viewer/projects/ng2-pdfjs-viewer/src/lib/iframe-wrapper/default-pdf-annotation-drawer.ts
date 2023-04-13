@@ -327,7 +327,7 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
                 const existingCanvasses = x.querySelectorAll(`.${this._canvasBaseClass}`);
                 if (existingCanvasses.length > 0)
                 {
-                    existingCanvasses.forEach(x => this.setCanvasWidth(x as HTMLCanvasElement));
+                    existingCanvasses.forEach(x => this.scalePageElement(x as HTMLCanvasElement));
                     return;
                 }
 
@@ -352,26 +352,37 @@ export class defaultPdfAnnotationDrawer implements pdfAnnotationDrawer
                 }
 
                 const pendingLayerElement = createCanvasElement(this._pendingCanvasBaseClass, 1);
-                this.setCanvasWidth(pendingLayerElement);
+                this.scalePageElement(pendingLayerElement);
 
                 const actualLayerElement = createCanvasElement(this._actualCanvasBaseClass, 2);
-                this.setCanvasWidth(actualLayerElement);
+                this.scalePageElement(actualLayerElement);
+
+                // Proceed to scale the width and height of the draw layer.
+                const page = this._pdfBehaviour.getPageNumberFromParent(x);
+                const pageDrawLayer = this._annotationDrawLayerInstances.filter(y => y.page === page)[0]?.layerElement;
+                if (!pageDrawLayer) {
+                    throw new Error('Could not find the page draw layer.');
+                }
+                this.scalePageElement(pageDrawLayer);
             })
     }
 
-    private setCanvasWidth(canvas: HTMLCanvasElement)
+    private scalePageElement(element: HTMLElement | HTMLCanvasElement)
     {
-        // This is the build in canvas which we will get the width and height from.
-        const referenceCanvas = <HTMLCanvasElement | undefined>canvas.parentElement?.children[0];
-        if (!referenceCanvas) {
-            throw new Error('canvas parent could not be found.');
+        // Try to find a reference element that has the height and width we want to sync with.
+        const reference = element.closest('.canvasWrapper') || element.querySelector('.textLayer') || element.closest('.page')?.querySelector('.canvasWrapper');
+        if (!reference) {
+            console.error(element);
+            throw new Error('Could not find a reference whilst scaling the element.');
         }
 
-        canvas.width = referenceCanvas.offsetWidth;
-        canvas.style.width = `${referenceCanvas.offsetWidth}px`;
+        element.style.width = `${reference.clientWidth}px`;
+        element.style.height = `${reference.clientHeight}px`;
 
-        canvas.height = referenceCanvas.offsetHeight;
-        canvas.style.height = `${referenceCanvas.offsetHeight}px`;
+        if (element instanceof HTMLCanvasElement) {
+            element.width = reference.clientWidth;
+            element.height = reference.clientHeight;
+        }
     }
 
     private getCanvasParentFromPageParent(parent: HTMLDivElement)
