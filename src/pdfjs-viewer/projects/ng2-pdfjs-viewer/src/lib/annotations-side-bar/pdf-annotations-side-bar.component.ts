@@ -8,67 +8,69 @@ export type shownAnnotationsFetcherType = () => Array<pdfAnnotation>;
 @Component({
 selector: 'lib-ng2-pdfjs-viewer-annotations-sidebar',
 template: `
-    <div
-        class="annotation-container full-height" [@expandInOut]="isSidebarExpanded ? 'expand' : 'collapse'">
+    <lib-west-resizeable [enabled]="isSidebarExpanded" [shouldResize]="sidebarWidthShouldResize" (widthChanged)="sidebarWidthChanged($event)">
+        <div
+            class="annotation-container full-height" [@expandInOut]="{ value: isSidebarExpanded ? 'expand' : 'collapse', params: { expandedWidth: sidebarWidth }}">
 
-        <div *ngIf="isSidebarExpanded && isLoading"
-            class="loading-indicator">
+            <div *ngIf="isSidebarExpanded && isLoading"
+                class="loading-indicator">
 
-            <lib-ng2-pdfjs-viewer-loading-ring></lib-ng2-pdfjs-viewer-loading-ring>
-        </div>
-
-        <div class="header">
-            <div *ngIf="isSidebarExpanded"
-                (click)="collapseAnnotations()"
-                class="toolbar-button close"
-                [title]="'sidebar.collapse' | translate">
-
-                <svg type="button"
-                    aria-label="Close"
-                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                    <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
-                </svg>
+                <lib-ng2-pdfjs-viewer-loading-ring></lib-ng2-pdfjs-viewer-loading-ring>
             </div>
-            
-            <button *ngIf="!isSidebarExpanded"
-                class="toolbar-button expand"
-                [title]="'sidebar.expand' | translate"
-                (click)="expandAnnotations()">
-            </button>
 
-            <span class="count" *ngIf="isSidebarExpanded && isLoading">{{'annotations.loading' | translate}}</span>
-            <span class="count" *ngIf="isSidebarExpanded && shownAnnotations && shownAnnotations.length === 1">{{'annotations.singular' | translate: shownAnnotations.length.toString()}}</span>
-            <span class="count" *ngIf="isSidebarExpanded && shownAnnotations && shownAnnotations.length !== 1">{{'annotations.plural' | translate: shownAnnotations.length.toString()}}</span>
+            <div class="header">
+                <div *ngIf="isSidebarExpanded"
+                    (click)="collapseAnnotations()"
+                    class="toolbar-button close"
+                    [title]="'sidebar.collapse' | translate">
+
+                    <svg type="button"
+                        aria-label="Close"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+                    </svg>
+                </div>
+                
+                <button *ngIf="!isSidebarExpanded"
+                    class="toolbar-button expand"
+                    [title]="'sidebar.expand' | translate"
+                    (click)="expandAnnotations()">
+                </button>
+
+                <span class="count" *ngIf="isSidebarExpanded && isLoading">{{'annotations.loading' | translate}}</span>
+                <span class="count" *ngIf="isSidebarExpanded && shownAnnotations && shownAnnotations.length === 1">{{'annotations.singular' | translate: shownAnnotations.length.toString()}}</span>
+                <span class="count" *ngIf="isSidebarExpanded && shownAnnotations && shownAnnotations.length !== 1">{{'annotations.plural' | translate: shownAnnotations.length.toString()}}</span>
+            </div>
+            <ol class="annotations" *ngIf="isSidebarExpanded && !isLoading">
+                <p class="warning no-annotations" *ngIf="shownAnnotations?.length === 0 && !pendingAnnotation">{{'annotations.nonePage' | translate}}</p>
+
+                <li *ngIf="pendingAnnotation" class="annotation">
+                    <lib-ng2-pdfjs-viewer-annotation
+                        [annotation]="pendingAnnotation"
+                        (commentPosted)="submitInitialAnnotationComment($event)">
+                    </lib-ng2-pdfjs-viewer-annotation>
+                </li>
+
+                <li *ngFor="let annotation of shownAnnotations" class="annotation">
+                    <lib-ng2-pdfjs-viewer-annotation #annotation
+                        [annotation]="annotation"
+                        [metaDataHeaderTemplate]="annotationMetaDataHeaderTemplate"
+                        [commentTemplate]="annotationCommentTemplate"
+
+                        (clicked)="clickAnnotation($event)"
+                        (commentPosted)="submitAnnotationComment($event)">
+                    </lib-ng2-pdfjs-viewer-annotation>
+                </li>
+            </ol>
         </div>
-        <ol class="annotations" *ngIf="isSidebarExpanded && !isLoading">
-            <p class="warning no-annotations" *ngIf="shownAnnotations?.length === 0 && !pendingAnnotation">{{'annotations.nonePage' | translate}}</p>
-
-            <li *ngIf="pendingAnnotation" class="annotation">
-                <lib-ng2-pdfjs-viewer-annotation
-                    [annotation]="pendingAnnotation"
-                    (commentPosted)="submitInitialAnnotationComment($event)">
-                </lib-ng2-pdfjs-viewer-annotation>
-            </li>
-
-            <li *ngFor="let annotation of shownAnnotations" class="annotation">
-                <lib-ng2-pdfjs-viewer-annotation #annotation
-                    [annotation]="annotation"
-                    [metaDataHeaderTemplate]="annotationMetaDataHeaderTemplate"
-                    [commentTemplate]="annotationCommentTemplate"
-
-                    (clicked)="clickAnnotation($event)"
-                    (commentPosted)="submitAnnotationComment($event)">
-                </lib-ng2-pdfjs-viewer-annotation>
-            </li>
-        </ol>
-    </div>
+    </lib-west-resizeable>
 `,
 styleUrls: ['pdf-annotations-side-bar.component.scss'],
 animations: [
     trigger('expandInOut', [
         state('expand', style({
-            width: '30rem'
-        })),
+            width: '{{expandedWidth}}px'
+        }), { params: { expandedWidth: 480 } }),
         state('collapse', style({
             width: '28px'
         })),
@@ -105,6 +107,10 @@ export class PdfAnnotationsSideBarComponent
     
     private _isSidebarExpanded = false;
 
+    private readonly _minSidebarWidth = 300;
+    private readonly _maxSidebarWidth = 800;
+    sidebarWidth = 480;
+
     public get shownAnnotations()
     {
         return this.shownAnnotationsFetcher()
@@ -128,6 +134,7 @@ export class PdfAnnotationsSideBarComponent
     constructor(
         private changeDetector: ChangeDetectorRef)
     {
+        this.sidebarWidthShouldResize = this.sidebarWidthShouldResize.bind(this);
     }
 
     public ensureExpanded()
@@ -244,6 +251,14 @@ export class PdfAnnotationsSideBarComponent
         }
 
         annotationContainer[0].classList.remove('loading');
+    }
+
+    sidebarWidthShouldResize(difference: number) {
+        return this.sidebarWidth + difference > this._minSidebarWidth && this.sidebarWidth + difference < this._maxSidebarWidth;
+    }
+
+    sidebarWidthChanged(difference: number) {
+        this.sidebarWidth += difference;
     }
 
     protected expandAnnotations()

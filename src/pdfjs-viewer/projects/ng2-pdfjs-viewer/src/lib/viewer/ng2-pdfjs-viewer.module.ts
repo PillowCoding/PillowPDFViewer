@@ -9,6 +9,7 @@ import { LocalisationService } from 'projects/ng2-pdfjs-viewer/src/services/loca
 import { TranslatePipe } from "../../services/localisation/translate.pipe";
 import { RingLoadingComponent } from "../../components/loading-icons/ring-loading/ring-loading.component";
 import { FormsModule } from '@angular/forms';
+import { WestResizeableComponent } from '../../components/resizeable/west-resizeable.component';
 
 @NgModule({
     declarations: [
@@ -17,6 +18,7 @@ import { FormsModule } from '@angular/forms';
         PdfAnnotationsSideBarComponent,
         PdfIframeWrapperComponent,
         RingLoadingComponent,
+        WestResizeableComponent,
         TranslatePipe,
     ],
     exports: [
