@@ -2,7 +2,6 @@
     "sidebar.expand": "Expand",
     "sidebar.collapse": "Collapse",
 
-    "annotations.loading": "Loading...",
     "annotations.singular": "{0} annotation",
     "annotations.plural": "{0} annotations",
     "annotations.nonePage": "There are no annotations on this page.",
@@ -17,7 +16,6 @@
     "drawEditor.enabled": "Draw",
 
     "textAnnotate.disabled": "Annotate by text has been disabled for this file.",
-    "textAnnotate.disabledNotSupported": "This file does not support annotate by text.",
     "drawAnnotate.disabled": "Annotate by drawing has been disabled for this file.",
     "openFile.disabled": "Opening a file is disabled.",
     "printing.disabled": "Printing is disabled.",

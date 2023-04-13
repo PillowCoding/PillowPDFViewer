@@ -2,7 +2,6 @@
     "sidebar.expand": "Vergroot",
     "sidebar.collapse": "Sluit",
 
-    "annotations.loading": "Laden...",
     "annotations.singular": "{0} annotatie",
     "annotations.plural": "{0} annotaties",
     "annotations.nonePage": "Deze pagina bevat geen annotaties.",
@@ -17,7 +16,6 @@
     "drawEditor.enabled": "Teken",
 
     "textAnnotate.disabled": "Tekst annotaties is niet mogelijk.",
-    "textAnnotate.disabledNotSupported": "Tekst annotaties worden niet ondersteund voor dit bestand.",
     "drawAnnotate.disabled": "Teken annotaties is niet mogelijk.",
     "openFile.disabled": "Het openen van bestanden is niet mogelijk.",
     "printing.disabled": "Het uitprinten van het bestand is niet mogelijk.",

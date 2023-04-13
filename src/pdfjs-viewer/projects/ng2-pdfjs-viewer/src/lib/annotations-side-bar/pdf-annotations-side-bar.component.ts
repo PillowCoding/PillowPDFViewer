@@ -1,5 +1,5 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { ChangeDetectorRef, Component, EventEmitter, Input, Output, QueryList, TemplateRef, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import { PdfAnnotationComponent, pdfAnnotationCommentSubmission } from 'ng2-pdfjs-viewer/article/pdf-annotation.component';
 import { pdfAnnotation } from 'ng2-pdfjs-viewer/pdf-annotation';
 
@@ -44,7 +44,7 @@ template: `
                 <p class="warning no-annotations" *ngIf="shownAnnotations?.length === 0 && !pendingAnnotation">{{'annotations.nonePage' | translate}}</p>
 
                 <li *ngIf="pendingAnnotation" class="annotation">
-                    <lib-ng2-pdfjs-viewer-annotation
+                    <lib-ng2-pdfjs-viewer-annotation #pendingAnnotationContainer
                         [annotation]="pendingAnnotation"
                         (commentPosted)="submitInitialAnnotationComment($event)">
                     </lib-ng2-pdfjs-viewer-annotation>
@@ -81,6 +81,7 @@ animations: [
 export class PdfAnnotationsSideBarComponent
 {
     @ViewChildren('annotation') annotationComponents!: QueryList<PdfAnnotationComponent>;
+    @ViewChild('pendingAnnotationContainer') pendingAnnotationContainer?: PdfAnnotationComponent;
 
     @Input() enableDebugMessages!: boolean;
     @Input() pendingAnnotation?: pdfAnnotation;
@@ -163,9 +164,14 @@ export class PdfAnnotationsSideBarComponent
             attributeArticle[0].classList.add('focus');
         }
         
-        const annotationComponent = this.annotationComponents.filter(x => x.annotation == annotation)[0];
-        annotationComponent.expand();
-        
+        const annotationComponent = this.pendingAnnotation === annotation ?
+            this.pendingAnnotationContainer || null :
+            this.annotationComponents.filter(x => x.annotation == annotation)[0];
+
+        if (annotationComponent === null) {
+            throw new Error('Could not find the container of the annotation to focus.');
+        }
+
         this._currentAnnotationFocus = annotation;
     }
 
@@ -192,20 +198,16 @@ export class PdfAnnotationsSideBarComponent
             attributeArticle[0].classList.remove('focus');
         }
 
-        const annotationComponent = this.annotationComponents.filter(x => x.annotation == this._currentAnnotationFocus)[0];
-
-        // It is possible the annotation no longer exists due to scrolling.
-        if (annotationComponent) {
-            annotationComponent.collapse();
-        }
-
         delete(this._currentAnnotationFocus);
     }
 
     public focusAnnotationInput(annotation: pdfAnnotation)
     {
         this.ensureExpanded();
+        this.focusAnnotation(annotation);
+        this.expandAnnotation(annotation);
         this.sendDebugMessage(`Start focus on annotation input for ${annotation.id}...`);
+        this.changeDetector.detectChanges();
 
         const attributeArticle = document.querySelectorAll(`[data-annotation-input="${annotation.id}"]`);
 
@@ -216,6 +218,31 @@ export class PdfAnnotationsSideBarComponent
 
         (attributeArticle[0] as HTMLElement).focus();
         this.sendDebugMessage('Input focus changed', attributeArticle[0]);
+    }
+
+    public expandAnnotation(annotation: pdfAnnotation) {
+        const annotationComponent = this.pendingAnnotation === annotation ?
+            this.pendingAnnotationContainer :
+            this.annotationComponents.filter(x => x.annotation == annotation)[0];
+
+        if (!annotationComponent) {
+            throw new Error('Expected the annotation contains to exist.');
+        }
+
+        annotationComponent.expand();
+    }
+
+    public collapseAnnotation(annotation: pdfAnnotation) {
+        const annotationComponent = this.pendingAnnotation === annotation ?
+            this.pendingAnnotationContainer :
+            this.annotationComponents.filter(x => x.annotation == annotation)[0];
+
+        // It is possible the annotation no longer exists due to scrolling.
+        if (!annotationComponent) {
+            return;
+        }
+
+        annotationComponent.collapse();
     }
 
     public setLoading()

@@ -5,7 +5,6 @@
     "annotation.textButton": "",
     "annotation.drawButton": "",
 
-    "annotations.loading": "",
     "annotations.singular": "",
     "annotations.plural": "",
     "annotations.nonePage": "",
@@ -20,7 +19,6 @@
     "drawEditor.enabled": "",
 
     "textAnnotate.disabled": "",
-    "textAnnotate.disabledNotSupported": "",
     "drawAnnotate.disabled": "",
     "openFile.disabled": "",
     "printing.disabled": "",

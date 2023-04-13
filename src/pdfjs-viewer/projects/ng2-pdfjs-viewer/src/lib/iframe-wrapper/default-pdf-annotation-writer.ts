@@ -91,6 +91,33 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
                 return true;
             }
 
+            // Structured PDFs have "markedContent" wrappers.
+            // If these are encountered, we must get the next sibling with an extra step.
+            if (currentElement.parentElement?.classList.contains('markedContent')) {
+
+                // Marked content can have multiple spans
+                if (currentElement.nextSibling) {
+                    currentElement = currentElement.nextElementSibling;
+                    continue;
+                }
+                
+                let nextNode: Element | null = null;
+                let lastCheckedElement: Element = currentElement.parentElement;
+                while(!nextNode) {
+                    if (!lastCheckedElement.nextElementSibling) {
+                        break;
+                    }
+
+                    nextNode = (Array.from(lastCheckedElement.nextElementSibling.children).filter(x => Array.from(x.children).some(y => y.nodeName === 'FONT')))[0];
+                    if (!nextNode) {
+                        lastCheckedElement = lastCheckedElement.nextElementSibling;
+                    }
+                }
+                
+                currentElement = nextNode as Element | null;
+                continue;
+            }
+
             currentElement = currentElement.nextElementSibling;
         }
 
@@ -178,6 +205,38 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
                 break;
             }
 
+            // Structured PDFs have "markedContent" wrappers.
+            // If these are encountered, we must get the next sibling with an extra step.
+            if (nodeReference.parentElement?.classList.contains('markedContent')) {
+
+                // Marked content can have multiple spans
+                if (nodeReference.nextSibling) {
+                    nodeReference = nodeReference.nextSibling;
+                    continue;
+                }
+
+                if (!nodeReference.parentElement.nextSibling) {
+                    nodeReference = null;
+                    continue;
+                }
+                
+                let nextNode: ChildNode | null = null;
+                let lastCheckedNode = nodeReference;
+                while(!nextNode) {
+                    if (!lastCheckedNode.parentElement?.nextSibling) {
+                        break;
+                    }
+
+                    nextNode = (Array.from(lastCheckedNode.parentElement.nextSibling.childNodes).filter(x => x.nodeName === 'SPAN'))[0];
+                    if (!nextNode) {
+                        lastCheckedNode = lastCheckedNode.parentElement.nextSibling;
+                    }
+                }
+                
+                nodeReference = nextNode as ChildNode | null;
+                continue;
+            }
+
             // Proceed with next sibling
             nodeReference = nodeReference.nextSibling;
             this.sendDebugMessage('Annotations remove color: node reference', nodeReference);
@@ -188,20 +247,24 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
     {
         const xpathBase = this.getXpathBySelection(selection);
 
-        if (!xpathBase.startsWith('//*[@id="viewer"]'))
+        // Validate the xpath starts at a valid expected id.
+        if (!xpathBase.startsWith('//*[@id="viewer"]') && !xpathBase.startsWith('//*[@id="page'))
         {
             return null;
         }
 
         // Generate the actual xpath. We manually create the actual xpath since the page element and text layer element need to be manually set to avoid bad behaviour.
         const parts = xpathBase.split("/");
-        if (parts.length != 6)
+        if (parts.length == 6)
         {
-            return null;
+            parts[3] = `div[contains(@data-page-number, "${page}")]`;
+            parts[4] = 'div[contains(@class, "textLayer")]';
         }
 
-        parts[3] = `div[contains(@data-page-number, "${page}")]`;
-        parts[4] = 'div[contains(@class, "textLayer")]';
+        if (parts.length != 4 && parts.length != 6) {
+            throw Error(`Expected part length of 2/6, but received ${parts.length}.`);
+        }
+
         return parts.join('/');
     }
 
@@ -312,6 +375,38 @@ export class defaultPdfAnnotationWriter implements pdfAnnotationWriter
             if (remainingTextLength == 0)
             {
                 break;
+            }
+
+            // Structured PDFs have "markedContent" wrappers.
+            // If these are encountered, we must get the next sibling with an extra step.
+            if (currentNode.parentElement?.classList.contains('markedContent')) {
+
+                // Marked content can have multiple spans
+                if (currentNode.nextSibling) {
+                    currentNode = currentNode.nextSibling;
+                    continue;
+                }
+
+                if (!currentNode.parentElement.nextSibling) {
+                    currentNode = null;
+                    continue;
+                }
+                
+                let nextNode: ChildNode | null = null;
+                let lastCheckedNode = currentNode;
+                while(!nextNode) {
+                    if (!lastCheckedNode.parentElement?.nextSibling) {
+                        break;
+                    }
+
+                    nextNode = (Array.from(lastCheckedNode.parentElement.nextSibling.childNodes).filter(x => x.nodeName === 'SPAN'))[0];
+                    if (!nextNode) {
+                        lastCheckedNode = lastCheckedNode.parentElement.nextSibling;
+                    }
+                }
+                
+                currentNode = nextNode as ChildNode | null;
+                continue;
             }
 
             // Proceed with next sibling

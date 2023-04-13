@@ -152,11 +152,6 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         return this.pdfBehaviour.pdfViewerApplication.baseUrl;
     }
 
-    public get markInfo()
-    {
-        return this.pdfBehaviour.pdfViewerApplication.pdfDocument.getMarkInfo();
-    }
-
     constructor(
         private readonly localisationService: LocalisationService,
         private readonly changeDetector: ChangeDetectorRef)
@@ -283,18 +278,6 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         if(this.behaviourOnDownload)
         {
             this.setDownloadBehaviour(this.behaviourOnDownload);
-        }
-
-        // Currently there is no support for "structured content" in PDFs.
-        // These type of PDFs have a different structure on the textlayer.
-        // The "Marked" value in the PDFs markinfo indicates if the PDF has this feature enabled.
-        // Until this is supported, we disable the button on these.
-        const markInfo = await this.markInfo;
-        const marked = markInfo && 'Marked' in markInfo && markInfo.Marked === true;
-        if (marked)
-        {
-            this._iframeWrapper.disableButton('textAnnotate', true);
-            this._iframeWrapper.setButtonTitle('textAnnotate', this.localisationService.Translate('textAnnotate.disabledNotSupported'));
         }
 
         const renderedPages = this.pdfBehaviour.getRenderedPageNumbers();
@@ -570,6 +553,9 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
 
         if (this.behaviourOnAnnotationPosted)
         {
+            // Refocus the annotation now that it will be redrawn as a new component
+            this.focusAnnotation(annotation);
+
             this._annotationsSidebar.setAnnotationLoading(annotation);
             await this.behaviourOnAnnotationPosted(annotation);
             this._annotationsSidebar.setAnnotationNotLoading(annotation);
@@ -670,6 +656,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         }
 
         this._annotationsSidebar.focusAnnotation(annotation);
+        this._annotationsSidebar.expandAnnotation(annotation);
         this._currentAnnotationFocus = annotation;
 
         if (annotation.type === 'text')
@@ -701,6 +688,7 @@ export class Ng2PdfjsViewerComponent implements OnInit, AfterViewInit {
         }
 
         this._annotationsSidebar.unfocusAnnotation();
+        this._annotationsSidebar.collapseAnnotation(annotation);
         delete(this._currentAnnotationFocus);
 
         if (annotation.type === 'text')
