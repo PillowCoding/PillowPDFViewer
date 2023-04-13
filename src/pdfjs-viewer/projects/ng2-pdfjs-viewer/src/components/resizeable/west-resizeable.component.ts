@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, Output } from "@angular/core";
 @Component({
 selector: 'lib-west-resizeable',
 template: `
-    <div class="container">
+    <div class="main-container">
        <ng-content></ng-content> 
         <span *ngIf="enabled">
             <div class="draggableAnchor east" (mousedown)="onMouseDown($event)">
