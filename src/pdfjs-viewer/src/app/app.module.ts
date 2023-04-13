@@ -9,7 +9,7 @@ import { pdfViewerSimpleComponent } from './pdfviewer-simple.component';
 import { pdfViewerModifiedComponent } from './pdfviewer-modified.component';
 
 import { AppComponent } from './app.component';
-import { LocalisationConfiguration } from 'ng2-pdfjs-viewer/localisation/localisationConfiguration';
+import { LocalisationConfiguration } from 'projects/ng2-pdfjs-viewer/src/services/localisation/localisationConfiguration';
 
 @NgModule({
   declarations: [

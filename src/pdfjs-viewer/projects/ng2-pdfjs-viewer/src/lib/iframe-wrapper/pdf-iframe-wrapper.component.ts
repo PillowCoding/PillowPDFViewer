@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { LocalisationService } from 'ng2-pdfjs-viewer/localisation/localisation.service';
+import { LocalisationService } from 'projects/ng2-pdfjs-viewer/src/services/localisation/localisation.service';
 import { boundingBox, pdfAnnotation, textSelection } from 'ng2-pdfjs-viewer/pdf-annotation';
 import { pdfAnnotationDrawer } from 'ng2-pdfjs-viewer/pdf-annotation-drawer';
 import { pdfAnnotationWriter } from 'ng2-pdfjs-viewer/pdf-annotation-writer';
