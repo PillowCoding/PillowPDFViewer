@@ -1,5 +1,5 @@
 /*
- * Public API Surface of ng2-pdfjs-viewer
+ * Public API Surface of the PDF viewer.
  */
 
 export * from './lib/index';

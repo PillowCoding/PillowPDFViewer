@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { AppRoutingModule } from './app-routing.module';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { Ng2PdfjsViewerModule, templateRefDirective } from 'ng2-pdfjs-viewer'
-import { pdfViewerComponent } from './pages/pdfviewer.component';
 
+import { LocalisationConfiguration, Ng2PdfjsViewerModule, templateRefDirective } from 'ng2-pdfjs-viewer'
+
+import { pdfViewerComponent } from './pages/pdfviewer.component';
+import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { LocalisationConfiguration } from 'projects/ng2-pdfjs-viewer/src/services/localisation/localisationConfiguration';
 
 @NgModule({
   declarations: [

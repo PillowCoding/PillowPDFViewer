@@ -1,29 +1,3 @@
-<div class="display-flex full-height" *ngIf="pdfBehaviour">
-
-    <lib-ng2-pdfjs-viewer-iframe-wrapper #iframeWrapper
-        [(pendingAnnotation)]="_pendingAnnotation"
-        
-        [enableDebugMessages]="enableDebugMessages"
-        [pdfBehaviour]="pdfBehaviour"
-
-        (annotationClick)="focusAnnotation($event)"
-        (startNewAnnotation)="onStartNewAnnotation()"
-        (pendingAnnotationTextSelected)="onPendingAnnotationTextSelected()"
-        (pendingAnnotationBoundingBoxCreated)="onPendingAnnotationBoundingBoxCreated()">
-    </lib-ng2-pdfjs-viewer-iframe-wrapper>
-
-    <lib-ng2-pdfjs-viewer-annotations-sidebar #annotationsSidebar *ngIf="enableTextAnnotating || enableDrawAnnotating"
-        [enableDebugMessages]="enableDebugMessages"
-        [pendingAnnotation]="_pendingAnnotation"
-
-        [annotationMetaDataHeaderTemplate]="annotationMetaDataHeaderTemplate"
-        [annotationCommentTemplate]="annotationCommentTemplate"
-
-        [shownAnnotationsFetcher]="getShownAnnotations"
-
-        (sidebarCollapse)="onSidebarCollapse()"
-        (clicked)="focusAnnotation($event)"
-        (initialCommentPosted)="submitInitialAnnotationComment($event)"
-        (commentPosted)="onCommentPosted($event)">
-    </lib-ng2-pdfjs-viewer-annotations-sidebar>
+<div>
+    Viewer goes here
 </div>
