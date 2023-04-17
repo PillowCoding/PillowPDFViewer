@@ -7,11 +7,15 @@ import { LocalisationConfiguration, Ng2PdfjsViewerModule, templateRefDirective }
 import { pdfViewerComponent } from './pages/pdfviewer.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { SidebarComponent } from './components/sidebar.component';
+import { MainComponent } from './components/main.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     pdfViewerComponent,
+    MainComponent,
+    SidebarComponent,
     templateRefDirective
   ],
   imports: [
