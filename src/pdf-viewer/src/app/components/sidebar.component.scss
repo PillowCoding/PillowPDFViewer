@@ -1,7 +1,10 @@
-.sidebar {
-    background-color: rgba(LightSlateGray, 0.1);
+:host, .sidebar {
     height: 100%;
     width: 15rem;
+}
+
+.sidebar {
+    background-color: rgba(LightSlateGray, 0.1);
 }
 
 .logo {
