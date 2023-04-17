@@ -25,7 +25,22 @@ export class PdfViewerComponent implements OnInit {
         this._relativeViewerPath = relativePath;
     }
 
+    /** The source url of the file to use. If undefined, the PDF viewer will be empty until a file is loaded. */
+    @Input()
+    public set fileSource(source: string | Blob | Uint8Array) {
+        this._fileSource = source;
+    }
+
+    public get pdfjsContext() {
+        if (!this._pdfjsContext) {
+             throw new Error('The PDFJS context could not be found.');
+        }
+
+        return this._pdfjsContext;
+    }
+
     private _relativeViewerPath?: string;
+    private _fileSource?: string | Blob | Uint8Array;
     private _loggingProvider?: LoggingProvider;
     private _pdfjsContext?: pdfjsContext;
 
@@ -38,5 +53,14 @@ export class PdfViewerComponent implements OnInit {
         }
 
         this._pdfjsContext = new PdfjsContext(this._loggingProvider, this._relativeViewerPath, this._iframeWrapper.nativeElement);
+        this._pdfjsContext.viewerLoaded.subscribe(() => this.onViewerLoaded());
+    }
+
+    private onViewerLoaded() {
+        if (!this._fileSource) {
+            return;
+        }
+
+        this.pdfjsContext.load(this._fileSource);
     }
 }

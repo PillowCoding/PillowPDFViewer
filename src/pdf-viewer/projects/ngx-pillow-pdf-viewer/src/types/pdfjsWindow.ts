@@ -1,5 +1,5 @@
 import { PDFViewerApplication } from "./pdfViewerApplication";
 
-export interface PdfJsWindow extends Window {
+export interface PdfjsWindow extends Window {
   PDFViewerApplication: PDFViewerApplication;
 }

@@ -8,12 +8,12 @@ export default class DefaultLoggingProvider implements LoggingProvider {
         this.messages = new ReplaySubject(bufferedMessageCount);
     }
 
-    send(source: string, message: unknown): void {
+    send(source: string, message: unknown, ...args: unknown[]): void {
         if (typeof message === 'string') {
-            console.log(`${source}: ${message}`);
+            console.log(`${source}: ${message}`, ...args);
         }
         else {
-            console.log(source, message);
+            console.log(source, message, ...args);
         }
         
         this.messages.next(message);
