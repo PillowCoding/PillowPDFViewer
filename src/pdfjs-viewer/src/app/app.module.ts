@@ -3,10 +3,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { Ng2PdfjsViewerModule, templateRefDirective } from 'ng2-pdfjs-viewer'
-import { pdfViewerAnnotateComponent } from './pdfviewer-annotate.component';
-import { pdfViewerDownloadComponent } from './pdfviewer-download.component';
-import { pdfViewerSimpleComponent } from './pdfviewer-simple.component';
-import { pdfViewerModifiedComponent } from './pdfviewer-modified.component';
+import { pdfViewerComponent } from './pages/pdfviewer.component';
 
 import { AppComponent } from './app.component';
 import { LocalisationConfiguration } from 'projects/ng2-pdfjs-viewer/src/services/localisation/localisationConfiguration';
@@ -14,10 +11,7 @@ import { LocalisationConfiguration } from 'projects/ng2-pdfjs-viewer/src/service
 @NgModule({
   declarations: [
     AppComponent,
-    pdfViewerSimpleComponent,
-    pdfViewerAnnotateComponent,
-    pdfViewerDownloadComponent,
-    pdfViewerModifiedComponent,
+    pdfViewerComponent,
     templateRefDirective
   ],
   imports: [
