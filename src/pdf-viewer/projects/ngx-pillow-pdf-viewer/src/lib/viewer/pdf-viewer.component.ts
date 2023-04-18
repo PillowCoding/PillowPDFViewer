@@ -63,6 +63,6 @@ export class PdfViewerComponent implements OnInit {
     }
 
     private onViewerLoaded() {
-        this.pdfjsContext.subscribeEventBusDispatch('textlayerrendered', (e) => console.log('text layer rendered', e));
+        this.pdfjsContext.subscribeEventBusDispatch('pagemode', (e) => console.log(e));
     }
 }

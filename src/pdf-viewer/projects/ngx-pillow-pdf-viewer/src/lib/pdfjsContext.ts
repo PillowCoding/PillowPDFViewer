@@ -46,19 +46,9 @@ export default class PdfjsContext
     }
 
     public subscribeEventBusDispatch<K extends EventBusEventType>(eventKey: K, dispatch: (payload: EventBusPayloadType<K>) => void) {
-        // This small check will tell Typescript that the eventKey is always a string.
-        if (typeof eventKey !== 'string') {
-            throw new Error('The eventKey must be a string.');
-        }
-
         this.pdfViewerApplication.eventBus.on(
-            eventKey,
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (e: any) => {
-                this.sendLogMessage(`Dispatching ${eventKey}...`, 'EventBus');
-                dispatch(e);
-            });
+            eventKey as string,
+            dispatch as (e: object) => void);
     }
 
     private async onIframeLoaded() {
