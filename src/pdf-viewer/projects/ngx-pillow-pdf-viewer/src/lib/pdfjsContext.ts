@@ -11,6 +11,9 @@ export default class PdfjsContext
     public readonly viewerLoaded = new Subject<void>();
     public readonly eventBusDispatched = new Subject<{key: EventBusEventType, payload: object}>();
 
+    private _loadViewerResolver!: () => void;
+    private readonly _loadViewerPromise = new Promise<void>((resolve) => this._loadViewerResolver = resolve);
+
     /** Gets the iframe window. */
     public get pdfjsWindowOrNull() {
         return this._iframeElement.contentWindow as PdfjsWindow | null;
@@ -37,6 +40,7 @@ export default class PdfjsContext
 
     public async load(source: string | Blob | Uint8Array)
     {
+        await this._loadViewerPromise;
         this.sendLogMessage('Loading source...', undefined, source);
 
         const args = { url: source };
@@ -55,6 +59,12 @@ export default class PdfjsContext
         // Attach the event bus.
         this.attachEventBusEvents();
         this.sendLogMessage('Eventbus has been attached.');
+
+        // Resolve the loading
+        if (!this._loadViewerResolver) {
+            throw new Error('Expected the load viewer resolved to exist.');
+        }
+        this._loadViewerResolver();
     }
 
     /**
