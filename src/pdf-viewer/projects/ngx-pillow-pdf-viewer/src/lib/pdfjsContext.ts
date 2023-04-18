@@ -2,10 +2,14 @@ import { Subject } from "rxjs";
 import LoggingProvider, { pdfViewerLogSourceType } from "./utils/logging/loggingProvider";
 import { PdfjsWindow } from "../types/pdfjsWindow";
 
+export const EventBusEventTypeCollection = ["nextpage", "previouspage", "lastpage", "firstpage", "beforeprint", "afterprint", "print", "download", "zoomin", "zoomout", "zoomreset", "pagenumberchanged", "scalechanging", "scalechanged", "resize", "hashchange", "pagerender", "pagerendered", "pagesdestroy", "updateviewarea", "pagechanging", "rotationchanging", "sidebarviewchanged", "pagemode", "namedaction", "presentationmodechanged", "presentationmode", "switchannotationeditormode", "switchannotationeditorparams", "rotatecw", "rotateccw", "optionalcontentconfig", "switchscrollmode", "scrollmodechanged", "switchspreadmode", "spreadmodechanged", "documentproperties", "findfromurlhash", "updatefindmatchescount", "updatefindcontrolstate", "fileinputchange", "openfile", "textlayerrendered"] as const;
+export type EventBusEventType = typeof EventBusEventTypeCollection[number];
+
 export default class PdfjsContext
 {
     public readonly iframeLoaded = new Subject<void>();
     public readonly viewerLoaded = new Subject<void>();
+    public readonly eventBusDispatched = new Subject<{key: EventBusEventType, payload: object}>();
 
     /** Gets the iframe window. */
     public get pdfjsWindowOrNull() {
@@ -47,6 +51,25 @@ export default class PdfjsContext
         await this.pdfViewerApplication.initializedPromise;
         this.sendLogMessage('Viewer has been loaded.');
         this.viewerLoaded.next();
+
+        // Attach the event bus.
+        this.attachEventBusEvents();
+        this.sendLogMessage('Eventbus has been attached.');
+    }
+
+    /**
+     * Hooks all possible EventBus events so that they can be passed through the service.
+     */
+    private attachEventBusEvents()
+    {
+        for (const eventKey of EventBusEventTypeCollection) {
+            this.pdfViewerApplication.eventBus.on(
+                eventKey,
+                (e: object) => {
+                    this.sendLogMessage(`Dispatching ${eventKey}...`, 'EventBus');
+                    this.eventBusDispatched.next({ key: eventKey, payload: e});
+                });
+        }
     }
 
     private sendLogMessage(message: unknown, source?: pdfViewerLogSourceType, ...args: unknown[]) {
