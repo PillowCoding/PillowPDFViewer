@@ -1,5 +1,5 @@
 import { Subject } from "rxjs";
-import LoggingProvider from "./utils/logging/loggingProvider";
+import LoggingProvider, { pdfViewerLogSourceType } from "./utils/logging/loggingProvider";
 import { PdfjsWindow } from "../types/pdfjsWindow";
 
 export default class PdfjsContext
@@ -33,7 +33,7 @@ export default class PdfjsContext
 
     public load(source: string | Blob | Uint8Array)
     {
-        this.sendLogMessage('Loading source...', source);
+        this.sendLogMessage('Loading source...', undefined, source);
 
         const args = { url: source };
         this.pdfViewerApplication.open(args);
@@ -49,7 +49,7 @@ export default class PdfjsContext
         this.viewerLoaded.next();
     }
 
-    private sendLogMessage(message: unknown, ...args: unknown[]) {
-        this._loggingProvider.send(PdfjsContext.name, message, ...args);
+    private sendLogMessage(message: unknown, source?: pdfViewerLogSourceType, ...args: unknown[]) {
+        this._loggingProvider.send(source || 'PdfjsContext', message, ...args);
     }
 }
