@@ -63,6 +63,6 @@ export class PdfViewerComponent implements OnInit {
     }
 
     private onViewerLoaded() {
-        this.pdfjsContext.subscribeEventBusDispatch('pagemode', (e) => console.log(e));
+        this.pdfjsContext.disableTool('printing');
     }
 }
