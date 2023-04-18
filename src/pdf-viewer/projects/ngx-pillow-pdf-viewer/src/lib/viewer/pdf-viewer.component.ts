@@ -54,13 +54,15 @@ export class PdfViewerComponent implements OnInit {
 
         this._pdfjsContext = new PdfjsContext(this._loggingProvider, this._relativeViewerPath, this._iframeWrapper.nativeElement);
         this._pdfjsContext.viewerLoaded.subscribe(() => this.onViewerLoaded());
-    }
 
-    private onViewerLoaded() {
         if (!this._fileSource) {
             return;
         }
 
         this.pdfjsContext.load(this._fileSource);
+    }
+
+    private onViewerLoaded() {
+        this.pdfjsContext.subscribeEventBusDispatch('textlayerrendered', (e) => console.log('text layer rendered', e));
     }
 }

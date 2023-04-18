@@ -1,5 +1,5 @@
 import { DownloadManager } from "./downloadManager";
-import { EventBus } from "./eventBus";
+import EventBus from "./eventBus";
 import { PDFDocument } from "./pdfDocument";
 import { PDFSidebar } from "./pdfSidebar";
 import { PDFViewer } from "./pdfViewer";
