@@ -35,12 +35,12 @@ export default class PdfjsContext
         this._iframeElement.src = this._viewerRelativePath + '?file=';
     }
 
-    public load(source: string | Blob | Uint8Array)
+    public async load(source: string | Blob | Uint8Array)
     {
         this.sendLogMessage('Loading source...', undefined, source);
 
         const args = { url: source };
-        this.pdfViewerApplication.open(args);
+        await this.pdfViewerApplication.open(args);
     }
 
     private async onIframeLoaded() {
