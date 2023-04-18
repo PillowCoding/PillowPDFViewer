@@ -50,6 +50,6 @@ export default class PdfjsContext
     }
 
     private sendLogMessage(message: unknown, source?: pdfViewerLogSourceType, ...args: unknown[]) {
-        this._loggingProvider.send(source || 'PdfjsContext', message, ...args);
+        this._loggingProvider.send(message, source || 'PdfjsContext', ...args);
     }
 }

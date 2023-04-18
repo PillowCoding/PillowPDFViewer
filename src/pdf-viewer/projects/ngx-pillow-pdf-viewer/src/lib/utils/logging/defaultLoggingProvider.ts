@@ -11,7 +11,7 @@ export default class DefaultLoggingProvider implements LoggingProvider {
         this.messages = new ReplaySubject(bufferedMessageCount);
     }
 
-    send(source: logSourceType, message: unknown, ...args: unknown[]): void {
+    send(message: unknown, source: logSourceType, ...args: unknown[]): void {
 
         // Check if the source should be logged.
         if (this.excludedLogSourceTypes.includes(source)) {

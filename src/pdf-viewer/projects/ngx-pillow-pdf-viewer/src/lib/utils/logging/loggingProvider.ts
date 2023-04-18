@@ -5,5 +5,5 @@ export type logSourceType = pdfViewerLogSourceType | Omit<string, pdfViewerLogSo
 
 export default interface LoggingProvider {
     messages: ReplaySubject<unknown>;
-    send(source: logSourceType, message: unknown, ...args: unknown[]): void;
+    send(message: unknown, source: logSourceType, ...args: unknown[]): void;
 }
