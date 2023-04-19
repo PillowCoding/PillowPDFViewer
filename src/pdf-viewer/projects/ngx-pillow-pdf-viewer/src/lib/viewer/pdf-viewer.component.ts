@@ -4,6 +4,11 @@ import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider, { pdfViewerLogSourceType } from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 import { AnnotationEditorModeChangedEventType, AnnotationEditorType } from "../../types/eventBus";
+import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
+import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
+
+export type AnnotationRequest = { page: number };
+export type RequestedAnnotations = AnnotationRequest & { annotations: Array<annotation> };
 
 @Component({
     selector: 'lib-pdf-viewer',
@@ -62,6 +67,7 @@ export class PdfViewerComponent implements OnInit {
     private _loggingProvider?: LoggingProvider;
     private _pdfjsContext?: pdfjsContext;
     private _disabledTools?: toolType[];
+    private _annotations: RequestedAnnotations[] = [];
 
     ngOnInit(): void {
         if (!this._relativeViewerPath) {
@@ -127,9 +133,12 @@ export class PdfViewerComponent implements OnInit {
             }
         `;
 
-        this.pdfjsContext.insertToolButton(this._annotateDrawId, 'beforebegin', 'textEditor', true);
-        this.pdfjsContext.insertToolButton(this._annotateTextId, 'beforebegin', this._annotateDrawId, true);
-        this.pdfjsContext.injectStyle(textAnnotateStyle + drawAnnotateStyle + sharedStyle)
+        const annotateDrawButton = this.pdfjsContext.insertToolButton(this._annotateDrawId, 'beforebegin', 'textEditor', true);
+        const annotateTextButton = this.pdfjsContext.insertToolButton(this._annotateTextId, 'beforebegin', this._annotateDrawId, true);
+        this.pdfjsContext.injectStyle(textAnnotateStyle + drawAnnotateStyle + sharedStyle);
+
+        annotateDrawButton.onclick = () => { throw new Error('Not implemented.') };
+        annotateTextButton.onclick = () => this.beginNewAnnotation('text');
 
         // Collect the tools to disable.
         // The text editor and draw editor are disabled after the initial render.
@@ -139,6 +148,10 @@ export class PdfViewerComponent implements OnInit {
         for (const toolId of toolsToDisable) {
             this.pdfjsContext.setToolDisabled(toolId);
         }
+    }
+
+    private beginNewAnnotation(type: AnnotationType) {
+        const newAnnotation = new annotation(type);
     }
 
     private onPagesLoaded() {

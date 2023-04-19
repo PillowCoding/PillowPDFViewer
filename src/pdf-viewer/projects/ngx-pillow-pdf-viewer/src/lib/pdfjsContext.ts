@@ -133,6 +133,8 @@ export default class PdfjsContext
         if (startDisabled) {
             this.setToolDisabled(id, true);
         }
+
+        return toolButton;
     }
 
     public injectStyle(style: string) {
