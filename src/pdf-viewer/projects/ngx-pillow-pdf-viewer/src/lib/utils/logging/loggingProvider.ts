@@ -1,6 +1,6 @@
 import { ReplaySubject } from "rxjs";
 
-export type pdfViewerLogSourceType = 'PdfjsContext' | 'EventBus';
+export type pdfViewerLogSourceType = 'PdfViewerComponent' | 'PdfjsContext' | 'EventBus';
 export type logSourceType = pdfViewerLogSourceType | Omit<string, pdfViewerLogSourceType>
 
 export default interface LoggingProvider {

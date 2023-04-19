@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
 import PdfjsContext, { toolType } from "ngx-pillow-pdf-viewer/pdfjsContext";
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
-import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
+import LoggingProvider, { pdfViewerLogSourceType } from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 import { AnnotationEditorModeChangedEventType, AnnotationEditorType } from "../../types/eventBus";
 
 @Component({
@@ -18,6 +18,14 @@ export class PdfViewerComponent implements OnInit {
     @Input()
     public set loggingProvider(provider: LoggingProvider) {
         this._loggingProvider = provider;
+    }
+
+    public get loggingProvider() {
+        if (!this._loggingProvider) {
+             throw new Error('The logging provider could not be found.');
+        }
+
+        return this._loggingProvider;
     }
 
     /** The relative path that is used to access the viewer. */
@@ -77,12 +85,16 @@ export class PdfViewerComponent implements OnInit {
 
         // Subscribe to event bus events.
         this.pdfjsContext.subscribeEventBusDispatch('annotationeditormodechanged', (e) => this.onAnnotationEditorModeChanged(e));
+        this.pdfjsContext.subscribeEventBusDispatch('pagesloaded', () => this.onPagesLoaded());
+        this.pdfjsContext.subscribeEventBusDispatch('documentloaded', () => this.sendLogMessage('Document has been loaded.'));
+        this.pdfjsContext.subscribeEventBusDispatch('documentinit', () => this.sendLogMessage('Document is loading...'));
+        this.pdfjsContext.subscribeEventBusDispatch('pagesinit', () => this.sendLogMessage('Pages are loading...'));
 
         if (!this._disabledTools) {
             return;
         }
 
-        // Inject the text and draw annotation tool buttons
+        // Inject the text and draw annotation tool buttons.
         const textAnnotateStyle = `
             #${this._annotateTextId}::before
             {
@@ -129,6 +141,14 @@ export class PdfViewerComponent implements OnInit {
         }
     }
 
+    private onPagesLoaded() {
+        // Enable the annotation buttons
+        this.pdfjsContext.setToolDisabled(this._annotateDrawId, false);
+        this.pdfjsContext.setToolDisabled(this._annotateTextId, false);
+
+        this.sendLogMessage('Pages have been loaded.')
+    }
+
     private onAnnotationEditorModeChanged(event: AnnotationEditorModeChangedEventType) {
         // Check if the mode is an action that is not disabled.
         if (event.mode === AnnotationEditorType.disable) {
@@ -144,5 +164,9 @@ export class PdfViewerComponent implements OnInit {
         for (const toolId of toolsToDisable) {
             this.pdfjsContext.setToolDisabled(toolId);
         }
+    }
+
+    private sendLogMessage(message: unknown, source?: pdfViewerLogSourceType, ...args: unknown[]) {
+        this.loggingProvider.send(message, source || PdfViewerComponent.name, ...args);
     }
 }
