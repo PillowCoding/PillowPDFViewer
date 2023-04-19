@@ -1,3 +1,5 @@
-<div class="full-height annotation-container">
+<lib-west-resizeable (widthChanged)="onSidebarWidthChanged($event)">
+    <div class="full-height annotation-container" [style.width.px]="sidebarWidth">
 
-</div>
+    </div>
+</lib-west-resizeable>
