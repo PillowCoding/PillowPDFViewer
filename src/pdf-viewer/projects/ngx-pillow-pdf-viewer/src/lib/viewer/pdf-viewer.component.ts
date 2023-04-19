@@ -7,9 +7,6 @@ import { AnnotationEditorModeChangedEventType, AnnotationEditorType } from "../.
 import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
 
-export type AnnotationRequest = { page: number };
-export type RequestedAnnotations = AnnotationRequest & { annotations: Array<annotation> };
-
 @Component({
     selector: 'lib-pdf-viewer',
     templateUrl: 'pdf-viewer.component.html',
@@ -51,11 +48,23 @@ export class PdfViewerComponent implements OnInit {
         this._disabledTools = Array.isArray(tools) ? tools : [tools];
     }
 
-    public get pdfjsContext() {
-        if (!this._pdfjsContext) {
-             throw new Error('The PDFJS context could not be found.');
+    /** If the annotations are retrieved synchronously, this input can be used to give them before the pdf has loaded.
+     * Note that any asynchronous fetches should be done using the `annotationProvider` input.
+     */
+    @Input()
+    public set annotations(annotations: annotation[]) {
+
+        // It is too late to load annotations this way.
+        // TODO: viewerState is the wrong thing to check for. There needs to be a state that returns true if a document is loaded.
+        if (this.pdfjsContext?.viewerState === 'loaded') {
+            console.warn('It is not possible to pass annotations through the input after the document is loaded. If the annotations are fetched asynchronously, or at a later state, it is possible to pass them through the `annotationProvider` input.');
+            return;
         }
 
+        this._annotations = annotations;
+    }
+
+    public get pdfjsContext() {
         return this._pdfjsContext;
     }
 
@@ -67,7 +76,7 @@ export class PdfViewerComponent implements OnInit {
     private _loggingProvider?: LoggingProvider;
     private _pdfjsContext?: pdfjsContext;
     private _disabledTools?: toolType[];
-    private _annotations: RequestedAnnotations[] = [];
+    private _annotations: annotation[] = [];
 
     ngOnInit(): void {
         if (!this._relativeViewerPath) {
@@ -84,10 +93,15 @@ export class PdfViewerComponent implements OnInit {
             return;
         }
 
+        // Typescript is unaware the context deifnitely exists at this point.
+        this.assertPdfjsContextExists();
+
         this.pdfjsContext.load(this._fileSource);
     }
 
     private onViewerLoaded() {
+
+        this.assertPdfjsContextExists();
 
         // Subscribe to event bus events.
         this.pdfjsContext.subscribeEventBusDispatch('annotationeditormodechanged', (e) => this.onAnnotationEditorModeChanged(e));
@@ -151,10 +165,14 @@ export class PdfViewerComponent implements OnInit {
     }
 
     private beginNewAnnotation(type: AnnotationType) {
-        const newAnnotation = new annotation(type);
+        this.sendLogMessage(`Start new ${type} annotation...`);
+        const newAnnotation = new annotation({ type, page: 1 });
     }
 
     private onPagesLoaded() {
+
+        this.assertPdfjsContextExists();
+
         // Enable the annotation buttons
         this.pdfjsContext.setToolDisabled(this._annotateDrawId, false);
         this.pdfjsContext.setToolDisabled(this._annotateTextId, false);
@@ -163,6 +181,9 @@ export class PdfViewerComponent implements OnInit {
     }
 
     private onAnnotationEditorModeChanged(event: AnnotationEditorModeChangedEventType) {
+
+        this.assertPdfjsContextExists();
+
         // Check if the mode is an action that is not disabled.
         if (event.mode === AnnotationEditorType.disable) {
             return;
@@ -176,6 +197,14 @@ export class PdfViewerComponent implements OnInit {
         const toolsToDisable = this._disabledTools.filter(x => x === 'textEditor' || x === 'drawEditor');
         for (const toolId of toolsToDisable) {
             this.pdfjsContext.setToolDisabled(toolId);
+        }
+    }
+
+    private assertPdfjsContextExists(): asserts this is this & {
+        pdfjsContext: PdfjsContext;
+    } {
+        if (!this.pdfjsContext) {
+            throw new Error('The PDFJS context could not be found.');
         }
     }
 

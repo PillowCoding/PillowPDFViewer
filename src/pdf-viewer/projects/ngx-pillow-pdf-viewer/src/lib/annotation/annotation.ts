@@ -6,15 +6,14 @@ export type AnnotationCommentConstructType =
         dateCreated: Date;
     };
 
-export type AnnotationConstructType =
-    AnnotationType | {
-        type: AnnotationType;
-        id: string;
-        dateCreated: Date;
-        comments: Array<AnnotationComment>;
-        page: number;
-        reference: textSelection;
-    };
+export type AnnotationConstructType = {
+    type: AnnotationType;
+    page: number;
+    id?: string;
+    dateCreated?: Date;
+    comments?: Array<AnnotationComment>;
+    reference?: textSelection;
+};
 
 export class AnnotationComment {
     private _dateCreated: Date;
@@ -77,9 +76,10 @@ export default class annotation {
 
     constructor(
         args: AnnotationConstructType) {
-        
-        if (typeof args === 'string') {
-            this._type = args;
+
+        if (!args.id || !args.dateCreated || !args.comments || !args.reference) {
+            this._type = args.type;
+            this._page = args.page;
             this._id = this.generateGuid();
             this._dateCreated = new Date();
             this._comments = [];
