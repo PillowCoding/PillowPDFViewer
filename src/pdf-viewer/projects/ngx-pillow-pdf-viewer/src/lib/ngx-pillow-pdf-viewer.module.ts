@@ -7,12 +7,14 @@ import { TranslatePipe } from './utils/localisation/translate.pipe';
 import { LocalisationConfiguration } from './utils/localisation/localisationConfiguration';
 import { LocalisationService } from './utils/localisation/localisation.service';
 import { PdfViewerComponent } from './viewer/pdf-viewer.component';
+import { PdfSidebarComponent } from './sidebar/pdf-sidebar.component';
 
 @NgModule({
     declarations: [
         PdfViewerComponent,
         RingLoadingComponent,
         WestResizeableComponent,
+        PdfSidebarComponent,
         TranslatePipe,
     ],
     exports: [

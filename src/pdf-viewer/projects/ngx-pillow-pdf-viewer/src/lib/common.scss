@@ -5,3 +5,17 @@
 .full-height {
     height: 100%;
 }
+
+:host
+{
+    --sidebar-background-color: rgb(249, 249, 250);
+    --sidebar-border-color: rgb(184, 184, 184);
+}
+
+@media (prefers-color-scheme: dark) {
+    :host
+    {
+        --sidebar-background-color: rgb(56, 56, 61);
+        --sidebar-border-color: rgba(0, 0, 0, 0.3);
+    }
+}
