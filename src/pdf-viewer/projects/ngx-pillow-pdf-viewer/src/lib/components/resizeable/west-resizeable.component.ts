@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 
+export type shouldResizeDelegateType = (difference: number) => boolean;
+
 @Component({
 selector: 'lib-west-resizeable',
 templateUrl: 'west-resizeable.component.html',
@@ -7,40 +9,53 @@ styleUrls: ['west-resizeable.component.scss']
 })
 export class WestResizeableComponent
 {
-    @Input() enabled = true;
-    @Input() shouldResize?: (difference: number) => boolean;
-    @Output() widthChanged = new EventEmitter<number>();
+    @Input()
+    public set shouldResize(delegate: shouldResizeDelegateType) {
+        this._shouldResize = delegate;
+    }
 
-    lastMousePosition: number | null = null;
+    @Output()
+    public get widthChanged() {
+        return this._widthChanged;
+    }
 
-    onMouseDown(event: MouseEvent) {
-        if (this.lastMousePosition) {
+    public get lastMousePosition() {
+        return this._lastMousePosition;
+    }
+
+    @Input() public enabled = true;
+    private _shouldResize?: shouldResizeDelegateType;
+    private _widthChanged = new EventEmitter<number>();
+    private _lastMousePosition: number | null = null;
+
+    public onMouseDown(event: MouseEvent) {
+        if (this._lastMousePosition) {
             throw new Error('The last mouse position is already set.');
         }
 
-        this.lastMousePosition = event.pageX;
+        this._lastMousePosition = event.pageX;
     }
 
-    onMouseUp() {
-        if (!this.lastMousePosition) {
+    public onMouseUp() {
+        if (!this._lastMousePosition) {
             return;
         }
 
-        this.lastMousePosition = null;
+        this._lastMousePosition = null;
     }
 
-    onMouseMove(event: MouseEvent) {
-        if (!this.lastMousePosition) {
+    public onMouseMove(event: MouseEvent) {
+        if (!this._lastMousePosition) {
             return;
         }
 
-        const difference = this.lastMousePosition - event.pageX;
+        const difference = this._lastMousePosition - event.pageX;
 
-        if (this.shouldResize && !this.shouldResize(difference)) {
+        if (this._shouldResize && !this._shouldResize(difference)) {
             return;
         }
 
-        this.lastMousePosition = event.pageX;
+        this._lastMousePosition = event.pageX;
         this.widthChanged.emit(difference);
     }
 }
