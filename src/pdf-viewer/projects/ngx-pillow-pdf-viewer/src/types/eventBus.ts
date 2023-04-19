@@ -10,11 +10,14 @@ export default interface EventBus {
 }
 
 export interface EventBusEventTypePayloadMap {
-    "annotationeditormodechanged": AnnotationEditorModeChangedEventType
+    "annotationeditormodechanged": AnnotationEditorModeChangedEventType;
+    "attachmentsloaded": AttachmentsLoadedEventType;
     "nextpage": NextPageEventType;
     "previouspage": PreviousPageEventType;
     "lastpage": LastPageEventType;
     "firstpage": FirstPageEventType;
+    "find": FindEventType;
+    "findbarclose": FindBarCloseEventType;
     "beforeprint": BeforePrintEventType;
     "afterprint": AfterPrintEventType;
     "print": PrintEventType;
@@ -29,7 +32,9 @@ export interface EventBusEventTypePayloadMap {
     "hashchange": object;
     "pagerender": PageRenderEventType;
     "pagerendered": PageRenderedEventType;
+    "pagesinit": object;
     "pagesdestroy": PageDestroyEventType;
+    "pagesloaded": object;
     "updateviewarea": UpdateViewAreaEventType;
     "pagechanging": PageChangingEventType;
     "rotationchanging": object;
@@ -43,17 +48,35 @@ export interface EventBusEventTypePayloadMap {
     "rotatecw": RotateClockwiseEventType;
     "rotateccw": RotateCounterClockwiseEventType;
     "optionalcontentconfig": object;
+    "outlineloaded": object;
     "switchscrollmode": SwitchScrollModeEventType;
     "scrollmodechanged": ScrollModeChangedEventType;
     "switchspreadmode": SwitchSpreadModeEventType;
     "spreadmodechanged": SpreadModeChangedEventType;
     "documentproperties": DocumentPropertiesEventType;
+    "layersloaded": LayersLoadedEventType;
+    "resetlayers": object;
     "findfromurlhash": object;
     "updatefindmatchescount": UpdateFindMatchesCountEventType;
     "updatefindcontrolstate": UpdateFindControlStateEventType;
+    "updatetextlayermatches": UpdateTextLayerMatchesEventType;
     "fileinputchange": FileInputChangeEventType;
     "openfile": OpenFileEventType;
     "textlayerrendered": TextLayerRenderedEventType;
+    "sandboxcreated": object;
+    "toggleoutlinetree": object;
+    "currentoutlineitem": object;
+    "annotationlayerrendered": object;
+    "annotationeditorlayerrendered": object;
+    "xfalayerrendered": object;
+    "secondarytoolbarreset": object;
+    "localized": object;
+    "documenterror": object;
+    "documentloaded": object;
+    "documentinit": object;
+    "metadataloaded": object;
+    "updatefromsandbox": object;
+    "cursortoolchanged": object;
 }
 
 /**
@@ -79,6 +102,11 @@ export type AnnotationEditorModeChangedEventType = {
     mode: AnnotationEditorType;
 }
 
+export type AttachmentsLoadedEventType = {
+    source: unknown;
+    attachmentsCount: number;
+}
+
 export type NextPageEventType = {
     source: Toolbar;
 }
@@ -90,6 +118,22 @@ export type LastPageEventType = {
 }
 
 export type FirstPageEventType = LastPageEventType;
+
+export type FindEventType = {
+    source: unknown;
+    type: string;
+    query: string;
+    phraseSearch: boolean;
+    caseSensitive: boolean;
+    entireWord: boolean;
+    highlightAll: boolean;
+    findPrevious: boolean;
+    matchDiacritics: boolean;
+}
+
+export type FindBarCloseEventType = {
+    source: unknown;
+}
 
 export type BeforePrintEventType = {
     source: PdfjsWindow;
@@ -224,6 +268,11 @@ export type DocumentPropertiesEventType = {
     source: SecondaryToolbar;
 }
 
+export type LayersLoadedEventType = {
+    source: unknown;
+    layersCount: number;
+}
+
 export type FindQueryMatchesCount = {
     current: number;
     total: number;
@@ -247,6 +296,11 @@ export type UpdateFindControlStateEventType = {
     rawQuery: string;
     state: FindState;
     source: unknown;
+}
+
+export type UpdateTextLayerMatchesEventType = {
+    source: unknown;
+    pageIndex: number;
 }
 
 export type PageChangingEventType = {
