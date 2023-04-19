@@ -13,20 +13,42 @@
     height: 28px;
     margin: 2px 1px;
     padding: 2px 6px 0;
-    outline: none;
     border: none;
     border-radius: 2px;
+    color: var(--toolbar-icon-color);
+    user-select: none;
+    cursor: default;
+    box-sizing: border-box;
+    outline: none;
+    font: message-box;
+    position: relative;
+    float: left;
 
-    &:hover
-    {
+    &:hover {
         background-color: var(--button-hover-background-color);
+    }
+
+    &::before {
+        opacity: var(--toolbar-icon-opacity);
+        top: 6px;
+        left: 6px;
+        position: absolute;
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        content: "";
+        background-color: black;
+        mask-size: cover;
+        mask-repeat: no-repeat;
+        mask-position: center;
     }
 }
 
 :host
 {
     --text-color: rgb(12, 12, 13);
-    --icon-color: rgba(1, 1, 1, .7);
+    --toolbar-icon-color: rgba(1, 1, 1);
+    --toolbar-icon-opacity: 0.7;
 
     --sidebar-background-color: rgb(249, 249, 250);
     --sidebar-border-color: rgb(184, 184, 184);
@@ -38,7 +60,7 @@
     :host
     {
         --text-color: rgb(240, 240, 240);
-        --icon-color: rgba(249, 249, 250, .7);
+        --toolbar-icon-color: rgba(249, 249, 250, .7);
 
         --sidebar-background-color: rgb(56, 56, 61);
         --sidebar-border-color: rgba(0, 0, 0, 0.3);

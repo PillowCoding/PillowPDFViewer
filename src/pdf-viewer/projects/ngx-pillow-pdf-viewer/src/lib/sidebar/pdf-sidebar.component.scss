@@ -3,7 +3,8 @@
     border-left: solid 1px var(--sidebar-border-color);
 }
 
-#expand-sidebar::after
+#expand-sidebar::before
 {
-    content: "<";
+    mask-image: url(/assets/pdfjs/web/images/toolbarButton-secondaryToolbarToggle.svg);
+    transform: rotate(180deg);
 }
