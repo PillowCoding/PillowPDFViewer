@@ -46,6 +46,9 @@ export class PdfViewerComponent implements OnInit {
         return this._pdfjsContext;
     }
 
+    private readonly _annotateTextId = 'annotate-text';
+    private readonly _annotateDrawId = 'annotate-draw';
+
     private _relativeViewerPath?: string;
     private _fileSource?: string | Blob | Uint8Array;
     private _loggingProvider?: LoggingProvider;
@@ -81,20 +84,20 @@ export class PdfViewerComponent implements OnInit {
 
         // Inject the text and draw annotation tool buttons
         const textAnnotateStyle = `
-            #annotate-text::before
+            #${this._annotateTextId}::before
             {
                 -webkit-mask-image: var(--toolbarButton-editorFreeText-icon);
             }
         `;
         const drawAnnotateStyle = `
-            #annotate-draw::before
+            #${this._annotateDrawId}::before
             {
                 -webkit-mask-image: var(--toolbarButton-editorInk-icon);
             }
         `;
 
         const sharedStyle = `
-            #annotate-draw::after, #annotate-text::after
+            #${this._annotateDrawId}::after, #${this._annotateTextId}::after
             {
                 content: 'A';
                 font-size: 8px;
@@ -105,15 +108,15 @@ export class PdfViewerComponent implements OnInit {
                 color: var(--main-color);
                 opacity: var(--toolbar-icon-opacity);
             }
-            #annotate-draw::before, #annotate-text::before
+            #${this._annotateDrawId}::before, #${this._annotateTextId}::before
             {
                 color: var(--main-color);
                 opacity: var(--toolbar-icon-opacity);
             }
         `;
 
-        this.pdfjsContext.insertToolButton('annotate-draw', 'beforebegin', 'textEditor', true);
-        this.pdfjsContext.insertToolButton('annotate-text', 'beforebegin', 'annotate-draw', true);
+        this.pdfjsContext.insertToolButton(this._annotateDrawId, 'beforebegin', 'textEditor', true);
+        this.pdfjsContext.insertToolButton(this._annotateTextId, 'beforebegin', this._annotateDrawId, true);
         this.pdfjsContext.injectStyle(textAnnotateStyle + drawAnnotateStyle + sharedStyle)
 
         // Collect the tools to disable.
