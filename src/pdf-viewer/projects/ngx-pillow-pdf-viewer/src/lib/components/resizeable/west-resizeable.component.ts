@@ -2,24 +2,7 @@ import { Component, EventEmitter, Input, Output } from "@angular/core";
 
 @Component({
 selector: 'lib-west-resizeable',
-template: `
-    <div class="main-container">
-       <ng-content></ng-content> 
-        <span *ngIf="enabled">
-            <div class="draggableAnchor east" (mousedown)="onMouseDown($event)">
-                <div class="handle">
-                    <span></span>
-                </div>
-            </div>
-        </span>
-    </div>
-
-    <div *ngIf="lastMousePosition !== null"
-        (document:mouseup)="onMouseUp()"
-        (document:mousemove)="onMouseMove($event)"
-        class="overlay">
-    </div>
-`,
+templateUrl: 'west-resizeable.component.html',
 styleUrls: ['west-resizeable.component.scss']
 })
 export class WestResizeableComponent
