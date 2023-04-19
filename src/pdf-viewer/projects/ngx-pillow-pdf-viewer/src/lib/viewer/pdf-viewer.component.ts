@@ -31,7 +31,7 @@ export class PdfViewerComponent implements OnInit {
         this._fileSource = source;
     }
 
-    /** The source url of the file to use. If undefined, the PDF viewer will be empty until a file is loaded. */
+    /** Represents tools to disable in the viewer so they can not be used. */
     @Input()
     public set disabledTools(tools: toolType | toolType[]) {
         this._disabledTools = Array.isArray(tools) ? tools : [tools];
