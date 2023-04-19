@@ -6,16 +6,43 @@
     height: 100%;
 }
 
+.toolbar-button
+{
+    background: none;
+    width: 28px;
+    height: 28px;
+    margin: 2px 1px;
+    padding: 2px 6px 0;
+    outline: none;
+    border: none;
+    border-radius: 2px;
+
+    &:hover
+    {
+        background-color: var(--button-hover-background-color);
+    }
+}
+
 :host
 {
+    --text-color: rgb(12, 12, 13);
+    --icon-color: rgba(1, 1, 1, .7);
+
     --sidebar-background-color: rgb(249, 249, 250);
     --sidebar-border-color: rgb(184, 184, 184);
+
+    --button-hover-background-color: rgb(221, 222, 223);
 }
 
 @media (prefers-color-scheme: dark) {
     :host
     {
+        --text-color: rgb(240, 240, 240);
+        --icon-color: rgba(249, 249, 250, .7);
+
         --sidebar-background-color: rgb(56, 56, 61);
         --sidebar-border-color: rgba(0, 0, 0, 0.3);
+
+        --button-hover-background-color: rgb(102, 102, 103);
     }
 }

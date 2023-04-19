@@ -1,5 +1,20 @@
-<lib-west-resizeable (widthChanged)="onSidebarWidthChanged($event)">
-    <div class="full-height annotation-container" [style.width.px]="sidebarWidth">
+<lib-west-resizeable
+    [enabled]="expanded"
+    [shouldResize]="sidebarWidthShouldResize"
+    (widthChanged)="onSidebarWidthChanged($event)">
 
+    <div
+        [@expandCollapse]="{ value: expanded ? 'expand' : 'collapse', params: { expandedWidth: expandedSidebarWidth }}"
+        class="full-height annotation-container">
+
+        <button *ngIf="!expanded"
+            class="toolbar-button"
+            id="expand-sidebar"
+            [title]="'expand'"
+            (click)="expandAnnotations()">
+        </button>
+
+        <lib-close-button *ngIf="expanded"
+            (closed)="collapseAnnotations()"/>
     </div>
 </lib-west-resizeable>
