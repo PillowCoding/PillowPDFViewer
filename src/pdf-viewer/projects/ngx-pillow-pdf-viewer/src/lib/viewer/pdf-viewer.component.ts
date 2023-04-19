@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
-import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
+import PdfjsContext, { toolType } from "ngx-pillow-pdf-viewer/pdfjsContext";
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
@@ -31,6 +31,12 @@ export class PdfViewerComponent implements OnInit {
         this._fileSource = source;
     }
 
+    /** The source url of the file to use. If undefined, the PDF viewer will be empty until a file is loaded. */
+    @Input()
+    public set disabledTools(tools: toolType | toolType[]) {
+        this._disabledTools = Array.isArray(tools) ? tools : [tools];
+    }
+
     public get pdfjsContext() {
         if (!this._pdfjsContext) {
              throw new Error('The PDFJS context could not be found.');
@@ -43,6 +49,7 @@ export class PdfViewerComponent implements OnInit {
     private _fileSource?: string | Blob | Uint8Array;
     private _loggingProvider?: LoggingProvider;
     private _pdfjsContext?: pdfjsContext;
+    private _disabledTools?: toolType[];
 
     ngOnInit(): void {
         if (!this._relativeViewerPath) {
@@ -63,6 +70,12 @@ export class PdfViewerComponent implements OnInit {
     }
 
     private onViewerLoaded() {
-        this.pdfjsContext.disableTool('printing');
+        if (!this._disabledTools) {
+            return;
+        }
+
+        for (const toolId of this._disabledTools) {
+            this.pdfjsContext.setToolDisabled(toolId);
+        }
     }
 }

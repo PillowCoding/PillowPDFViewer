@@ -24,6 +24,11 @@ export default class PdfjsContext
         'downloadPdf': [ 'download', 'secondaryDownload' ],
     };
 
+    /** Gets the iframe document. */
+    public get pdfjsDocument() {
+        return this._iframeElement.contentDocument || this.pdfjsWindow?.document;
+    }
+
     /** Gets the iframe window. */
     public get pdfjsWindow() {
         return this._iframeElement.contentWindow as PdfjsWindow | null;
@@ -68,9 +73,35 @@ export default class PdfjsContext
             dispatch as (e: object) => void);
     }
 
-    public disableTool(type: toolType) {
-        this.sendLogMessage(`Disabling ${type}...`);
+    public setToolDisabled(type: toolType, disabled = true) {
+        this.sendLogMessage(`${disabled ? 'Disabling' : 'Enabling'} ${type}...`);
         this.assertViewerLoaded();
+
+        const toolIds = this.toolTypeIdMap[type];
+        for (const toolId of toolIds) {
+            const element = this.pdfjsDocument.getElementById(toolId);
+            if (!element) {
+                console.warn(`Tool element ${toolId} could not be found.`);
+                continue;
+            }
+
+            element.toggleAttribute('disabled', disabled);
+            element.ariaDisabled = String(disabled);
+        }
+    }
+
+    public getToolDisabled(type: toolType) {
+        const toolIds = this.toolTypeIdMap[type];
+        return toolIds.every(toolId => {
+            this.assertViewerLoaded();
+            const element = this.pdfjsDocument.getElementById(toolId);
+            if (!element) {
+                console.warn(`Tool element ${toolId} could not be found. Assuming disabled.`);
+                return true;
+            }
+
+            return element.ariaDisabled === String(true);
+        });
     }
 
     private async onIframeLoaded() {
@@ -94,6 +125,7 @@ export default class PdfjsContext
     }
 
     private assertPdfViewerApplicationExists(): asserts this is this & {
+        pdfjsDocument: Document;
         pdfjsWindow: PdfjsWindow;
         pdfViewerApplication: PDFViewerApplication
     } {
@@ -103,10 +135,12 @@ export default class PdfjsContext
     }
 
     private assertViewerLoaded(): asserts this is this & {
+        pdfjsDocument: Document;
         pdfjsWindow: PdfjsWindow;
         pdfViewerApplication: PDFViewerApplication
         viewerState: 'loaded';
     } {
+        this.assertPdfViewerApplicationExists();
         if (this._viewerState !== 'loaded') {
             throw new Error('The viewer has not been loaded.');
         }
