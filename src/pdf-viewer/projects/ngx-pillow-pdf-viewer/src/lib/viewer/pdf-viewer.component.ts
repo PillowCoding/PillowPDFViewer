@@ -3,6 +3,7 @@ import PdfjsContext, { toolType } from "ngx-pillow-pdf-viewer/pdfjsContext";
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
+import { AnnotationEditorModeChangedEventType, AnnotationEditorType } from "../../types/eventBus";
 
 @Component({
     selector: 'lib-pdf-viewer',
@@ -70,11 +71,37 @@ export class PdfViewerComponent implements OnInit {
     }
 
     private onViewerLoaded() {
+
+        // Subscribe to event bus events.
+        this.pdfjsContext.subscribeEventBusDispatch('annotationeditormodechanged', (e) => this.onAnnotationEditorModeChanged(e));
+
         if (!this._disabledTools) {
             return;
         }
 
-        for (const toolId of this._disabledTools) {
+        // Collect the tools to disable.
+        // The text editor and draw editor are disabled after the initial render.
+        // This is due to the fact that these are manually disabled by the viewer.
+        const toolsToDisable = this._disabledTools.filter(x => x !== 'textEditor' && x !== 'drawEditor');
+
+        for (const toolId of toolsToDisable) {
+            this.pdfjsContext.setToolDisabled(toolId);
+        }
+    }
+
+    private onAnnotationEditorModeChanged(event: AnnotationEditorModeChangedEventType) {
+        // Check if the mode is an action that is not disabled.
+        if (event.mode === AnnotationEditorType.disable) {
+            return;
+        }
+
+        if (!this._disabledTools) {
+            return;
+        }
+
+        // If the text editor or draw editor must be disabled, disable them if the annotation mode changed to not disabled.
+        const toolsToDisable = this._disabledTools.filter(x => x === 'textEditor' || x === 'drawEditor');
+        for (const toolId of toolsToDisable) {
             this.pdfjsContext.setToolDisabled(toolId);
         }
     }

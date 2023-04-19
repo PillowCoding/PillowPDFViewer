@@ -4,7 +4,7 @@ import { PdfjsWindow } from "../types/pdfjsWindow";
 import { EventBusEventType, EventBusPayloadType } from "../types/eventBus";
 import { PDFViewerApplication } from "../types/pdfViewerApplication";
 
-export type toolType = 'openFile' | 'printing' | 'downloadPdf';
+export type toolType = 'openFile' | 'printing' | 'downloadPdf' | 'textEditor' | 'drawEditor';
 
 export default class PdfjsContext
 {
@@ -22,6 +22,8 @@ export default class PdfjsContext
         'openFile': [ 'openFile', 'secondaryOpenFile' ],
         'printing': [ 'print', 'secondaryPrint' ],
         'downloadPdf': [ 'download', 'secondaryDownload' ],
+        'textEditor': [ 'editorFreeText' ],
+        'drawEditor': [ 'editorInk' ],
     };
 
     /** Gets the iframe document. */

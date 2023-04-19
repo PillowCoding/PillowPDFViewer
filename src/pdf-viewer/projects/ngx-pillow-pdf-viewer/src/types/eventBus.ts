@@ -10,6 +10,7 @@ export default interface EventBus {
 }
 
 export interface EventBusEventTypePayloadMap {
+    "annotationeditormodechanged": AnnotationEditorModeChangedEventType
     "nextpage": NextPageEventType;
     "previouspage": PreviousPageEventType;
     "lastpage": LastPageEventType;
@@ -65,6 +66,18 @@ export type EventBusEventType = keyof EventBusEventTypePayloadMap | Omit<string,
  * If valid, the return type of that index is used. If not, an object is returned.
  */
 export type EventBusPayloadType<K extends EventBusEventType> = K extends keyof EventBusEventTypePayloadMap ? EventBusEventTypePayloadMap[K] : object;
+
+export enum AnnotationEditorType {
+    disable = -1,
+    none = 0,
+    freeText = 3,
+    ink = 15
+}
+
+export type AnnotationEditorModeChangedEventType = {
+    source: PDFViewer;
+    mode: AnnotationEditorType;
+}
 
 export type NextPageEventType = {
     source: Toolbar;
@@ -164,13 +177,6 @@ export type PresentationModeChangedEventType = {
 
 export type PresentationModeEventType = {
     source: SecondaryToolbar;
-}
-
-export enum AnnotationEditorType {
-    disable = -1,
-    none = 0,
-    freeText = 3,
-    ink = 15
 }
 
 export type SwitchAnnotationEditorModeEventType = {
