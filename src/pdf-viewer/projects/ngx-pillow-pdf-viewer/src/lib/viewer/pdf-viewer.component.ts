@@ -79,6 +79,43 @@ export class PdfViewerComponent implements OnInit {
             return;
         }
 
+        // Inject the text and draw annotation tool buttons
+        const textAnnotateStyle = `
+            #annotate-text::before
+            {
+                -webkit-mask-image: var(--toolbarButton-editorFreeText-icon);
+            }
+        `;
+        const drawAnnotateStyle = `
+            #annotate-draw::before
+            {
+                -webkit-mask-image: var(--toolbarButton-editorInk-icon);
+            }
+        `;
+
+        const sharedStyle = `
+            #annotate-draw::after, #annotate-text::after
+            {
+                content: 'A';
+                font-size: 8px;
+                position: absolute;
+                left: 4px;
+                top: 4px;
+
+                color: var(--main-color);
+                opacity: var(--toolbar-icon-opacity);
+            }
+            #annotate-draw::before, #annotate-text::before
+            {
+                color: var(--main-color);
+                opacity: var(--toolbar-icon-opacity);
+            }
+        `;
+
+        this.pdfjsContext.insertToolButton('annotate-draw', 'beforebegin', 'textEditor', true);
+        this.pdfjsContext.insertToolButton('annotate-text', 'beforebegin', 'annotate-draw', true);
+        this.pdfjsContext.injectStyle(textAnnotateStyle + drawAnnotateStyle + sharedStyle)
+
         // Collect the tools to disable.
         // The text editor and draw editor are disabled after the initial render.
         // This is due to the fact that these are manually disabled by the viewer.

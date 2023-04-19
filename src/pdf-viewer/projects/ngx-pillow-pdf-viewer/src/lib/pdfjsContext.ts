@@ -75,11 +75,13 @@ export default class PdfjsContext
             dispatch as (e: object) => void);
     }
 
-    public setToolDisabled(type: toolType, disabled = true) {
-        this.sendLogMessage(`${disabled ? 'Disabling' : 'Enabling'} ${type}...`);
+    public setToolDisabled(typeOrId: toolType | Omit<string, toolType>, disabled = true) {
+        this.sendLogMessage(`${disabled ? 'Disabling' : 'Enabling'} ${typeOrId.toString()}...`);
         this.assertViewerLoaded();
 
-        const toolIds = this.toolTypeIdMap[type];
+        // Determine the relevant ids to disable/enable.
+        const toolIds = this.getToolButtonIds(typeOrId);
+
         for (const toolId of toolIds) {
             const element = this.pdfjsDocument.getElementById(toolId);
             if (!element) {
@@ -92,8 +94,10 @@ export default class PdfjsContext
         }
     }
 
-    public getToolDisabled(type: toolType) {
-        const toolIds = this.toolTypeIdMap[type];
+    public getToolDisabled(typeOrId: toolType | Omit<string, toolType>) {
+        // Determine the relevant ids to check.
+        const toolIds = this.getToolButtonIds(typeOrId);
+
         return toolIds.every(toolId => {
             this.assertViewerLoaded();
             const element = this.pdfjsDocument.getElementById(toolId);
@@ -104,6 +108,49 @@ export default class PdfjsContext
 
             return element.ariaDisabled === String(true);
         });
+    }
+
+    public insertToolButton(id: string, where: InsertPosition, whereReference: toolType | Omit<string, toolType>, startDisabled = false) {
+        this.assertViewerLoaded();
+        
+        const toolButton = document.createElement('button');
+        toolButton.classList.add('toolbarButton');
+        toolButton.id = id;
+
+        // Determine the relevant ids to be used as a reference.
+        const referenceToolButtons = this.getToolButtonIds(whereReference);
+
+        // Get the first index of the array. This represents the button from the primary sidebar.
+        const referenceToolButtonId = referenceToolButtons[0];
+        const element = this.pdfjsDocument.getElementById(referenceToolButtonId);
+        if (!element) {
+            throw new Error(`Tool element ${referenceToolButtonId} could not be found.`);
+        }
+
+        element.insertAdjacentElement(where, toolButton);
+
+        // Disable the button if the parameter is true.
+        if (startDisabled) {
+            this.setToolDisabled(id, true);
+        }
+    }
+
+    public injectStyle(style: string) {
+        this.assertViewerLoaded();
+
+        // Inject the css in a style tag.
+        const styleContainer = this.pdfjsDocument.createElement("style");
+        styleContainer.textContent = style;
+        this.pdfjsDocument.head.appendChild(styleContainer);
+    }
+
+    private getToolButtonIds(typeOrId: toolType | Omit<string, toolType>) {
+        // Determine the relevant ids.
+        // If typeOrId represents a valid build in toolType, get the ids from that map.
+        // Otherwise assume typeOrId is the id to use as reference
+        return typeof typeOrId === 'string' && typeOrId in this.toolTypeIdMap ?
+            this.toolTypeIdMap[typeOrId as toolType] :
+            [typeOrId as string];
     }
 
     private async onIframeLoaded() {
