@@ -91,6 +91,10 @@ export class PdfViewerComponent implements OnInit {
         return this._sidebar;
     }
 
+    public annotationMode() {
+        return this._annotationMode;
+    }
+
     private readonly _annotateTextId = 'annotate-text';
     private readonly _annotateDrawId = 'annotate-draw';
     private readonly _defaultLogSource = PdfViewerComponent.name;
@@ -101,6 +105,7 @@ export class PdfViewerComponent implements OnInit {
     private _pdfjsContext?: pdfjsContext;
     private _disabledTools?: toolType[];
     private _annotations: annotation[] = [];
+    private _annotationMode: AnnotationType | 'none' = 'none';
 
     // Keeps track of pages that have had their annotations fetched.
     private readonly _fetchedAnnotationPages: number[] = [];
@@ -119,6 +124,7 @@ export class PdfViewerComponent implements OnInit {
 
         this._pdfjsContext = new PdfjsContext(this._loggingProvider, this._relativeViewerPath, this._iframeWrapper.nativeElement);
         this._pdfjsContext.viewerLoaded.subscribe(() => this.onViewerLoaded());
+        this._pdfjsContext.documentLoaded.subscribe(() => this.onDocumentLoaded());
 
         if (!this._fileSource) {
             return;
@@ -194,6 +200,22 @@ export class PdfViewerComponent implements OnInit {
         }
     }
 
+    private onDocumentLoaded() {
+        this.assertPdfjsContextExists();
+        this.pdfjsContext.documentMouseUp.subscribe(() => this.onDocumentMouseUp());
+    }
+
+    private onDocumentMouseUp() {
+        this.assertPdfjsContextExists();
+
+        // Proceed if we are working on a text annotation.
+        if (this._annotationMode !== 'text') {
+            return;
+        }
+
+        console.log(this.pdfjsContext.getSelectedTextContext())
+    }
+
     private beginNewAnnotation(type: AnnotationType) {
         this.loggingProvider.sendDebug(`Start new ${type} annotation...`, this._defaultLogSource);
         this.assertPdfjsContextExists();
@@ -203,6 +225,7 @@ export class PdfViewerComponent implements OnInit {
             this.deleteAnnotation(uncompletedAnnotation);
         }
 
+        this._annotationMode = type;
         const newAnnotation = new annotation({ type, page: 1 });
         this._annotations.push(newAnnotation);
         this.pdfjsContext.dispatchEventBus('annotationStarted', {

@@ -4,6 +4,7 @@ import { PdfjsWindow } from "./types/pdfjsWindow";
 import { EventBusEventType, EventBusPayloadType } from "./types/eventBus";
 import { PDFViewerApplication } from "./types/pdfViewerApplication";
 import DeferredPromise from "./utils/deferredPromise";
+import { PdfjsPageContext, SelectedTextContext } from "./pdfjsContextTypes";
 
 export type toolType = 'openFile' | 'printing' | 'downloadPdf' | 'textEditor' | 'drawEditor';
 
@@ -12,6 +13,8 @@ export default class PdfjsContext
     public readonly iframeLoaded = new Subject<void>();
     public readonly viewerLoaded = new Subject<void>();
     public readonly documentLoaded = new Subject<void>();
+    public readonly documentMouseDown = new Subject<MouseEvent>();
+    public readonly documentMouseUp = new Subject<MouseEvent>();
 
     private readonly _loadViewerPromise = new DeferredPromise<void>();
     private readonly _loadDocumentPromise = new DeferredPromise<void>();
@@ -191,6 +194,71 @@ export default class PdfjsContext
         this.pdfjsDocument.head.appendChild(styleContainer);
     }
 
+    public getSelectedTextContext(): SelectedTextContext | null {
+        this.assertDocumentLoaded();
+
+        const selection = this.pdfjsDocument.getSelection();
+        const selectedText = selection?.toString().trim();
+        if (!selection || !selectedText || selectedText === '') {
+            return null;
+        }
+
+        // Ensure all data is set, and the node type is a text node.
+        if (!selection.anchorNode || !selection.focusNode || selection.anchorNode.nodeType !== Node.TEXT_NODE  || selection.focusNode.nodeType !== Node.TEXT_NODE)
+        {
+            return null;
+        }
+
+        let startNode = selection.anchorNode;
+        let endNode = selection.focusNode;
+
+        // We need to make sure what node comes earlier in the DOM tree. If we select backwards, we need to switch the nodes around.
+        const anchorNodePosition = selection.anchorNode.compareDocumentPosition(selection.focusNode);
+        if (anchorNodePosition & Node.DOCUMENT_POSITION_PRECEDING)
+        {
+            startNode = selection.focusNode;
+            endNode = selection.anchorNode;
+        }
+
+        const startElement = startNode.parentElement;
+        const endElement = endNode.parentElement;
+
+        if (!startElement || !endElement) {
+            return null;
+        }
+
+        // Get the current page context and validate it can be found and both ends match the same page.
+        const startPageContext = this.getPageContext(startElement);
+        const endPageContext = this.getPageContext(endElement);
+        if (!startPageContext || !endPageContext || startPageContext.page !== endPageContext.page) {
+            return null;
+        }
+
+        return {
+            ...startPageContext,
+            selectedText,
+            startElement,
+            endElement
+        }
+    }
+
+    public getPageContext(element: Element): PdfjsPageContext | null {
+        const pageElement = element.closest('[data-page-number]');
+        if (!pageElement) {
+            return null;
+        }
+
+        const page = pageElement.getAttribute('data-page-number');
+        if (!page) {
+            return null;
+        }
+
+        return {
+            pageContainer: pageElement as HTMLDivElement,
+            page: Number(page),
+        }
+    }
+
     private getToolButtonIds(typeOrId: toolType | Omit<string, toolType>) {
         // Determine the relevant ids.
         // If typeOrId represents a valid build in toolType, get the ids from that map.
@@ -202,6 +270,10 @@ export default class PdfjsContext
 
     private async onIframeLoaded() {
         this.assertPdfViewerApplicationExists();
+
+        // Hook events
+        this.pdfjsDocument.addEventListener('mousedown', (e) => this.documentMouseDown.next(e));
+        this.pdfjsDocument.addEventListener('mouseup', (e) => this.documentMouseUp.next(e));
 
         this._loggingProvider.sendDebug('Iframe has been loaded.', this._defaultLogSource);
         this.iframeLoaded.next();
