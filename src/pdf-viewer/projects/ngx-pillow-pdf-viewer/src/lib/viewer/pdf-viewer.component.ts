@@ -6,6 +6,7 @@ import LoggingProvider, { pdfViewerLogSourceType } from "ngx-pillow-pdf-viewer/u
 import { AnnotationEditorModeChangedEventType, AnnotationEditorType } from "../../types/eventBus";
 import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
+import { annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
 
 @Component({
     selector: 'lib-pdf-viewer',
@@ -55,8 +56,7 @@ export class PdfViewerComponent implements OnInit {
     public set annotations(annotations: annotation[]) {
 
         // It is too late to load annotations this way.
-        // TODO: viewerState is the wrong thing to check for. There needs to be a state that returns true if a document is loaded.
-        if (this.pdfjsContext?.viewerState === 'loaded') {
+        if (this.pdfjsContext?.documentState === 'loaded') {
             console.warn('It is not possible to pass annotations through the input after the document is loaded. If the annotations are fetched asynchronously, or at a later state, it is possible to pass them through the `annotationProvider` input.');
             return;
         }
@@ -64,8 +64,15 @@ export class PdfViewerComponent implements OnInit {
         this._annotations = annotations;
     }
 
+    /** The provider that will fetch annotations asynchronously. */
+    @Input() public annotationsProvider?: annotationsProviderDelegate;
+
     public get pdfjsContext() {
         return this._pdfjsContext;
+    }
+
+    public get uncompletedAnnotation() {
+        return this._annotations.filter(x => x.state !== 'completed')[0];
     }
 
     private readonly _annotateTextId = 'annotate-text';
@@ -77,6 +84,9 @@ export class PdfViewerComponent implements OnInit {
     private _pdfjsContext?: pdfjsContext;
     private _disabledTools?: toolType[];
     private _annotations: annotation[] = [];
+
+    // Keeps track of pages that have had their annotations fetched.
+    private readonly _fetchedAnnotationPages: number[] = [];
 
     ngOnInit(): void {
         if (!this._relativeViewerPath) {
@@ -166,7 +176,15 @@ export class PdfViewerComponent implements OnInit {
 
     private beginNewAnnotation(type: AnnotationType) {
         this.sendLogMessage(`Start new ${type} annotation...`);
+
+        const uncompletedAnnotation = this.uncompletedAnnotation;
+        if (uncompletedAnnotation) {
+            this.sendLogMessage('Removing uncompleted annotation...');
+            this._annotations = this._annotations.filter(x => x.id !== uncompletedAnnotation.id);
+        }
+
         const newAnnotation = new annotation({ type, page: 1 });
+        this._annotations.push(newAnnotation);
     }
 
     private onPagesLoaded() {
@@ -200,7 +218,24 @@ export class PdfViewerComponent implements OnInit {
         }
     }
 
-    private assertPdfjsContextExists(): asserts this is this & {
+    public async fetchAnnotationsForPage(page: number) {
+
+        // Previously fetched.
+        if (this._fetchedAnnotationPages.some(x => x === page)) {
+            return this._annotations.filter(x => x.page === page);
+        }
+
+        // Check if the provider is set.
+        if (!this.annotationsProvider) {
+            console.warn('Please provide a value for `annotationsProvider` in order to asynchronously fetch annotations for pages.');
+            return [];
+        }
+
+        this.sendLogMessage(`Fetching annotations for page ${page}...`);
+        return await this.annotationsProvider(page);
+    }
+
+    public assertPdfjsContextExists(): asserts this is this & {
         pdfjsContext: PdfjsContext;
     } {
         if (!this.pdfjsContext) {

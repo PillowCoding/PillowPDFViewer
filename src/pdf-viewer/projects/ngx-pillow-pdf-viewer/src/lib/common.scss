@@ -24,6 +24,10 @@
     position: relative;
     float: left;
 
+    &[disabled] {
+        opacity: 0.5;
+    }
+
     &:hover {
         background-color: var(--button-hover-background-color);
     }

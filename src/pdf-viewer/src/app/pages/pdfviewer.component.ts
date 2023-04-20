@@ -7,4 +7,6 @@ import { Component } from '@angular/core';
 })
 export class pdfViewerComponent
 {
+    private readonly _annotationStorageKey = 'storedAnnotations';
+    private readonly delay = (ms: number) => { return new Promise( resolve => setTimeout(resolve, ms) ); }
 }

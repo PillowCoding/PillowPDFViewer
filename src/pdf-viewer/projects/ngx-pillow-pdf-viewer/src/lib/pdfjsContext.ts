@@ -10,11 +10,15 @@ export default class PdfjsContext
 {
     public readonly iframeLoaded = new Subject<void>();
     public readonly viewerLoaded = new Subject<void>();
+    public readonly documentLoaded = new Subject<void>();
 
     private _loadViewerResolver!: () => void;
     private readonly _loadViewerPromise = new Promise<void>((resolve) => this._loadViewerResolver = resolve);
+    private _loadDocumentResolver!: () => void;
+    private readonly _loadDocumentPromise = new Promise<void>((resolve) => this._loadDocumentResolver = resolve);
 
     private _viewerState: 'unloaded' | 'loading' | 'loaded' = 'unloaded';
+    private _documentState: 'unloaded' | 'loading' | 'loaded' = 'unloaded';
 
     // TODO: Replace hotkeys that fall under certain tool types.
     /** Represents the ids of the html elements representing the tool type. */
@@ -47,6 +51,31 @@ export default class PdfjsContext
     {
         return this._viewerState;
     }
+
+    /** Gets the current state of the document. */
+    public get documentState()
+    {
+        return this._documentState;
+    }
+
+    /** Represents the promise and resolver responsible for providing a promise until the viewer is loaded. */
+    public get loadViewerPromise()
+    {
+        return this._loadViewerPromise;
+    }
+
+    /** Represents the promise and resolver responsible for providing a promise until the document is loaded. */
+    public get loadDocumentPromise()
+    {
+        return this._loadDocumentPromise;
+    }
+
+    /** Gets the currently focused page */
+    public get page()
+    {
+        this.assertDocumentLoaded();
+        return this.pdfViewerApplication.pdfViewer.currentPageNumber;
+    }
     
     constructor(
         private readonly _loggingProvider: LoggingProvider,
@@ -63,6 +92,7 @@ export default class PdfjsContext
         await this._loadViewerPromise;
         this.sendLogMessage('Loading source...', undefined, source);
         this.assertViewerLoaded();
+        this._documentState = 'loading';
 
         const args = { url: source };
         await this.pdfViewerApplication.open(args);
@@ -166,12 +196,15 @@ export default class PdfjsContext
 
         this._viewerState = 'loaded';
         this.sendLogMessage('Viewer has been loaded.');
-        this.viewerLoaded.next();
 
-        // Resolve the loading
-        if (!this._loadViewerResolver) {
-            throw new Error('Expected the load viewer resolved to exist.');
-        }
+        // Inject event bus events.
+        this.subscribeEventBusDispatch('documentloaded', () => {
+            this._documentState = 'loaded';
+            this._loadDocumentResolver();
+            this.documentLoaded.next();
+        });
+
+        this.viewerLoaded.next();
         this._loadViewerResolver();
     }
 
@@ -194,6 +227,19 @@ export default class PdfjsContext
         this.assertPdfViewerApplicationExists();
         if (this._viewerState !== 'loaded') {
             throw new Error('The viewer has not been loaded.');
+        }
+    }
+
+    private assertDocumentLoaded(): asserts this is this & {
+        pdfjsDocument: Document;
+        pdfjsWindow: PdfjsWindow;
+        pdfViewerApplication: PDFViewerApplication
+        viewerState: 'loaded';
+        documentState: 'loaded';
+    } {
+        this.assertViewerLoaded();
+        if (this._documentState !== 'loaded') {
+            throw new Error('The document has not been loaded.');
         }
     }
 

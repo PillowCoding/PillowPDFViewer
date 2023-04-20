@@ -10,6 +10,7 @@
         <button *ngIf="!expanded"
             class="toolbar-button"
             id="expand-sidebar"
+            [disabled]="pdfjsContext?.documentState !== 'loaded'"
             [title]="'expand'"
             (click)="expandAnnotations()">
         </button>
