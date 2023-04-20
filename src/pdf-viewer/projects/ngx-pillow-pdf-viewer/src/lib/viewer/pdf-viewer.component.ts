@@ -251,8 +251,8 @@ export class PdfViewerComponent implements OnInit {
         }
     }
 
-    public async fetchAnnotationsForPage(page: number) {
-
+    public async fetchAnnotationsForPage(page: number)
+    {
         // Previously fetched.
         if (this._fetchedAnnotationPages.some(x => x === page)) {
             return this._annotations.filter(x => x.page === page);

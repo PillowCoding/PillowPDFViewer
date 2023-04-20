@@ -7,15 +7,24 @@
         [@expandCollapse]="{ value: expanded ? 'expand' : 'collapse', params: { expandedWidth: expandedSidebarWidth }}"
         class="full-height annotation-container">
 
-        <button *ngIf="!expanded"
-            class="toolbar-button"
-            id="expand-sidebar"
-            [disabled]="pdfjsContext?.documentState !== 'loaded'"
-            [title]="'expand'"
-            (click)="expandAnnotations()">
-        </button>
+        <div class="flex">
+            <button *ngIf="!expanded"
+                class="toolbar-button"
+                id="expand-sidebar"
+                [disabled]="pdfjsContext?.documentState !== 'loaded'"
+                [title]="'expand'"
+                (click)="expandAnnotations()">
+            </button>
 
-        <lib-close-button *ngIf="expanded"
-            (closed)="collapseAnnotations()"/>
+            <lib-close-button *ngIf="expanded"
+                (closed)="collapseAnnotations()"/>
+        </div>
+
+        <ng-container *ngIf="expanded">
+            <div *ngIf="loading"
+                class="loading-indicator">
+                <lib-loading-ring></lib-loading-ring>
+            </div>
+        </ng-container>
     </div>
 </lib-west-resizeable>

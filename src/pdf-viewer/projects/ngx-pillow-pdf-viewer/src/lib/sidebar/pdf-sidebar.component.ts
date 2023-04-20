@@ -1,5 +1,5 @@
 import { trigger, state, style, transition, animate } from "@angular/animations";
-import { Component, Input, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, Input, OnInit } from "@angular/core";
 import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
 import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import { DeleteAnnotationEventType, StartAnnotationEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
@@ -41,6 +41,9 @@ export class PdfSidebarComponent implements OnInit {
     @Input() public pdfjsContext?: PdfjsContext;
     @Input() public loggingProvider?: LoggingProvider;
 
+    // If loadingCount is higher than 0, the sidebar is loading.
+    private _loadingCount = 0;
+
     public get expandedSidebarWidth()
     {
         return this._expandedSidebarWidth;
@@ -51,7 +54,20 @@ export class PdfSidebarComponent implements OnInit {
         return this._expanded;
     }
 
-    constructor()
+    public get annotations() {
+        return this._annotations.filter(x => x.state === 'completed');
+    }
+
+    public get uncompletedAnnotations() {
+        return this._annotations.filter(x => x.state !== 'completed');
+    }
+
+    public get loading() {
+        return this._loadingCount > 0;
+    }
+
+    constructor(
+        private changeDetector: ChangeDetectorRef)
     {
         this.sidebarWidthShouldResize = this.sidebarWidthShouldResize.bind(this);
     }
@@ -86,7 +102,12 @@ export class PdfSidebarComponent implements OnInit {
 
         // Fetch the annotations. After fetching make sure we are still on the same page.
         // If we scroll quickly and fetch annotations of a previous page, we don't want to show the wrong annotations.
+        this._loadingCount++;
+        this.stateHasChanged();
         const annotations = await this.annotationsProvider(targetPage);
+        this._loadingCount--;
+        this.stateHasChanged();
+
         this._fetchingPages = this._fetchingPages.filter(x => x !== targetPage);
         if (this.pdfjsContext.page !== targetPage) {
             console.warn(`Aborting annotation fetch. Page ${targetPage} is no longer in focus.`);
@@ -137,7 +158,7 @@ export class PdfSidebarComponent implements OnInit {
         this._expandedSidebarWidth += difference;
     }
 
-    public assertParametersSet(): asserts this is this & {
+    private assertParametersSet(): asserts this is this & {
         annotationsProvider: annotationsProviderDelegate;
         pdfjsContext: PdfjsContext;
         loggingProvider: LoggingProvider;
@@ -149,6 +170,10 @@ export class PdfSidebarComponent implements OnInit {
         if (missingParameters.length > 0) {
             throw new Error(`Please provide a value for the parameters ${missingParameters.join(', ')}`);
         }
+    }
+
+    private stateHasChanged() {
+        this.changeDetector.detectChanges();
     }
 
     private sendLogMessage(message: unknown, source?: pdfViewerLogSourceType, ...args: unknown[]) {
