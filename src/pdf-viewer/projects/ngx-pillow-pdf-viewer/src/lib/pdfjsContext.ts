@@ -5,6 +5,7 @@ import { EventBusEventType, EventBusPayloadType } from "./types/eventBus";
 import { PDFViewerApplication } from "./types/pdfViewerApplication";
 import DeferredPromise from "./utils/deferredPromise";
 import { PdfjsPageContext, SelectedTextContext } from "./pdfjsContextTypes";
+import { getElementXpath } from "./utils/xpath";
 
 export type toolType = 'openFile' | 'printing' | 'downloadPdf' | 'textEditor' | 'drawEditor';
 
@@ -198,14 +199,14 @@ export default class PdfjsContext
         this.assertDocumentLoaded();
 
         const selection = this.pdfjsDocument.getSelection();
-        const selectedText = selection?.toString().trim();
+        const selectedText = selection?.toString().replace(/[\n\r]/g, "").trim();
         if (!selection || !selectedText || selectedText === '') {
             return null;
         }
 
         // Ensure all data is set, and the node type is a text node.
-        if (!selection.anchorNode || !selection.focusNode || selection.anchorNode.nodeType !== Node.TEXT_NODE  || selection.focusNode.nodeType !== Node.TEXT_NODE)
-        {
+        if (!selection.anchorNode || !selection.focusNode || selection.anchorNode.nodeType !== Node.TEXT_NODE  || selection.focusNode.nodeType !== Node.TEXT_NODE) {
+            selection.removeAllRanges();
             return null;
         }
 
@@ -219,6 +220,8 @@ export default class PdfjsContext
             startNode = selection.focusNode;
             endNode = selection.anchorNode;
         }
+
+        selection.removeAllRanges();
 
         const startElement = startNode.parentElement;
         const endElement = endNode.parentElement;
@@ -234,11 +237,17 @@ export default class PdfjsContext
             return null;
         }
 
+        const elementXpath = this.getElementXPathOnPage(startElement, 'viewer');
+        if (!elementXpath) {
+            return null;
+        }
+
         return {
             ...startPageContext,
             selectedText,
             startElement,
-            endElement
+            endElement,
+            xpath: elementXpath,
         }
     }
 
@@ -257,6 +266,23 @@ export default class PdfjsContext
             pageContainer: pageElement as HTMLDivElement,
             page: Number(page),
         }
+    }
+
+    private getElementXPathOnPage(element: HTMLElement, expectId: string) {
+        const elementXpath = getElementXpath(element, expectId);
+        const xpathParts = elementXpath.split('/');
+
+        // Regular PDF has 6 parts and PDF's with marked content have 7.
+        if (!elementXpath.startsWith(`//*[@id="${expectId}"]`) || (xpathParts.length !== 6 && xpathParts.length !== 7)) {
+            return null;
+        }
+
+        // Replace some parts of the xpath with more accurate steps.
+        const page = xpathParts[3].split('[')[1].replace(']', '');
+        xpathParts[3] = `div[contains(@data-page-number, "${page}")]`;
+        xpathParts[4] = 'div[contains(@class, "textLayer")]';
+
+        return xpathParts.join('/');
     }
 
     private getToolButtonIds(typeOrId: toolType | Omit<string, toolType>) {

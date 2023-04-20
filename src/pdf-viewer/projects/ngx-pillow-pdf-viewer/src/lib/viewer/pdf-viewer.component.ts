@@ -213,7 +213,12 @@ export class PdfViewerComponent implements OnInit {
             return;
         }
 
-        console.log(this.pdfjsContext.getSelectedTextContext())
+        const selectionContext = this.pdfjsContext.getSelectedTextContext();
+        console.log(selectionContext);
+        
+        if (selectionContext == null) {
+            return;
+        }
     }
 
     private beginNewAnnotation(type: AnnotationType) {
