@@ -1,8 +1,8 @@
 import { Subject } from "rxjs";
 import LoggingProvider, { pdfViewerLogSourceType } from "./utils/logging/loggingProvider";
-import { PdfjsWindow } from "../types/pdfjsWindow";
-import { EventBusEventType, EventBusPayloadType } from "../types/eventBus";
-import { PDFViewerApplication } from "../types/pdfViewerApplication";
+import { PdfjsWindow } from "./types/pdfjsWindow";
+import { EventBusEventType, EventBusPayloadType } from "./types/eventBus";
+import { PDFViewerApplication } from "./types/pdfViewerApplication";
 import DeferredPromise from "./utils/deferredPromise";
 
 export type toolType = 'openFile' | 'printing' | 'downloadPdf' | 'textEditor' | 'drawEditor';
@@ -97,11 +97,18 @@ export default class PdfjsContext
         await this.pdfViewerApplication.open(args);
     }
 
-    public subscribeEventBusDispatch<K extends EventBusEventType>(eventKey: K, dispatch: (payload: EventBusPayloadType<K>) => void) {
+    public subscribeEventBus<K extends EventBusEventType>(eventKey: K, dispatch: (payload: EventBusPayloadType<K>) => void) {
         this.assertViewerLoaded();
         this.pdfViewerApplication.eventBus.on(
             eventKey as string,
             dispatch as (e: object) => void);
+    }
+
+    public dispatchEventBus<K extends EventBusEventType>(eventKey: K, payload: EventBusPayloadType<K>) {
+        this.assertViewerLoaded();
+        this.pdfViewerApplication.eventBus.dispatch(
+            eventKey as string,
+            payload as object);
     }
 
     public setToolDisabled(typeOrId: toolType | Omit<string, toolType>, disabled = true) {
@@ -197,7 +204,7 @@ export default class PdfjsContext
         this.sendLogMessage('Viewer has been loaded.');
 
         // Inject event bus events.
-        this.subscribeEventBusDispatch('documentloaded', () => {
+        this.subscribeEventBus('documentloaded', () => {
             this._documentState = 'loaded';
             this._loadDocumentPromise.resolve();
             this.documentLoaded.next();

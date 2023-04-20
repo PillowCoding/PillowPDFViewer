@@ -1,3 +1,5 @@
+import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
+import { PdfViewerComponent } from "../../public-api";
 import PDFPageView from "./pdfPageView";
 import PDFPresentationMode from "./pdfPresentationMode";
 import { PDFViewer, scrollModeType, spreadModeType } from "./pdfViewer";
@@ -7,6 +9,7 @@ import { SecondaryToolbar, Toolbar } from "./toolbar";
 export default interface EventBus {
     on: (name: string, listener: (e: object) => void, options?: object) => void;
     off: (name: string, listener: (e: object) => void, options?: object) => void;
+    dispatch: (name: string, payload: object) => void;
 }
 
 export interface EventBusEventTypePayloadMap {
@@ -77,6 +80,9 @@ export interface EventBusEventTypePayloadMap {
     "metadataloaded": object;
     "updatefromsandbox": object;
     "cursortoolchanged": object;
+
+    // Custom events
+    "startAnnotation": StartAnnotationEventType;
 }
 
 /**
@@ -323,4 +329,9 @@ export type TextLayerRenderedEventType = {
     numTextDivs: number;
     pageNumber: number;
     source: PDFPageView;
+}
+
+export type StartAnnotationEventType = {
+    annotation: annotation;
+    source: PdfViewerComponent;
 }

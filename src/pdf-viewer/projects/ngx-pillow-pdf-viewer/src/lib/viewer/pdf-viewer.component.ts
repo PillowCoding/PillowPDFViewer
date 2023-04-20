@@ -3,7 +3,7 @@ import PdfjsContext, { toolType } from "ngx-pillow-pdf-viewer/pdfjsContext";
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider, { pdfViewerLogSourceType } from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
-import { AnnotationEditorModeChangedEventType, AnnotationEditorType } from "../../types/eventBus";
+import { AnnotationEditorModeChangedEventType, AnnotationEditorType } from "../types/eventBus";
 import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
@@ -134,11 +134,11 @@ export class PdfViewerComponent implements OnInit {
         this.assertPdfjsContextExists();
 
         // Subscribe to event bus events.
-        this.pdfjsContext.subscribeEventBusDispatch('annotationeditormodechanged', (e) => this.onAnnotationEditorModeChanged(e));
-        this.pdfjsContext.subscribeEventBusDispatch('pagesloaded', () => this.onPagesLoaded());
-        this.pdfjsContext.subscribeEventBusDispatch('documentloaded', () => this.sendLogMessage('Document has been loaded.'));
-        this.pdfjsContext.subscribeEventBusDispatch('documentinit', () => this.sendLogMessage('Document is loading...'));
-        this.pdfjsContext.subscribeEventBusDispatch('pagesinit', () => this.sendLogMessage('Pages are loading...'));
+        this.pdfjsContext.subscribeEventBus('annotationeditormodechanged', (e) => this.onAnnotationEditorModeChanged(e));
+        this.pdfjsContext.subscribeEventBus('pagesloaded', () => this.onPagesLoaded());
+        this.pdfjsContext.subscribeEventBus('documentloaded', () => this.sendLogMessage('Document has been loaded.'));
+        this.pdfjsContext.subscribeEventBus('documentinit', () => this.sendLogMessage('Document is loading...'));
+        this.pdfjsContext.subscribeEventBus('pagesinit', () => this.sendLogMessage('Pages are loading...'));
 
         if (!this._disabledTools) {
             return;
@@ -196,6 +196,7 @@ export class PdfViewerComponent implements OnInit {
 
     private beginNewAnnotation(type: AnnotationType) {
         this.sendLogMessage(`Start new ${type} annotation...`);
+        this.assertPdfjsContextExists();
 
         const uncompletedAnnotation = this.uncompletedAnnotation;
         if (uncompletedAnnotation) {
@@ -205,6 +206,10 @@ export class PdfViewerComponent implements OnInit {
 
         const newAnnotation = new annotation({ type, page: 1 });
         this._annotations.push(newAnnotation);
+        this.pdfjsContext.dispatchEventBus('startAnnotation', {
+            source: this,
+            annotation: newAnnotation,
+        });
     }
 
     private onPagesLoaded() {
