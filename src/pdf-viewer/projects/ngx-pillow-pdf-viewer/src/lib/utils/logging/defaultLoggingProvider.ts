@@ -20,7 +20,8 @@ export default class DefaultLoggingProvider extends LoggingProvider {
         }
 
         source = `[${severity}] ${source} -`;
-        const logMethod: (message: unknown, ...args: unknown[]) => void = severity === 'error' ? console.error :
+        const logMethod: (message: unknown, ...args: unknown[]) => void =
+            severity === 'error' ? console.error :
             severity === 'warning' ? console.warn : 
             console.log;
 
