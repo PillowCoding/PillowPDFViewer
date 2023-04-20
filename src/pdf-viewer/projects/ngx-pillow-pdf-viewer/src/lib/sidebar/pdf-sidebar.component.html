@@ -25,6 +25,25 @@
                 class="loading-indicator">
                 <lib-loading-ring></lib-loading-ring>
             </div>
+            <ol *ngIf="!loading">
+                <!-- Pending annotation -->
+                <li *ngIf="uncompletedAnnotation">
+                    <lib-pdf-annotation
+                        [loggingProvider]="loggingProvider"
+                        [annotation]="uncompletedAnnotation">
+
+                    </lib-pdf-annotation>
+                </li>
+
+                <!-- Other annotations -->
+                <li *ngFor="let annotation of completedAnnotations">
+                    <lib-pdf-annotation
+                        [loggingProvider]="loggingProvider"
+                        [annotation]="annotation">
+
+                    </lib-pdf-annotation>
+                </li>
+            </ol>
         </ng-container>
     </div>
 </lib-west-resizeable>

@@ -56,12 +56,12 @@ export class PdfSidebarComponent implements OnInit {
         return this._expanded;
     }
 
-    public get annotations() {
+    public get completedAnnotations() {
         return this._annotations.filter(x => x.state === 'completed');
     }
 
-    public get uncompletedAnnotations() {
-        return this._annotations.filter(x => x.state !== 'completed');
+    public get uncompletedAnnotation() {
+        return this._annotations.filter(x => x.state !== 'completed')[0];
     }
 
     public get loading() {
@@ -174,7 +174,7 @@ export class PdfSidebarComponent implements OnInit {
         if (!this.pdfjsContext) { missingParameters.push('pdfjsContext'); }
         if (!this.loggingProvider) { missingParameters.push('loggingProvider'); }
         if (missingParameters.length > 0) {
-            throw new Error(`Please provide a value for the parameters ${missingParameters.join(', ')}`);
+            throw new Error(`Please provide a value for the parameters: ${missingParameters.join(', ')}`);
         }
     }
 

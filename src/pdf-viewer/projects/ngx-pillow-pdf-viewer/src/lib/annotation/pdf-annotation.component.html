@@ -1,0 +1,19 @@
+<div *ngIf="annotation"
+    class="annotation-container"
+    attr.data-annotation="{{annotation.id}}">
+
+    <header>
+        <p class="font-bold">{{annotation.dateCreated | date: 'h:mm:ss'}}</p>
+    </header>
+
+    <div *ngIf="expanded">
+        <blockquote *ngIf="annotation.type === 'text' && annotation.reference">
+            <ng-container *ngIf="'selectedText' in annotation.reference">
+                <p>{{annotation.reference.selectedText}}</p>
+            </ng-container>
+            <ng-container *ngIf="!'selectedText' in annotation.reference">
+                <p>...</p>
+            </ng-container>
+        </blockquote>
+    </div>
+</div>

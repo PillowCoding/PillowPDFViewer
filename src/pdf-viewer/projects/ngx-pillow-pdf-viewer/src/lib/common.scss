@@ -74,6 +74,11 @@
     --sidebar-background-color: rgb(249, 249, 250);
     --sidebar-border-color: rgb(184, 184, 184);
 
+    --annotation-background-color: #f1f1f1;
+    --annotation-background-hover-color: #ebebeb;
+    --annotation-background-focus-color: #cecece;
+    --annotation-border-color: rgb(204, 204, 204);
+
     --button-hover-background-color: rgb(221, 222, 223);
 
     --loading-color: rgb(0, 0, 0);
@@ -88,6 +93,11 @@
 
         --sidebar-background-color: rgb(56, 56, 61);
         --sidebar-border-color: rgba(0, 0, 0, 0.3);
+
+        --annotation-background-color: rgb(66, 66, 70);
+        --annotation-background-hover-color: rgb(68, 68, 72);
+        --annotation-background-focus-color: rgb(81, 81, 84);
+        --annotation-border-color: rgb(40, 40, 40);
 
         --button-hover-background-color: rgb(102, 102, 103);
 

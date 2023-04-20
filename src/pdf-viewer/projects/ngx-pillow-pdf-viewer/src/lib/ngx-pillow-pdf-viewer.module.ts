@@ -9,6 +9,7 @@ import { LocalisationService } from './utils/localisation/localisation.service';
 import { PdfViewerComponent } from './viewer/pdf-viewer.component';
 import { PdfSidebarComponent } from './sidebar/pdf-sidebar.component';
 import { CloseButtonComponent } from './components/close-button.component';
+import { PdfAnnotationComponent } from './annotation/pdf-annotation.component';
 
 @NgModule({
     declarations: [
@@ -16,6 +17,7 @@ import { CloseButtonComponent } from './components/close-button.component';
         RingLoadingComponent,
         WestResizeableComponent,
         CloseButtonComponent,
+        PdfAnnotationComponent,
         PdfSidebarComponent,
         TranslatePipe,
     ],
