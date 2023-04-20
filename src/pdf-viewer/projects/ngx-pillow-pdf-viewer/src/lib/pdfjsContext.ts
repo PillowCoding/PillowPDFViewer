@@ -1,5 +1,5 @@
 import { Subject } from "rxjs";
-import LoggingProvider, { pdfViewerLogSourceType } from "./utils/logging/loggingProvider";
+import LoggingProvider from "./utils/logging/loggingProvider";
 import { PdfjsWindow } from "./types/pdfjsWindow";
 import { EventBusEventType, EventBusPayloadType } from "./types/eventBus";
 import { PDFViewerApplication } from "./types/pdfViewerApplication";
@@ -15,6 +15,8 @@ export default class PdfjsContext
 
     private readonly _loadViewerPromise = new DeferredPromise<void>();
     private readonly _loadDocumentPromise = new DeferredPromise<void>();
+
+    private readonly _defaultLogSource = PdfjsContext.name;
 
     private _viewerState: 'unloaded' | 'loading' | 'loaded' = 'unloaded';
     private _documentState: 'unloaded' | 'loading' | 'loaded' = 'unloaded';
@@ -89,7 +91,7 @@ export default class PdfjsContext
     public async load(source: string | Blob | Uint8Array)
     {
         await this._loadViewerPromise;
-        this.sendLogMessage('Loading source...', undefined, source);
+        this._loggingProvider.sendDebug('Loading source...', this._defaultLogSource, source);
         this.assertViewerLoaded();
         this._documentState = 'loading';
 
@@ -119,7 +121,7 @@ export default class PdfjsContext
     }
 
     public setToolDisabled(typeOrId: toolType | Omit<string, toolType>, disabled = true) {
-        this.sendLogMessage(`${disabled ? 'Disabling' : 'Enabling'} ${typeOrId.toString()}...`);
+        this._loggingProvider.sendDebug(`${disabled ? 'Disabling' : 'Enabling'} ${typeOrId.toString()}...`, this._defaultLogSource);
         this.assertViewerLoaded();
 
         // Determine the relevant ids to disable/enable.
@@ -128,7 +130,7 @@ export default class PdfjsContext
         for (const toolId of toolIds) {
             const element = this.pdfjsDocument.getElementById(toolId);
             if (!element) {
-                console.warn(`Tool element ${toolId} could not be found.`);
+                this._loggingProvider.sendWarning(`Tool element ${toolId} could not be found.`, this._defaultLogSource);
                 continue;
             }
 
@@ -145,7 +147,7 @@ export default class PdfjsContext
             this.assertViewerLoaded();
             const element = this.pdfjsDocument.getElementById(toolId);
             if (!element) {
-                console.warn(`Tool element ${toolId} could not be found. Assuming disabled.`);
+                this._loggingProvider.sendWarning(`Tool element ${toolId} could not be found. Assuming disabled.`, this._defaultLogSource);
                 return true;
             }
 
@@ -201,14 +203,14 @@ export default class PdfjsContext
     private async onIframeLoaded() {
         this.assertPdfViewerApplicationExists();
 
-        this.sendLogMessage('Iframe has been loaded.');
+        this._loggingProvider.sendDebug('Iframe has been loaded.', this._defaultLogSource);
         this.iframeLoaded.next();
 
         // Wait for the pdfjs viewer to initialize
         await this.pdfViewerApplication.initializedPromise;
 
         this._viewerState = 'loaded';
-        this.sendLogMessage('Viewer has been loaded.');
+        this._loggingProvider.sendDebug('Viewer has been loaded.', this._defaultLogSource);
 
         // Inject event bus events.
         this.subscribeEventBus('documentloaded', () => {
@@ -254,9 +256,5 @@ export default class PdfjsContext
         if (this._documentState !== 'loaded') {
             throw new Error('The document has not been loaded.');
         }
-    }
-
-    private sendLogMessage(message: unknown, source?: pdfViewerLogSourceType, ...args: unknown[]) {
-        this._loggingProvider.send(message, source || PdfjsContext.name, ...args);
     }
 }

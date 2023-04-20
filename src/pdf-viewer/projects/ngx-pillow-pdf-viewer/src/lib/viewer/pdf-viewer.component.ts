@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
 import PdfjsContext, { toolType } from "ngx-pillow-pdf-viewer/pdfjsContext";
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
-import LoggingProvider, { pdfViewerLogSourceType } from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
+import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 import { AnnotationEditorModeChangedEventType, AnnotationEditorType } from "../types/eventBus";
 import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
@@ -60,7 +60,7 @@ export class PdfViewerComponent implements OnInit {
 
         // It is too late to load annotations this way.
         if (this.pdfjsContext?.documentState === 'loaded') {
-            console.warn('It is not possible to pass annotations through the input after the document is loaded. If the annotations are fetched asynchronously, or at a later state, it is possible to pass them through the `annotationProvider` input.');
+            this.loggingProvider.sendWarning('It is not possible to pass annotations through the input after the document is loaded. If the annotations are fetched asynchronously, or at a later state, it is possible to pass them through the `annotationProvider` input.', this._defaultLogSource);
             return;
         }
 
@@ -93,6 +93,7 @@ export class PdfViewerComponent implements OnInit {
 
     private readonly _annotateTextId = 'annotate-text';
     private readonly _annotateDrawId = 'annotate-draw';
+    private readonly _defaultLogSource = PdfViewerComponent.name;
 
     private _relativeViewerPath?: string;
     private _fileSource?: string | Blob | Uint8Array;
@@ -136,8 +137,8 @@ export class PdfViewerComponent implements OnInit {
         // Subscribe to event bus events.
         this.pdfjsContext.subscribeEventBus('annotationeditormodechanged', (e) => this.onAnnotationEditorModeChanged(e));
         this.pdfjsContext.subscribeEventBus('pagesloaded', () => this.onPagesLoaded());
-        this.pdfjsContext.subscribeEventBus('documentloaded', () => this.sendLogMessage('Document has been loaded.'));
-        this.pdfjsContext.subscribeEventBus('pagesinit', () => this.sendLogMessage('Pages are loading...'));
+        this.pdfjsContext.subscribeEventBus('documentloaded', () => this.loggingProvider.sendDebug('Document has been loaded.', this._defaultLogSource));
+        this.pdfjsContext.subscribeEventBus('pagesinit', () => this.loggingProvider.sendDebug('Pages are loading...', this._defaultLogSource));
 
         if (!this._disabledTools) {
             return;
@@ -194,7 +195,7 @@ export class PdfViewerComponent implements OnInit {
     }
 
     private beginNewAnnotation(type: AnnotationType) {
-        this.sendLogMessage(`Start new ${type} annotation...`);
+        this.loggingProvider.sendDebug(`Start new ${type} annotation...`, this._defaultLogSource);
         this.assertPdfjsContextExists();
 
         const uncompletedAnnotation = this.uncompletedAnnotation;
@@ -211,7 +212,7 @@ export class PdfViewerComponent implements OnInit {
     }
 
     private deleteAnnotation(annotation: annotation) {
-        this.sendLogMessage(`Deleting ${annotation.state} annotation: ${annotation.id}`);
+        this.loggingProvider.sendDebug(`Deleting ${annotation.state} annotation: ${annotation.id}`, this._defaultLogSource);
         this.assertPdfjsContextExists();
         this.pdfjsContext.dispatchEventBus('annotationDeleted', {
             source: this,
@@ -228,7 +229,7 @@ export class PdfViewerComponent implements OnInit {
         this.pdfjsContext.setToolDisabled(this._annotateDrawId, false);
         this.pdfjsContext.setToolDisabled(this._annotateTextId, false);
 
-        this.sendLogMessage('Pages have been loaded.')
+        this.loggingProvider.sendDebug('Pages have been loaded.', this._defaultLogSource)
     }
 
     private onAnnotationEditorModeChanged(event: AnnotationEditorModeChangedEventType) {
@@ -262,11 +263,11 @@ export class PdfViewerComponent implements OnInit {
 
         // Check if the provider is set.
         if (!this.annotationsProvider) {
-            console.warn(`Please provide a value for \`annotationsProvider\` in order to asynchronously fetch annotations for page ${page}.`);
+            this.loggingProvider.sendWarning(`Please provide a value for \`annotationsProvider\` in order to asynchronously fetch annotations for page ${page}.`, this._defaultLogSource);
             return [];
         }
 
-        this.sendLogMessage(`Fetching annotations for page ${page}...`);
+        this.loggingProvider.sendDebug(`Fetching annotations for page ${page}...`, this._defaultLogSource);
         return await this.annotationsProvider(page);
     }
 
@@ -276,9 +277,5 @@ export class PdfViewerComponent implements OnInit {
         if (!this.pdfjsContext) {
             throw new Error('The PDFJS context could not be found.');
         }
-    }
-
-    private sendLogMessage(message: unknown, source?: pdfViewerLogSourceType, ...args: unknown[]) {
-        this.loggingProvider.send(message, source || PdfViewerComponent.name, ...args);
     }
 }

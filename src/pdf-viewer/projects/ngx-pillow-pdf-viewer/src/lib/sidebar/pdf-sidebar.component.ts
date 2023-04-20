@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, Input, OnInit } from "@angular/core";
 import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
 import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import { DeleteAnnotationEventType, StartAnnotationEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
-import LoggingProvider, { pdfViewerLogSourceType } from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
+import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 
 export type annotationsProviderDelegate = (page: number) => Promise<annotation[]>;
 
@@ -28,6 +28,8 @@ export class PdfSidebarComponent implements OnInit {
 
     private readonly _minExpandedSidebarWidth = 325;
     private readonly _maxExpandedSidebarWidth = 800;
+
+    private readonly _defaultLogSource = PdfSidebarComponent.name;
 
     private _expandedSidebarWidth = 480;
     private _expanded = false;
@@ -110,7 +112,7 @@ export class PdfSidebarComponent implements OnInit {
 
         this._fetchingPages = this._fetchingPages.filter(x => x !== targetPage);
         if (this.pdfjsContext.page !== targetPage) {
-            console.warn(`Aborting annotation fetch. Page ${targetPage} is no longer in focus.`);
+            this.loggingProvider.sendWarning(`Aborting annotation fetch. Page ${targetPage} is no longer in focus.`, this._defaultLogSource);
             return;
         }
 
@@ -128,25 +130,29 @@ export class PdfSidebarComponent implements OnInit {
 
     public expandAnnotations()
     {
+        this.assertParametersSet();
+
         if (this.expanded)
         {
-            console.warn('Sidebar is already expanded.')
+            this.loggingProvider.sendWarning('Sidebar is already expanded.', this._defaultLogSource);
             return;
         }
 
-        this.sendLogMessage('Expanding sidebar...');
+        this.loggingProvider.sendDebug('Expanding sidebar...', this._defaultLogSource);
         this._expanded = true;
     }
 
     public collapseAnnotations()
     {
+        this.assertParametersSet();
+
         if (!this.expanded)
         {
-            console.warn('Sidebar is already collapsed.')
+            this.loggingProvider.sendWarning('Sidebar is already collapsed.', this._defaultLogSource);
             return;
         }
 
-        this.sendLogMessage('Collapsing sidebar...');
+        this.loggingProvider.sendDebug('Collapsing sidebar...', this._defaultLogSource);
         this._expanded = false;
     }
 
@@ -174,10 +180,5 @@ export class PdfSidebarComponent implements OnInit {
 
     private stateHasChanged() {
         this.changeDetector.detectChanges();
-    }
-
-    private sendLogMessage(message: unknown, source?: pdfViewerLogSourceType, ...args: unknown[]) {
-        this.assertParametersSet();
-        this.loggingProvider.send(message, source || PdfSidebarComponent.name, ...args);
     }
 }
