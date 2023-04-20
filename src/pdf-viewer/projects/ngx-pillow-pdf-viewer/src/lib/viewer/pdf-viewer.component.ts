@@ -6,7 +6,7 @@ import LoggingProvider, { pdfViewerLogSourceType } from "ngx-pillow-pdf-viewer/u
 import { AnnotationEditorModeChangedEventType, AnnotationEditorType } from "../../types/eventBus";
 import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
-import { annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
+import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
 
 @Component({
     selector: 'lib-pdf-viewer',
@@ -16,6 +16,9 @@ import { annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-s
 export class PdfViewerComponent implements OnInit {
     /** The iframe wrapper used to display the pdfjs viewer. */
     @ViewChild('iframeWrapper', { static: true }) private _iframeWrapper!: ElementRef<HTMLIFrameElement>;
+
+    /** The sidebar of the viewer */
+    @ViewChild('sidebar') private _sidebar?: PdfSidebarComponent;
 
     /** The logging provider that will be used to send log messages. */
     @Input()
@@ -75,6 +78,19 @@ export class PdfViewerComponent implements OnInit {
         return this._annotations.filter(x => x.state !== 'completed')[0];
     }
 
+    public get sidebarComponent() {
+        this.assertPdfjsContextExists();
+        if (this.pdfjsContext.viewerState !== 'loaded') {
+            throw new Error('The sidebar has not been loaded yet.');
+        }
+
+        if (!this._sidebar) {
+            throw new Error('The sidebar component could not be found.');
+        }
+
+        return this._sidebar;
+    }
+
     private readonly _annotateTextId = 'annotate-text';
     private readonly _annotateDrawId = 'annotate-draw';
 
@@ -87,6 +103,10 @@ export class PdfViewerComponent implements OnInit {
 
     // Keeps track of pages that have had their annotations fetched.
     private readonly _fetchedAnnotationPages: number[] = [];
+
+    constructor() {
+        this.fetchAnnotationsForPage = this.fetchAnnotationsForPage.bind(this);
+    }
 
     ngOnInit(): void {
         if (!this._relativeViewerPath) {
@@ -225,9 +245,11 @@ export class PdfViewerComponent implements OnInit {
             return this._annotations.filter(x => x.page === page);
         }
 
+        this._fetchedAnnotationPages.push(page);
+
         // Check if the provider is set.
         if (!this.annotationsProvider) {
-            console.warn('Please provide a value for `annotationsProvider` in order to asynchronously fetch annotations for pages.');
+            console.warn(`Please provide a value for \`annotationsProvider\` in order to asynchronously fetch annotations for page ${page}.`);
             return [];
         }
 
@@ -235,7 +257,7 @@ export class PdfViewerComponent implements OnInit {
         return await this.annotationsProvider(page);
     }
 
-    public assertPdfjsContextExists(): asserts this is this & {
+    private assertPdfjsContextExists(): asserts this is this & {
         pdfjsContext: PdfjsContext;
     } {
         if (!this.pdfjsContext) {

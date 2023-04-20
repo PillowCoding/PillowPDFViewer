@@ -34,6 +34,8 @@ export class PdfSidebarComponent implements OnInit {
     // The completed annotations and its provider.
     @Input() public annotationsProvider?: annotationsProviderDelegate;
     private _annotations: annotation[] = [];
+    private _fetchingPages: number[] = [];
+    private _fetchedPage?: number;
 
     @Input() public pdfjsContext?: PdfjsContext;
     @Input() public loggingProvider?: LoggingProvider;
@@ -55,13 +57,41 @@ export class PdfSidebarComponent implements OnInit {
 
     async ngOnInit() {
         this.assertParametersSet();
+        
+        await this.pdfjsContext.loadViewerPromise;
+        this.pdfjsContext.subscribeEventBusDispatch('pagechanging', () => this.callFetchAnnotations());
+
         await this.pdfjsContext.loadDocumentPromise;
         this.documentLoaded();
     }
 
     private documentLoaded() {
         this.assertParametersSet();
-        this.sendLogMessage('doc state', undefined, this.pdfjsContext.documentState, this.pdfjsContext.page);
+        this.callFetchAnnotations();
+    }
+
+    private async callFetchAnnotations() {
+        this.assertParametersSet();
+        const targetPage = this.pdfjsContext.page;
+
+        // Check if we fetched the current page already.
+        if (this._fetchedPage == targetPage || this._fetchingPages.some(x => x == targetPage)) {
+            return;
+        }
+
+        this._fetchingPages.push(targetPage);
+
+        // Fetch the annotations. After fetching make sure we are still on the same page.
+        // If we scroll quickly and fetch annotations of a previous page, we don't want to show the wrong annotations.
+        const annotations = await this.annotationsProvider(targetPage);
+        this._fetchingPages = this._fetchingPages.filter(x => x !== targetPage);
+        if (this.pdfjsContext.page !== targetPage) {
+            console.warn(`Aborting annotation fetch. Page ${targetPage} is no longer in focus.`);
+            return;
+        }
+
+        this._fetchedPage = targetPage;
+        this._annotations = annotations;
     }
 
     public expandAnnotations()

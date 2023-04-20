@@ -2,7 +2,8 @@
     <iframe #iframeWrapper title="PDF viewer">
     </iframe>
 
-    <lib-pdf-sidebar *ngIf="pdfjsContext?.viewerState === 'loaded'"
+    <lib-pdf-sidebar #sidebar
+        *ngIf="pdfjsContext?.viewerState === 'loaded'"
         [pdfjsContext]="pdfjsContext"
         [loggingProvider]="loggingProvider"
         [annotationsProvider]="fetchAnnotationsForPage">
