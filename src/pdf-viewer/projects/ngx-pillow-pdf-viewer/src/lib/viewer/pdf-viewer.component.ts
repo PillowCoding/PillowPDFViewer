@@ -137,7 +137,6 @@ export class PdfViewerComponent implements OnInit {
         this.pdfjsContext.subscribeEventBus('annotationeditormodechanged', (e) => this.onAnnotationEditorModeChanged(e));
         this.pdfjsContext.subscribeEventBus('pagesloaded', () => this.onPagesLoaded());
         this.pdfjsContext.subscribeEventBus('documentloaded', () => this.sendLogMessage('Document has been loaded.'));
-        this.pdfjsContext.subscribeEventBus('documentinit', () => this.sendLogMessage('Document is loading...'));
         this.pdfjsContext.subscribeEventBus('pagesinit', () => this.sendLogMessage('Pages are loading...'));
 
         if (!this._disabledTools) {
