@@ -3,6 +3,7 @@ import LoggingProvider, { pdfViewerLogSourceType } from "./utils/logging/logging
 import { PdfjsWindow } from "../types/pdfjsWindow";
 import { EventBusEventType, EventBusPayloadType } from "../types/eventBus";
 import { PDFViewerApplication } from "../types/pdfViewerApplication";
+import DeferredPromise from "./utils/deferredPromise";
 
 export type toolType = 'openFile' | 'printing' | 'downloadPdf' | 'textEditor' | 'drawEditor';
 
@@ -12,10 +13,8 @@ export default class PdfjsContext
     public readonly viewerLoaded = new Subject<void>();
     public readonly documentLoaded = new Subject<void>();
 
-    private _loadViewerResolver!: () => void;
-    private readonly _loadViewerPromise = new Promise<void>((resolve) => this._loadViewerResolver = resolve);
-    private _loadDocumentResolver!: () => void;
-    private readonly _loadDocumentPromise = new Promise<void>((resolve) => this._loadDocumentResolver = resolve);
+    private readonly _loadViewerPromise = new DeferredPromise<void>();
+    private readonly _loadDocumentPromise = new DeferredPromise<void>();
 
     private _viewerState: 'unloaded' | 'loading' | 'loaded' = 'unloaded';
     private _documentState: 'unloaded' | 'loading' | 'loaded' = 'unloaded';
@@ -61,13 +60,13 @@ export default class PdfjsContext
     /** Represents the promise and resolver responsible for providing a promise until the viewer is loaded. */
     public get loadViewerPromise()
     {
-        return this._loadViewerPromise;
+        return this._loadViewerPromise as Promise<void>;
     }
 
     /** Represents the promise and resolver responsible for providing a promise until the document is loaded. */
     public get loadDocumentPromise()
     {
-        return this._loadDocumentPromise;
+        return this._loadDocumentPromise as Promise<void>;
     }
 
     /** Gets the currently focused page */
@@ -200,12 +199,12 @@ export default class PdfjsContext
         // Inject event bus events.
         this.subscribeEventBusDispatch('documentloaded', () => {
             this._documentState = 'loaded';
-            this._loadDocumentResolver();
+            this._loadDocumentPromise.resolve();
             this.documentLoaded.next();
         });
 
         this.viewerLoaded.next();
-        this._loadViewerResolver();
+        this._loadViewerPromise.resolve();
     }
 
     private assertPdfViewerApplicationExists(): asserts this is this & {
