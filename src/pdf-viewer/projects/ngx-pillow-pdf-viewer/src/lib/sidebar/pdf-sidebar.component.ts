@@ -2,7 +2,7 @@ import { trigger, state, style, transition, animate } from "@angular/animations"
 import { Component, Input, OnInit } from "@angular/core";
 import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
 import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
-import { StartAnnotationEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
+import { DeleteAnnotationEventType, StartAnnotationEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
 import LoggingProvider, { pdfViewerLogSourceType } from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 
 export type annotationsProviderDelegate = (page: number) => Promise<annotation[]>;
@@ -61,7 +61,8 @@ export class PdfSidebarComponent implements OnInit {
 
         await this.pdfjsContext.loadViewerPromise;
         this.pdfjsContext.subscribeEventBus('pagechanging', () => this.callFetchAnnotations());
-        this.pdfjsContext.subscribeEventBus('startAnnotation', (e) => this.onStartAnnotation(e));
+        this.pdfjsContext.subscribeEventBus('annotationStarted', (e) => this.onAnnotationStarted(e));
+        this.pdfjsContext.subscribeEventBus('annotationDeleted', (e) => this.onAnnotationDeleted(e));
 
         await this.pdfjsContext.loadDocumentPromise;
         this.documentLoaded();
@@ -96,8 +97,12 @@ export class PdfSidebarComponent implements OnInit {
         this._annotations = annotations;
     }
 
-    private onStartAnnotation(event: StartAnnotationEventType) {
-        this.sendLogMessage(`${event.annotation.id}`);
+    private onAnnotationStarted(event: StartAnnotationEventType) {
+        this._annotations.push(event.annotation);
+    }
+
+    private onAnnotationDeleted(event: DeleteAnnotationEventType) {
+        this._annotations = this._annotations.filter(x => x.id !== event.annotation.id);
     }
 
     public expandAnnotations()

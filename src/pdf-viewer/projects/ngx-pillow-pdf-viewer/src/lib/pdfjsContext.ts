@@ -104,6 +104,13 @@ export default class PdfjsContext
             dispatch as (e: object) => void);
     }
 
+    public unsubscribeEventBus<K extends EventBusEventType>(eventKey: K, dispatch: (payload: EventBusPayloadType<K>) => void) {
+        this.assertViewerLoaded();
+        this.pdfViewerApplication.eventBus.off(
+            eventKey as string,
+            dispatch as (e: object) => void);
+    }
+
     public dispatchEventBus<K extends EventBusEventType>(eventKey: K, payload: EventBusPayloadType<K>) {
         this.assertViewerLoaded();
         this.pdfViewerApplication.eventBus.dispatch(

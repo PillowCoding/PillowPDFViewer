@@ -82,7 +82,8 @@ export interface EventBusEventTypePayloadMap {
     "cursortoolchanged": object;
 
     // Custom events
-    "startAnnotation": StartAnnotationEventType;
+    "annotationStarted": StartAnnotationEventType;
+    "annotationDeleted": DeleteAnnotationEventType;
 }
 
 /**
@@ -271,3 +272,5 @@ export type TextLayerRenderedEventType = EventBusEvent<PDFPageView> & {
 export type StartAnnotationEventType = EventBusEvent<PdfViewerComponent> & {
     annotation: annotation;
 }
+
+export type DeleteAnnotationEventType = StartAnnotationEventType;

@@ -199,16 +199,25 @@ export class PdfViewerComponent implements OnInit {
 
         const uncompletedAnnotation = this.uncompletedAnnotation;
         if (uncompletedAnnotation) {
-            this.sendLogMessage('Removing uncompleted annotation...');
-            this._annotations = this._annotations.filter(x => x.id !== uncompletedAnnotation.id);
+            this.deleteAnnotation(uncompletedAnnotation);
         }
 
         const newAnnotation = new annotation({ type, page: 1 });
         this._annotations.push(newAnnotation);
-        this.pdfjsContext.dispatchEventBus('startAnnotation', {
+        this.pdfjsContext.dispatchEventBus('annotationStarted', {
             source: this,
             annotation: newAnnotation,
         });
+    }
+
+    private deleteAnnotation(annotation: annotation) {
+        this.sendLogMessage(`Deleting ${annotation.state} annotation: ${annotation.id}`);
+        this.assertPdfjsContextExists();
+        this.pdfjsContext.dispatchEventBus('annotationDeleted', {
+            source: this,
+            annotation,
+        });
+        this._annotations = this._annotations.filter(x => x.id !== annotation.id);
     }
 
     private onPagesLoaded() {
