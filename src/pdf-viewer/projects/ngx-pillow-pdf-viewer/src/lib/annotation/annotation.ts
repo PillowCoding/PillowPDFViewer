@@ -1,4 +1,4 @@
-import { AnnotationType, textSelection } from "./annotationTypes";
+import { AnnotationState, AnnotationType, textSelection } from "./annotationTypes";
 
 export type AnnotationCommentConstructType =
     string | {
@@ -47,6 +47,7 @@ export default class annotation {
     private _dateCreated: Date;
     private _comments: Array<AnnotationComment>;
     private _page: number;
+    private _state: AnnotationState;
 
     private _reference: textSelection | null;
 
@@ -70,6 +71,10 @@ export default class annotation {
         return this._page;
     }
 
+    public get state() {
+        return this._state;
+    }
+
     public get reference() {
         return this._reference;
     }
@@ -84,6 +89,7 @@ export default class annotation {
             this._dateCreated = new Date();
             this._comments = [];
             this._reference = null;
+            this._state = 'pending';
             return;
         }
 
@@ -93,6 +99,7 @@ export default class annotation {
         this._comments = args.comments;
         this._page = args.page;
         this._reference = args.reference;
+        this._state = 'completed';
     }
 
     private generateGuid()
