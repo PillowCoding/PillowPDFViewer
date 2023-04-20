@@ -214,11 +214,12 @@ export class PdfViewerComponent implements OnInit {
         }
 
         const selectionContext = this.pdfjsContext.getSelectedTextContext();
-        console.log(selectionContext);
         
         if (selectionContext == null) {
             return;
         }
+
+        this.loggingProvider.sendDebug('Selected text: ', this._defaultLogSource, selectionContext);
     }
 
     private beginNewAnnotation(type: AnnotationType) {
