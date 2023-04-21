@@ -2,7 +2,7 @@ export interface PdfjsPageContext
 {
     page: number;
     pageContainer: HTMLDivElement;
-    loaded: boolean;
+    loaded: () => boolean;
 }
 
 export interface SelectedTextContext extends PdfjsPageContext

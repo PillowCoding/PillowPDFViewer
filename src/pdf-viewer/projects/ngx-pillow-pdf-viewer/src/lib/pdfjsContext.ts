@@ -27,6 +27,7 @@ export default class PdfjsContext
 
     private _viewerState: 'unloaded' | 'loading' | 'loaded' = 'unloaded';
     private _fileState: 'unloaded' | 'loading' | 'loaded' = 'unloaded';
+    private _pages?: PdfjsPageContext[];
 
     // TODO: Replace hotkeys that fall under certain tool types.
     /** Represents the ids of the html elements representing the tool type. */
@@ -87,7 +88,7 @@ export default class PdfjsContext
 
     public get pages()
     {
-        return this.gatherPages();
+        return this._pages;
     }
     
     constructor(
@@ -280,7 +281,7 @@ export default class PdfjsContext
         return {
             pageContainer: pageElement as HTMLDivElement,
             page: Number(page),
-            loaded: pageElement.hasAttribute(this._pageLoadedAttribute),
+            loaded: () => pageElement.hasAttribute(this._pageLoadedAttribute),
         }
     }
 
@@ -338,6 +339,7 @@ export default class PdfjsContext
         // Inject event bus events.
         this.subscribeEventBus('documentloaded', () => {
             this._fileState = 'loaded';
+            this._pages = this.gatherPages();
             this._loadFilePromise.resolve();
             this.fileLoaded.next();
         });
