@@ -24,8 +24,14 @@ export default class TextAnnotator {
             }
         }
 
-    public onPageRendered(event: PageRenderedEventType) {
-        this._layerManager.getOrSetLayerByIdOnPage(`${this._annotatedTextAttribute}-${event.pageNumber}`, event.pageNumber);
+    public async onPageRendered(event: PageRenderedEventType) {
+        const id = `${this._annotatedTextAttribute}-${event.pageNumber}`;
+        let layer = this._layerManager.getLayerById(id);
+        if (!layer) {
+            layer = await this._layerManager.createLayer(id, event.pageNumber);
+        }
+
+        this._layerManager.applyLayer(layer);
     }
     
     public annotateSelection(selection: SelectedTextContext, id: string) {

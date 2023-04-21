@@ -358,7 +358,7 @@ export default class PdfjsContext
         }
     }
 
-    private assertViewerLoaded(): asserts this is this & {
+    public assertViewerLoaded(): asserts this is this & {
         pdfjsDocument: Document;
         pdfjsWindow: PdfjsWindow;
         pdfViewerApplication: PDFViewerApplication
@@ -370,12 +370,13 @@ export default class PdfjsContext
         }
     }
 
-    private assertfileLoaded(): asserts this is this & {
+    public assertfileLoaded(): asserts this is this & {
         pdfjsDocument: Document;
         pdfjsWindow: PdfjsWindow;
         pdfViewerApplication: PDFViewerApplication
         viewerState: 'loaded';
         fileState: 'loaded';
+        pages: PdfjsPageContext[];
     } {
         this.assertViewerLoaded();
         if (this._fileState !== 'loaded') {
