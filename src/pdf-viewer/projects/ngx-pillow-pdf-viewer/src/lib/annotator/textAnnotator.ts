@@ -13,6 +13,7 @@ export type textContextElement = {
 export default class TextAnnotator {
     private readonly _defaultLogSource = TextAnnotator.name;
     private readonly _annotatedTextAttribute = 'Text-annotated';
+    private readonly _layerClassName = 'textAnnotateLayer';
 
     constructor(
         private readonly _loggingProvider: LoggingProvider,
@@ -22,13 +23,15 @@ export default class TextAnnotator {
             if (this._pdfjsContext.fileState !== 'loaded') {
                 throw new Error('Expected a file to be loaded.')
             }
+
+            this.injectLayerStyle();
         }
 
     public async onPageRendered(event: PageRenderedEventType) {
-        const id = `${this._annotatedTextAttribute}-${event.pageNumber}`;
-        let layer = this._layerManager.getLayerById(id);
+        const layerId = this.getLayerId(event.pageNumber);
+        let layer = this._layerManager.getLayerById(layerId);
         if (!layer) {
-            layer = await this._layerManager.createLayer(id, event.pageNumber);
+            layer = await this._layerManager.createLayer(layerId, event.pageNumber, this._layerClassName);
         }
 
         this._layerManager.applyLayer(layer);
@@ -38,15 +41,19 @@ export default class TextAnnotator {
         const selectionContextElements = Array.from(this.getTextContextElements(selection.startElement, selection.selectedText));
         this._loggingProvider.sendDebug('Selection elements:', this._defaultLogSource, selectionContextElements);
 
-        // Ensure the selection does not contain elements that have an existing annotation
-        // if (selectionContextElements.some(x => x.getAttribute(this._annotatedTextAttribute) !== null)) {
-        //     this._loggingProvider.sendDebug('Selection contains existing selection', this._defaultLogSource);
-        //     return;
-        // }
-
-        // for (const element of selectionContextElements) {
-        //     element.setAttribute(this._annotatedTextAttribute, id);
-        // }
+        const layerId = this.getLayerId(selection.page);
+        const layer = this._layerManager.getLayerById(layerId);
+        if (!layer) {
+            this._loggingProvider.sendWarning(`Annotation aborted: Layer ${layerId} was not found`, this._defaultLogSource);
+            return;
+        }
+        
+        // For each element, copy the element and move the copy to the layer.
+        for (const element of selectionContextElements) {
+            const elementCopy = element.parent.cloneNode(true) as HTMLElement;
+            elementCopy.setAttribute(this._annotatedTextAttribute, id);
+            layer.element.insertAdjacentElement('beforeend', elementCopy);
+        }
     }
 
     public colorById(id: string, color: string) {
@@ -62,6 +69,10 @@ export default class TextAnnotator {
         for (const element of elements) {
             (element as HTMLElement).style.backgroundColor = color;
         }
+    }
+
+    private getLayerId(page: number) {
+        return `${this._annotatedTextAttribute}-${page}`;
     }
 
     private *getTextContextElements(startElement: HTMLElement, text: string): Iterable<textContextElement>
@@ -83,5 +94,22 @@ export default class TextAnnotator {
             };
             currentElement = currentElement.nextElementSibling as HTMLElement | null;
         }
+    }
+
+    private injectLayerStyle() {
+        const layerStyle = `
+            .${this._layerClassName} {
+            }
+
+            .${this._layerClassName} span {
+                color: transparent;
+                position: absolute;
+                white-space: pre;
+                cursor: text;
+                transform-origin: 0% 0%;
+            }
+        `;
+
+        this._pdfjsContext.injectStyle(layerStyle);
     }
 }

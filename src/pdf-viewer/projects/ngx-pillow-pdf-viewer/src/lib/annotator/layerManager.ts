@@ -13,12 +13,11 @@ export type layer = {
 }
 
 export default class LayerManager {
+
     private readonly _defaultLogSource = LayerManager.name;
-
     private readonly _layers: pageLayers[] = [];
-
-    public readonly scaleFactorVariableName = 'scale-factor';
-    public readonly layerClassName = 'pageLayer';
+    private readonly _scaleFactorVariableName = 'scale-factor';
+    private readonly _layerClassName = 'pageLayer';
 
     constructor(
         private readonly _loggingProvider: LoggingProvider,
@@ -31,7 +30,7 @@ export default class LayerManager {
             this.injectLayerStyle();
         }
 
-    public async createLayer(id: string, page: number) {
+    public async createLayer(id: string, page: number, ...classes: string[]) {
         this._pdfjsContext.assertfileLoaded();
 
         this._loggingProvider.sendDebug(`Creating layer with id ${id} for page ${page}...`, this._defaultLogSource);
@@ -43,9 +42,11 @@ export default class LayerManager {
         const element = document.createElement('div');
         element.id = id;
         element.style.pointerEvents = 'none';
-        element.style.width = `calc(var(--${this.scaleFactorVariableName}) * ${width}px)`;
-        element.style.height = `calc(var(--${this.scaleFactorVariableName}) * ${height}px)`;
-        element.classList.add(this.layerClassName);
+        element.style.width = `calc(var(--${this._scaleFactorVariableName}) * ${width}px)`;
+        element.style.height = `calc(var(--${this._scaleFactorVariableName}) * ${height}px)`;
+
+        classes.push(this._layerClassName);
+        element.classList.add(...classes);
 
         let layerPage = this._layers.find(x => x.page === page);
         if (!layerPage) {
@@ -87,7 +88,7 @@ export default class LayerManager {
 
     private injectLayerStyle() {
         const layerStyle = `
-            .${this.layerClassName} {
+            .${this._layerClassName} {
                 position: absolute;
                 text-align: initial;
                 left: 0;

@@ -127,7 +127,7 @@ export class PdfViewerComponent implements OnInit {
     private _annotations: annotation[] = [];
     private _annotationMode: AnnotationType | 'none' = 'none';
 
-    private readonly _pendingAnnotateColor = 'green';
+    private readonly _pendingAnnotateColor = '#00800040';
 
     // Keeps track of pages that have had their annotations fetched.
     private readonly _fetchedAnnotationPages: number[] = [];
