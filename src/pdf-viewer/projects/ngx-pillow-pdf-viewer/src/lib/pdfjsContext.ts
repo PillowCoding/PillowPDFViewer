@@ -13,17 +13,17 @@ export default class PdfjsContext
 {
     public readonly iframeLoaded = new Subject<void>();
     public readonly viewerLoaded = new Subject<void>();
-    public readonly documentLoaded = new Subject<void>();
+    public readonly fileLoaded = new Subject<void>();
     public readonly documentMouseDown = new Subject<MouseEvent>();
     public readonly documentMouseUp = new Subject<MouseEvent>();
 
     private readonly _loadViewerPromise = new DeferredPromise<void>();
-    private readonly _loadDocumentPromise = new DeferredPromise<void>();
+    private readonly _loadFilePromise = new DeferredPromise<void>();
 
     private readonly _defaultLogSource = PdfjsContext.name;
 
     private _viewerState: 'unloaded' | 'loading' | 'loaded' = 'unloaded';
-    private _documentState: 'unloaded' | 'loading' | 'loaded' = 'unloaded';
+    private _fileState: 'unloaded' | 'loading' | 'loaded' = 'unloaded';
 
     // TODO: Replace hotkeys that fall under certain tool types.
     /** Represents the ids of the html elements representing the tool type. */
@@ -57,10 +57,10 @@ export default class PdfjsContext
         return this._viewerState;
     }
 
-    /** Gets the current state of the document. */
-    public get documentState()
+    /** Gets the current state of the file. */
+    public get fileState()
     {
-        return this._documentState;
+        return this._fileState;
     }
 
     /** Represents the promise and resolver responsible for providing a promise until the viewer is loaded. */
@@ -69,16 +69,16 @@ export default class PdfjsContext
         return this._loadViewerPromise as Promise<void>;
     }
 
-    /** Represents the promise and resolver responsible for providing a promise until the document is loaded. */
-    public get loadDocumentPromise()
+    /** Represents the promise and resolver responsible for providing a promise until the file is loaded. */
+    public get loadFilePromise()
     {
-        return this._loadDocumentPromise as Promise<void>;
+        return this._loadFilePromise as Promise<void>;
     }
 
     /** Gets the currently focused page */
     public get page()
     {
-        this.assertDocumentLoaded();
+        this.assertfileLoaded();
         return this.pdfViewerApplication.pdfViewer.currentPageNumber;
     }
     
@@ -97,7 +97,7 @@ export default class PdfjsContext
         await this._loadViewerPromise;
         this._loggingProvider.sendDebug('Loading source...', this._defaultLogSource, source);
         this.assertViewerLoaded();
-        this._documentState = 'loading';
+        this._fileState = 'loading';
 
         const args = { url: source };
         await this.pdfViewerApplication.open(args);
@@ -196,7 +196,7 @@ export default class PdfjsContext
     }
 
     public getSelectedTextContext(): SelectedTextContext | null {
-        this.assertDocumentLoaded();
+        this.assertfileLoaded();
 
         const selection = this.pdfjsDocument.getSelection();
         const selectedText = selection?.toString().replace(/[\n\r]/g, "").trim();
@@ -312,9 +312,9 @@ export default class PdfjsContext
 
         // Inject event bus events.
         this.subscribeEventBus('documentloaded', () => {
-            this._documentState = 'loaded';
-            this._loadDocumentPromise.resolve();
-            this.documentLoaded.next();
+            this._fileState = 'loaded';
+            this._loadFilePromise.resolve();
+            this.fileLoaded.next();
         });
 
         this.viewerLoaded.next();
@@ -343,16 +343,16 @@ export default class PdfjsContext
         }
     }
 
-    private assertDocumentLoaded(): asserts this is this & {
+    private assertfileLoaded(): asserts this is this & {
         pdfjsDocument: Document;
         pdfjsWindow: PdfjsWindow;
         pdfViewerApplication: PDFViewerApplication
         viewerState: 'loaded';
-        documentState: 'loaded';
+        fileState: 'loaded';
     } {
         this.assertViewerLoaded();
-        if (this._documentState !== 'loaded') {
-            throw new Error('The document has not been loaded.');
+        if (this._fileState !== 'loaded') {
+            throw new Error('The file has not been loaded.');
         }
     }
 }

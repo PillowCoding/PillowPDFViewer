@@ -82,11 +82,11 @@ export class PdfSidebarComponent implements OnInit {
         this.pdfjsContext.subscribeEventBus('annotationStarted', (e) => this.onAnnotationStarted(e));
         this.pdfjsContext.subscribeEventBus('annotationDeleted', (e) => this.onAnnotationDeleted(e));
 
-        await this.pdfjsContext.loadDocumentPromise;
-        this.documentLoaded();
+        await this.pdfjsContext.loadFilePromise;
+        this.fileLoaded();
     }
 
-    private documentLoaded() {
+    private fileLoaded() {
         this.assertParametersSet();
         this.callFetchAnnotations();
     }

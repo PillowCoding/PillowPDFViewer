@@ -7,6 +7,7 @@ import { AnnotationEditorModeChangedEventType, AnnotationEditorType } from "../t
 import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
+import TextAnnotator from "ngx-pillow-pdf-viewer/annotator/textAnnotator";
 
 @Component({
     selector: 'lib-pdf-viewer',
@@ -59,7 +60,7 @@ export class PdfViewerComponent implements OnInit {
     public set annotations(annotations: annotation[]) {
 
         // It is too late to load annotations this way.
-        if (this.pdfjsContext?.documentState === 'loaded') {
+        if (this.pdfjsContext?.fileState === 'loaded') {
             this.loggingProvider.sendWarning('It is not possible to pass annotations through the input after the document is loaded. If the annotations are fetched asynchronously, or at a later state, it is possible to pass them through the `annotationProvider` input.', this._defaultLogSource);
             return;
         }
@@ -91,8 +92,12 @@ export class PdfViewerComponent implements OnInit {
         return this._sidebar;
     }
 
-    public annotationMode() {
+    public get annotationMode() {
         return this._annotationMode;
+    }
+
+    public get textAnnotator() {
+        return this._textAnnotator;
     }
 
     private readonly _annotateTextId = 'annotate-text';
@@ -103,6 +108,7 @@ export class PdfViewerComponent implements OnInit {
     private _fileSource?: string | Blob | Uint8Array;
     private _loggingProvider?: LoggingProvider;
     private _pdfjsContext?: pdfjsContext;
+    private _textAnnotator?: TextAnnotator;
     private _disabledTools?: toolType[];
     private _annotations: annotation[] = [];
     private _annotationMode: AnnotationType | 'none' = 'none';
@@ -124,7 +130,7 @@ export class PdfViewerComponent implements OnInit {
 
         this._pdfjsContext = new PdfjsContext(this._loggingProvider, this._relativeViewerPath, this._iframeWrapper.nativeElement);
         this._pdfjsContext.viewerLoaded.subscribe(() => this.onViewerLoaded());
-        this._pdfjsContext.documentLoaded.subscribe(() => this.onDocumentLoaded());
+        this._pdfjsContext.fileLoaded.subscribe(() => this.onFileLoaded());
 
         if (!this._fileSource) {
             return;
@@ -200,8 +206,13 @@ export class PdfViewerComponent implements OnInit {
         }
     }
 
-    private onDocumentLoaded() {
+    private onFileLoaded() {
         this.assertPdfjsContextExists();
+
+        // Hook annotation classes
+        this._textAnnotator = new TextAnnotator(this.loggingProvider, this.pdfjsContext);
+
+        // Hook document-specific events.
         this.pdfjsContext.documentMouseUp.subscribe(() => this.onDocumentMouseUp());
     }
 
