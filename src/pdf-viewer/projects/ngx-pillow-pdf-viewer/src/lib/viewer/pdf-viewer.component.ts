@@ -3,11 +3,12 @@ import PdfjsContext, { toolType } from "ngx-pillow-pdf-viewer/pdfjsContext";
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
-import { AnnotationEditorModeChangedEventType, AnnotationEditorType } from "../types/eventBus";
+import { AnnotationEditorModeChangedEventType, AnnotationEditorType, PageRenderedEventType } from "../types/eventBus";
 import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
 import TextAnnotator from "ngx-pillow-pdf-viewer/annotator/textAnnotator";
+import LayerManager from "ngx-pillow-pdf-viewer/annotator/layerManager";
 
 @Component({
     selector: 'lib-pdf-viewer',
@@ -104,6 +105,10 @@ export class PdfViewerComponent implements OnInit {
         return this._annotationMode;
     }
 
+    public get layerManager() {
+        return this._layerManager;
+    }
+
     public get textAnnotator() {
         return this._textAnnotator;
     }
@@ -116,6 +121,7 @@ export class PdfViewerComponent implements OnInit {
     private _fileSource?: string | Blob | Uint8Array;
     private _loggingProvider?: LoggingProvider;
     private _pdfjsContext?: pdfjsContext;
+    private _layerManager?: LayerManager;
     private _textAnnotator?: TextAnnotator;
     private _disabledTools?: toolType[];
     private _annotations: annotation[] = [];
@@ -159,8 +165,14 @@ export class PdfViewerComponent implements OnInit {
         // Subscribe to event bus events.
         this.pdfjsContext.subscribeEventBus('annotationeditormodechanged', (e) => this.onAnnotationEditorModeChanged(e));
         this.pdfjsContext.subscribeEventBus('pagesloaded', () => this.onPagesLoaded());
+        this.pdfjsContext.subscribeEventBus('pagerendered', (e) => this.onPageRendered(e));
         this.pdfjsContext.subscribeEventBus('documentloaded', () => this.loggingProvider.sendDebug('Document has been loaded.', this._defaultLogSource));
         this.pdfjsContext.subscribeEventBus('pagesinit', () => this.loggingProvider.sendDebug('Pages are loading...', this._defaultLogSource));
+
+        // this.pdfjsContext.subscribeEventBus('resetlayers', (e) => console.log('resetlayers', e));
+        // this.pdfjsContext.subscribeEventBus('textlayerrendered', (e) => console.log('textlayerrendered', e));
+        // this.pdfjsContext.subscribeEventBus('layersloaded', (e) => console.log('layersloaded', e));
+        // this.pdfjsContext.subscribeEventBus('pagerender', (e) => console.log('pagerender', e));
 
         if (!this._disabledTools) {
             return;
@@ -220,7 +232,8 @@ export class PdfViewerComponent implements OnInit {
         this.assertPdfjsContextExists();
 
         // Hook annotation classes
-        this._textAnnotator = new TextAnnotator(this.loggingProvider, this.pdfjsContext);
+        this._layerManager = new LayerManager(this.loggingProvider, this.pdfjsContext);
+        this._textAnnotator = new TextAnnotator(this.loggingProvider, this.pdfjsContext, this._layerManager);
 
         // Hook document-specific events.
         this.pdfjsContext.documentMouseUp.subscribe(() => this.onDocumentMouseUp());
@@ -283,6 +296,11 @@ export class PdfViewerComponent implements OnInit {
         this.loggingProvider.sendDebug('Pages have been loaded.', this._defaultLogSource)
     }
 
+    private onPageRendered(event: PageRenderedEventType) {
+        this.assertFileLoaded();
+        this.textAnnotator.onPageRendered(event);
+    }
+
     private onAnnotationEditorModeChanged(event: AnnotationEditorModeChangedEventType) {
 
         this.assertPdfjsContextExists();
@@ -332,6 +350,7 @@ export class PdfViewerComponent implements OnInit {
 
     private assertFileLoaded(): asserts this is this & {
         pdfjsContext: PdfjsContext;
+        layerManager: LayerManager;
         textAnnotator: TextAnnotator;
     } {
         this.assertPdfjsContextExists();

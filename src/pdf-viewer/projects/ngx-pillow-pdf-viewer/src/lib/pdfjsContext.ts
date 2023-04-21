@@ -21,6 +21,9 @@ export default class PdfjsContext
     private readonly _loadFilePromise = new DeferredPromise<void>();
 
     private readonly _defaultLogSource = PdfjsContext.name;
+    private readonly _pageNumberAttribute = 'data-page-number';
+    private readonly _pageLoadedAttribute = 'data-loaded';
+    private readonly _viewerContainerId = 'viewer';
 
     private _viewerState: 'unloaded' | 'loading' | 'loaded' = 'unloaded';
     private _fileState: 'unloaded' | 'loading' | 'loaded' = 'unloaded';
@@ -80,6 +83,11 @@ export default class PdfjsContext
     {
         this.assertfileLoaded();
         return this.pdfViewerApplication.pdfViewer.currentPageNumber;
+    }
+
+    public get pages()
+    {
+        return this.gatherPages();
     }
     
     constructor(
@@ -251,13 +259,20 @@ export default class PdfjsContext
         }
     }
 
-    public getPageContext(element: Element): PdfjsPageContext | null {
-        const pageElement = element.closest('[data-page-number]');
+    public getPageContext(source: Element | number): PdfjsPageContext | null {
+        this.assertfileLoaded();
+
+        const pageElement = typeof source === 'number' ?
+            this.pdfjsDocument.querySelector(`[${this._pageNumberAttribute}="${source}"]`) :
+            source.hasAttribute(this._pageNumberAttribute) ?
+                source :
+                source.closest(`[${this._pageNumberAttribute}]`);
+
         if (!pageElement) {
             return null;
         }
 
-        const page = pageElement.getAttribute('data-page-number');
+        const page = pageElement.getAttribute(this._pageNumberAttribute);
         if (!page) {
             return null;
         }
@@ -265,7 +280,17 @@ export default class PdfjsContext
         return {
             pageContainer: pageElement as HTMLDivElement,
             page: Number(page),
+            loaded: pageElement.hasAttribute(this._pageLoadedAttribute),
         }
+    }
+
+    private gatherPages() {
+        this.assertfileLoaded();
+
+        const pages = this.pdfjsDocument.querySelectorAll(`#${this._viewerContainerId} [${this._pageNumberAttribute}]`);
+        return Array.from(pages)
+            .map(x => this.getPageContext(x))
+            .filter(x => x !== null) as PdfjsPageContext[];
     }
 
     private getElementXPathOnPage(element: HTMLElement, expectId: string) {
