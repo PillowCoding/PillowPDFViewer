@@ -60,14 +60,28 @@ export default class TextAnnotator {
         this._pdfjsContext.assertPdfViewerApplicationExists();
         const elements = Array.from(this._pdfjsContext.pdfjsDocument.querySelectorAll(`[${this._annotatedTextAttribute}]`));
 
-        this._loggingProvider.sendDebug(`Coloring ${id} ${color} (elements: ${elements.length})`, this._defaultLogSource);
+        this._loggingProvider.sendDebug(`Coloring ${id} ${color} (elements: ${elements.length})...`, this._defaultLogSource);
         if (elements.length === 0) {
-            this._loggingProvider.sendWarning(`Could not color by id ${id}: no elements found.`, this._defaultLogSource);
+            this._loggingProvider.sendWarning(`Could not color ${id}: no elements found.`, this._defaultLogSource);
             return;
         }
 
         for (const element of elements) {
             (element as HTMLElement).style.backgroundColor = color;
+        }
+    }
+
+    public removeById(id: string) {
+        this._pdfjsContext.assertPdfViewerApplicationExists();
+        const elements = Array.from(this._pdfjsContext.pdfjsDocument.querySelectorAll(`[${this._annotatedTextAttribute}]`));
+        this._loggingProvider.sendDebug(`Removing ${id} (elements: ${elements.length})...`, this._defaultLogSource);
+        if (elements.length === 0) {
+            this._loggingProvider.sendWarning(`Could not remove ${id}: no elements found.`, this._defaultLogSource);
+            return;
+        }
+
+        for (const element of elements) {
+            element.remove();
         }
     }
 
