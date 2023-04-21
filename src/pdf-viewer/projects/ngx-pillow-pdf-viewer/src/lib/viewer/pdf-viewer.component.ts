@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
 import PdfjsContext, { toolType } from "ngx-pillow-pdf-viewer/pdfjsContext";
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
@@ -132,7 +132,9 @@ export class PdfViewerComponent implements OnInit {
     // Keeps track of pages that have had their annotations fetched.
     private readonly _fetchedAnnotationPages: number[] = [];
 
-    constructor() {
+    constructor(
+        private changeDetector: ChangeDetectorRef
+    ) {
         this.fetchAnnotationsForPage = this.fetchAnnotationsForPage.bind(this);
     }
 
@@ -247,14 +249,34 @@ export class PdfViewerComponent implements OnInit {
             return;
         }
 
+        // Proceed if we have an uncompleted annotation with no reference.
+        if (!this.uncompletedAnnotation || this.uncompletedAnnotation.state !== 'pending') {
+            return;
+        }
+
         const selectionContext = this.pdfjsContext.getSelectedTextContext();
         
         if (selectionContext == null) {
             return;
         }
 
+        this.uncompletedAnnotation.setAnnotationReference({
+            ...selectionContext
+        });
+
         this.textAnnotator.annotateSelection(selectionContext, this.uncompletedAnnotation.id);
         this.textAnnotator.colorById(this.uncompletedAnnotation.id, this._pendingAnnotateColor);
+
+        this.sidebarComponent.expand();
+        this.stateHasChanged();
+
+        const uncompletedAnnotationComponent = this.sidebarComponent.annotationComponents.find(x => x.annotation == this.uncompletedAnnotation);
+        if (!uncompletedAnnotationComponent) {
+            throw new Error(`Expected the annotation component for ${this.uncompletedAnnotation.id} to exist.`);
+        }
+        
+        uncompletedAnnotationComponent.expand();
+        this.stateHasChanged();
     }
 
     private beginNewAnnotation(type: AnnotationType) {
@@ -357,5 +379,9 @@ export class PdfViewerComponent implements OnInit {
         if (this.pdfjsContext.fileState !== 'loaded') {
             throw new Error('No file is currently loaded.');
         }
+    }
+
+    private stateHasChanged() {
+        this.changeDetector.detectChanges();
     }
 }

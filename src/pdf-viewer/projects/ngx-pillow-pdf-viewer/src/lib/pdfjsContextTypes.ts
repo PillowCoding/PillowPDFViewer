@@ -8,6 +8,7 @@ export interface PdfjsPageContext
 export interface SelectedTextContext extends PdfjsPageContext
 {
     selectedText: string;
+    selectedTextOffset: number;
     startElement: HTMLElement;
     endElement: HTMLElement;
     xpath: string;

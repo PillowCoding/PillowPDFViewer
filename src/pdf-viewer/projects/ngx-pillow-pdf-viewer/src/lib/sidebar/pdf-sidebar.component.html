@@ -13,14 +13,14 @@
                 id="expand-sidebar"
                 [disabled]="pdfjsContext?.fileState !== 'loaded'"
                 [title]="'expand'"
-                (click)="expandAnnotations()">
+                (click)="expand()">
             </button>
 
             <lib-close-button *ngIf="expanded"
-                (closed)="collapseAnnotations()"/>
+                (closed)="collapse()"/>
         </div>
 
-        <ng-container *ngIf="expanded">
+        <div [ngClass]="{'hidden': !expanded}">
             <div *ngIf="loading"
                 class="loading-indicator">
                 <lib-loading-ring></lib-loading-ring>
@@ -28,7 +28,7 @@
             <ol *ngIf="!loading">
                 <!-- Pending annotation -->
                 <li *ngIf="uncompletedAnnotation">
-                    <lib-pdf-annotation
+                    <lib-pdf-annotation #annotation
                         [loggingProvider]="loggingProvider"
                         [annotation]="uncompletedAnnotation">
 
@@ -37,13 +37,13 @@
 
                 <!-- Other annotations -->
                 <li *ngFor="let annotation of completedAnnotations">
-                    <lib-pdf-annotation
+                    <lib-pdf-annotation #annotation
                         [loggingProvider]="loggingProvider"
                         [annotation]="annotation">
 
                     </lib-pdf-annotation>
                 </li>
             </ol>
-        </ng-container>
+        </div>
     </div>
 </lib-west-resizeable>

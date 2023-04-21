@@ -21,6 +21,41 @@ export class PdfAnnotationComponent implements OnInit {
         this.assertParametersSet();
     }
 
+    public expand()
+    {
+        this.assertParametersSet();
+
+        if (this.expanded)
+        {
+            return;
+        }
+
+        this.loggingProvider.sendDebug(`Expanding annotation ${this.annotation.id}...`, this._defaultLogSource);
+        this.expanded = true;
+    }
+
+    public collapse()
+    {
+        this.assertParametersSet();
+
+        if (!this.expanded)
+        {
+            return;
+        }
+
+        this.loggingProvider.sendDebug(`Collapsing annotation ${this.annotation.id}...`, this._defaultLogSource);
+        this.expanded = false;
+    }
+
+    /**
+     * Called when a comment is being submitted
+     */
+    public onSubmit()
+    {
+        this.assertParametersSet();
+        this.loggingProvider.sendDebug('Submitting...', this._defaultLogSource);
+    }
+
     private assertParametersSet(): asserts this is this & {
         loggingProvider: LoggingProvider;
         annotation: annotation;

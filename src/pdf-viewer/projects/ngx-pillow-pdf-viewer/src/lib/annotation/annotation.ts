@@ -102,6 +102,14 @@ export default class annotation {
         this._state = 'completed';
     }
 
+    public setAnnotationReference(reference: textSelection) {
+        if (this._state != 'pending') {
+            throw new Error('It is not possible to add a reference to an annotation that already has one.');
+        }
+        this._reference = reference;
+        this._state = 'referenced';
+    }
+
     private generateGuid()
     {
         const generateNext = () => {

@@ -3,7 +3,7 @@
     border-left: solid 1px var(--annotation-border-color);
     border-radius: 5px;
     margin: 0 .25rem 0 .25rem;
-    padding: 0 0.5rem 0 1rem;
+    padding: .15rem .5rem .5rem 1rem;
     cursor: pointer;
 
     &.expanded
@@ -13,12 +13,12 @@
 
     &.focus
     {
-        background-color: var(--card-background-focus-color);
+        background-color: var(--annotation-background-focus-color);
     }
 
     &:hover
     {
-        background-color: var(--card-background-hover-color);
+        background-color: var(--annotation-background-hover-color);
     }
 
     > header
@@ -26,4 +26,8 @@
         text-align: right;
         padding-right: 2.5rem;
     }
+}
+
+.form {
+    z-index: 50000;
 }

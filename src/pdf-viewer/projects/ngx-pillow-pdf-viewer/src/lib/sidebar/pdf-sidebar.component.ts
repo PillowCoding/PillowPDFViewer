@@ -1,6 +1,7 @@
 import { trigger, state, style, transition, animate } from "@angular/animations";
-import { ChangeDetectorRef, Component, Input, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, Input, OnInit, QueryList, ViewChildren } from "@angular/core";
 import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
+import { PdfAnnotationComponent } from "ngx-pillow-pdf-viewer/annotation/pdf-annotation.component";
 import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import { DeleteAnnotationEventType, StartAnnotationEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
@@ -26,6 +27,8 @@ export type annotationsProviderDelegate = (page: number) => Promise<annotation[]
 })
 export class PdfSidebarComponent implements OnInit {
 
+    @ViewChildren('annotation') private _annotationComponents!: QueryList<PdfAnnotationComponent>;
+    
     private readonly _minExpandedSidebarWidth = 325;
     private readonly _maxExpandedSidebarWidth = 800;
 
@@ -45,6 +48,10 @@ export class PdfSidebarComponent implements OnInit {
 
     // If loadingCount is higher than 0, the sidebar is loading.
     private _loadingCount = 0;
+
+    public get annotationComponents() {
+        return Array.from(this._annotationComponents);
+    }
 
     public get expandedSidebarWidth()
     {
@@ -69,8 +76,8 @@ export class PdfSidebarComponent implements OnInit {
     }
 
     constructor(
-        private changeDetector: ChangeDetectorRef)
-    {
+        private changeDetector: ChangeDetectorRef
+    ) {
         this.sidebarWidthShouldResize = this.sidebarWidthShouldResize.bind(this);
     }
 
@@ -128,32 +135,32 @@ export class PdfSidebarComponent implements OnInit {
         this._annotations = this._annotations.filter(x => x.id !== event.annotation.id);
     }
 
-    public expandAnnotations()
+    public expand()
     {
         this.assertParametersSet();
 
         if (this.expanded)
         {
-            this.loggingProvider.sendWarning('Sidebar is already expanded.', this._defaultLogSource);
             return;
         }
 
         this.loggingProvider.sendDebug('Expanding sidebar...', this._defaultLogSource);
         this._expanded = true;
+        this.stateHasChanged();
     }
 
-    public collapseAnnotations()
+    public collapse()
     {
         this.assertParametersSet();
 
         if (!this.expanded)
         {
-            this.loggingProvider.sendWarning('Sidebar is already collapsed.', this._defaultLogSource);
             return;
         }
 
         this.loggingProvider.sendDebug('Collapsing sidebar...', this._defaultLogSource);
         this._expanded = false;
+        this.stateHasChanged();
     }
 
     public sidebarWidthShouldResize(difference: number) {

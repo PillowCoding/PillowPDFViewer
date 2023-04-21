@@ -8,3 +8,12 @@
     mask-image: url(/assets/pdfjs/web/images/toolbarButton-secondaryToolbarToggle.svg);
     transform: rotate(180deg);
 }
+
+ol {
+    padding: .5rem 0 .5rem 0;
+    margin: 0;
+    
+    & > li {
+        list-style: none;
+    }
+}

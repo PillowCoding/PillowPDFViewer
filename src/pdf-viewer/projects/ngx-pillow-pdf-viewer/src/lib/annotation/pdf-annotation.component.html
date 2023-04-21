@@ -1,4 +1,5 @@
 <div *ngIf="annotation"
+    (click)="expanded ? collapse() : expand()"
     class="annotation-container"
     attr.data-annotation="{{annotation.id}}">
 
@@ -7,13 +8,22 @@
     </header>
 
     <div *ngIf="expanded">
-        <blockquote *ngIf="annotation.type === 'text' && annotation.reference">
-            <ng-container *ngIf="'selectedText' in annotation.reference">
-                <p>{{annotation.reference.selectedText}}</p>
+        <blockquote class="quote" *ngIf="annotation.type === 'text'">
+            <ng-container *ngIf="annotation.reference?.selectedText">
+                <p>{{annotation.reference?.selectedText}}</p>
             </ng-container>
-            <ng-container *ngIf="!'selectedText' in annotation.reference">
+            <ng-container *ngIf="!annotation.reference?.selectedText">
                 <p>...</p>
             </ng-container>
         </blockquote>
+
+        <!-- Comment form -->
+        <form class="form" *ngIf="annotation.reference">
+            <input #annotationComment
+                attr.data-annotation-input="{{annotation.id}}"
+                type="text"
+                aria-label="Comment input" />
+            <input type="submit" role="button" (click)="onSubmit()" value="Post" />
+        </form>
     </div>
 </div>

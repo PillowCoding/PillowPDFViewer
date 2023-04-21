@@ -221,6 +221,7 @@ export default class PdfjsContext
 
         let startNode = selection.anchorNode;
         let endNode = selection.focusNode;
+        let selectedTextOffset = selection.anchorOffset;
 
         // We need to make sure what node comes earlier in the DOM tree. If we select backwards, we need to switch the nodes around.
         const anchorNodePosition = selection.anchorNode.compareDocumentPosition(selection.focusNode);
@@ -228,6 +229,7 @@ export default class PdfjsContext
         {
             startNode = selection.focusNode;
             endNode = selection.anchorNode;
+            selectedTextOffset = selection.focusOffset;
         }
 
         selection.removeAllRanges();
@@ -254,6 +256,7 @@ export default class PdfjsContext
         return {
             ...startPageContext,
             selectedText,
+            selectedTextOffset,
             startElement,
             endElement,
             xpath: elementXpath,
