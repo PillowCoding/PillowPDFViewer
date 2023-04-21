@@ -68,15 +68,23 @@ export class PdfViewerComponent implements OnInit {
         this._annotations = annotations;
     }
 
+    public get annotations() {
+        return this._annotations;
+    }
+
+    public get completedAnnotations() {
+        return this._annotations.filter(x => x.state === 'completed');
+    }
+
+    public get uncompletedAnnotation() {
+        return this._annotations.filter(x => x.state !== 'completed')[0];
+    }
+
     /** The provider that will fetch annotations asynchronously. */
     @Input() public annotationsProvider?: annotationsProviderDelegate;
 
     public get pdfjsContext() {
         return this._pdfjsContext;
-    }
-
-    public get uncompletedAnnotation() {
-        return this._annotations.filter(x => x.state !== 'completed')[0];
     }
 
     public get sidebarComponent() {
@@ -112,6 +120,8 @@ export class PdfViewerComponent implements OnInit {
     private _disabledTools?: toolType[];
     private _annotations: annotation[] = [];
     private _annotationMode: AnnotationType | 'none' = 'none';
+
+    private readonly _pendingAnnotateColor = 'green';
 
     // Keeps track of pages that have had their annotations fetched.
     private readonly _fetchedAnnotationPages: number[] = [];
@@ -217,7 +227,7 @@ export class PdfViewerComponent implements OnInit {
     }
 
     private onDocumentMouseUp() {
-        this.assertPdfjsContextExists();
+        this.assertFileLoaded();
 
         // Proceed if we are working on a text annotation.
         if (this._annotationMode !== 'text') {
@@ -230,7 +240,8 @@ export class PdfViewerComponent implements OnInit {
             return;
         }
 
-        this.loggingProvider.sendDebug('Selected text: ', this._defaultLogSource, selectionContext);
+        this.textAnnotator.annotateSelection(selectionContext, this.uncompletedAnnotation.id);
+        this.textAnnotator.colorById(this.uncompletedAnnotation.id, this._pendingAnnotateColor);
     }
 
     private beginNewAnnotation(type: AnnotationType) {
@@ -316,6 +327,16 @@ export class PdfViewerComponent implements OnInit {
     } {
         if (!this.pdfjsContext) {
             throw new Error('The PDFJS context could not be found.');
+        }
+    }
+
+    private assertFileLoaded(): asserts this is this & {
+        pdfjsContext: PdfjsContext;
+        textAnnotator: TextAnnotator;
+    } {
+        this.assertPdfjsContextExists();
+        if (this.pdfjsContext.fileState !== 'loaded') {
+            throw new Error('No file is currently loaded.');
         }
     }
 }

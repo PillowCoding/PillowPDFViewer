@@ -321,7 +321,7 @@ export default class PdfjsContext
         this._loadViewerPromise.resolve();
     }
 
-    private assertPdfViewerApplicationExists(): asserts this is this & {
+    public assertPdfViewerApplicationExists(): asserts this is this & {
         pdfjsDocument: Document;
         pdfjsWindow: PdfjsWindow;
         pdfViewerApplication: PDFViewerApplication
