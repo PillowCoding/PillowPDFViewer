@@ -1,10 +1,11 @@
-import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
+import annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfViewerComponent } from "../../public-api";
 import PDFPageView from "./pdfPageView";
 import PDFPresentationMode from "./pdfPresentationMode";
 import { PDFViewer, scrollModeType, spreadModeType } from "./pdfViewer";
 import { PdfjsWindow } from "./pdfjsWindow";
 import { SecondaryToolbar, Toolbar } from "./toolbar";
+import { PdfAnnotationComponent } from "ngx-pillow-pdf-viewer/annotation/pdf-annotation.component";
 
 export default interface EventBus {
     on: (name: string, listener: (e: object) => void, options?: object) => void;
@@ -84,6 +85,7 @@ export interface EventBusEventTypePayloadMap {
     // Custom events
     "annotationStarted": StartAnnotationEventType;
     "annotationDeleted": DeleteAnnotationEventType;
+    "annotationCommentSubmit": AnnotationCommentSubmitEventType;
 }
 
 /**
@@ -274,3 +276,8 @@ export type StartAnnotationEventType = EventBusEvent<PdfViewerComponent> & {
 }
 
 export type DeleteAnnotationEventType = StartAnnotationEventType;
+
+export type AnnotationCommentSubmitEventType = EventBusEvent<PdfAnnotationComponent> & {
+    annotation: annotation;
+    comment: AnnotationComment;
+}

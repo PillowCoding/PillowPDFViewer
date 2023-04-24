@@ -5,7 +5,7 @@
 
     <div
         [@expandCollapse]="{ value: expanded ? 'expand' : 'collapse', params: { expandedWidth: expandedSidebarWidth }}"
-        class="full-height annotation-container">
+        class="full-height sidebar-container">
 
         <div class="flex">
             <button *ngIf="!expanded"
@@ -20,28 +20,18 @@
                 (closed)="collapse()"/>
         </div>
 
-        <div [ngClass]="{'hidden': !expanded}">
+        <div [ngClass]="{'hidden': !expanded}" class="annotation-container">
             <div *ngIf="loading"
                 class="loading-indicator">
                 <lib-loading-ring></lib-loading-ring>
             </div>
             <ol *ngIf="!loading">
-                <!-- Pending annotation -->
-                <li *ngIf="uncompletedAnnotation">
+                <li *ngFor="let annotation of annotations">
                     <lib-pdf-annotation #annotation
                         [loggingProvider]="loggingProvider"
-                        [annotation]="uncompletedAnnotation"
+                        [pdfjsContext]="pdfjsContext"
+                        [annotation]="annotation"
                         [expanded]="true">
-
-                    </lib-pdf-annotation>
-                </li>
-
-                <!-- Other annotations -->
-                <li *ngFor="let annotation of completedAnnotations">
-                    <lib-pdf-annotation #annotation
-                        [loggingProvider]="loggingProvider"
-                        [annotation]="annotation">
-
                     </lib-pdf-annotation>
                 </li>
             </ol>

@@ -107,7 +107,7 @@ export default class annotation {
             throw new Error('It is not possible to add a reference to an annotation that already has one.');
         }
         this._reference = reference;
-        this._state = 'referenced';
+        this._state = 'completed';
     }
 
     private generateGuid()

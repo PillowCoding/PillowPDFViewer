@@ -11,7 +11,15 @@
 }
 
 .hidden {
-    display: none;
+    display: none !important;
+}
+
+.font-bold {
+    font-weight: bold;
+}
+
+.muted {
+    color: var(--text-muted-color);
 }
 
 .loading-indicator {
@@ -69,40 +77,6 @@
     }
 }
 
-.quote {
-    display: -webkit-box;
-    margin: 0;
-    background: var(--quote-background-color);
-    border-left: 10px solid var(--quote-border-color);
-    border-radius: 2px;
-    padding: 0.5em 10px;
-    quotes: "\201C""\201D""\2018""\2019";
-    text-overflow: ellipsis;
-    max-height: 120px;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-
-    &::before {
-        color: var(--text-color);
-        content: open-quote;
-        font-size: 2rem;
-        line-height: 0.1em;
-        margin-right: 0.25em;
-        vertical-align: -0.4em;
-    }
-    
-    &::after {
-        content: no-close-quote;
-    }
-
-    > p
-    {
-        display: inline;
-        font-size: .7rem;
-    }
-}
-
 .form
 {
     display: flex;
@@ -117,9 +91,12 @@
         color: var(--text-color);
         outline: none;
 
-        &:focus
-        {
+        &:focus {
             background-color: var(--input-background-focus-color);
+        }
+
+        &:disabled {
+            background-color: var(--input-background-disabled-color);
         }
     }
     
@@ -143,12 +120,17 @@
         {
             background-color: var(--input-background-focus-color);
         }
+
+        &:disabled {
+            background-color: var(--input-background-disabled-color);
+        }
     }
 }
 
 :host
 {
     --text-color: rgb(12, 12, 13);
+    --text-muted-color: rgb(103, 103, 103);
     --toolbar-icon-color: rgba(1, 1, 1);
     --toolbar-icon-opacity: 0.7;
 
@@ -166,6 +148,7 @@
     --input-background-color: rgb(255, 255, 255);
     --input-background-hover-color: rgb(233, 233, 233);
     --input-background-focus-color: rgb(226, 226, 226);
+    --input-background-disabled-color: rgb(200, 200, 200);
     --input-border-color: rgb(204, 204, 204);
 
     --loading-color: rgb(0, 0, 0);
@@ -179,6 +162,7 @@
     :host
     {
         --text-color: rgb(240, 240, 240);
+        --text-muted-color: rgb(82, 82, 82);
         --toolbar-icon-color: rgba(249, 249, 250, .7);
 
         --sidebar-background-color: rgb(56, 56, 61);
@@ -195,6 +179,7 @@
         --input-background-color: rgb(74, 74, 79);
         --input-background-focus-color: rgb(75, 75, 75);
         --input-background-focus-color: rgb(80, 80, 80);
+        --input-background-disabled-color: rgb(70, 70, 70);
         --input-border-color: rgb(50, 50, 50);
 
         --loading-color: rgb(255, 255, 255);

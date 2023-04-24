@@ -1,6 +1,11 @@
-.annotation-container {
+.sidebar-container {
     background-color: var(--sidebar-background-color);
     border-left: solid 1px var(--sidebar-border-color);
+}
+
+.annotation-container {
+    overflow-y: auto;
+    height: calc(100% - 32px);
 }
 
 #expand-sidebar::before
@@ -15,5 +20,6 @@ ol {
     
     & > li {
         list-style: none;
+        margin-bottom: 8px;
     }
 }

@@ -1,5 +1,7 @@
 <lib-pdf-viewer
     [fileSource]="'/assets/compressed.tracemonkey-pldi-09.pdf'"
     [disabledTools]="['printing', 'downloadPdf', 'textEditor', 'drawEditor']"
-    [annotationsProvider]="fetchAnnotationsForPage">
+    [annotationsProvider]="fetchAnnotationsForPage"
+    [annotationsSaveProvider]="saveAnnotation"
+    [annotationsCommentSaveProvider]="saveAnnotationComment">
 </lib-pdf-viewer>

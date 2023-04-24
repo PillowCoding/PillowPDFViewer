@@ -1,5 +1,6 @@
-import { Component, Input, OnInit } from "@angular/core";
-import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
+import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
+import annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
+import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 
 export type annotationsProviderDelegate = (page: number) => Promise<annotation[]>;
@@ -11,11 +12,58 @@ export type annotationsProviderDelegate = (page: number) => Promise<annotation[]
 })
 export class PdfAnnotationComponent implements OnInit {
 
+    @ViewChild('annotationCommentInput') private _annotationCommentInput!: ElementRef<HTMLInputElement>;
+    
     @Input() public loggingProvider?: LoggingProvider;
+    @Input() public pdfjsContext?: PdfjsContext;
     @Input() public annotation?: annotation;
     @Input() public expanded = false;
 
+    @Input()
+    public set loading(loading: boolean) {
+        this.assertParametersSet();
+
+        this._loadingCount += loading ? 1 : -1;
+        if (this._loadingCount < 0) {
+            this.loggingProvider.sendWarning('The loading count went below 0 which should not happen.', this._defaultLogSource);
+            this._loadingCount = 0;
+        }
+
+        // Also set the input loading.
+        this.inputLoading = loading;
+    }
+
+    public get loading() {
+        return this._loadingCount > 0;
+    }
+
+    @Input()
+    public set inputLoading(loading: boolean) {
+        this.assertParametersSet();
+
+        this._inputLoadingCount += loading ? 1 : -1;
+        if (this._inputLoadingCount < 0) {
+            this.loggingProvider.sendWarning('The input loading count went below 0 which should not happen.', this._defaultLogSource);
+            this._inputLoadingCount = 0;
+        }
+    }
+
+    public get inputLoading() {
+        return this._inputLoadingCount > 0;
+    }
+
+    // If loadingCount is higher than 0, the component is loading.
+    private _loadingCount = 0;
+
+    // If loadingCount is higher than 0, the component is loading.
+    private _inputLoadingCount = 0;
+
     private readonly _defaultLogSource = PdfAnnotationComponent.name;
+
+    constructor(
+        private changeDetector: ChangeDetectorRef
+    ) {
+    }
 
     ngOnInit(): void {
         this.assertParametersSet();
@@ -32,6 +80,7 @@ export class PdfAnnotationComponent implements OnInit {
 
         this.loggingProvider.sendDebug(`Expanding annotation ${this.annotation.id}...`, this._defaultLogSource);
         this.expanded = true;
+        this.stateHasChanged();
     }
 
     public collapse()
@@ -45,26 +94,42 @@ export class PdfAnnotationComponent implements OnInit {
 
         this.loggingProvider.sendDebug(`Collapsing annotation ${this.annotation.id}...`, this._defaultLogSource);
         this.expanded = false;
+        this.stateHasChanged();
     }
 
     /**
      * Called when a comment is being submitted
      */
-    public onSubmit()
+    public onCommentSubmit()
     {
         this.assertParametersSet();
-        this.loggingProvider.sendDebug('Submitting...', this._defaultLogSource);
+        this.loggingProvider.sendDebug('Submitting comment...', this._defaultLogSource);
+
+        const comment = new AnnotationComment(this._annotationCommentInput.nativeElement.value);
+        this._annotationCommentInput.nativeElement.value = '';
+
+        this.pdfjsContext.dispatchEventBus('annotationCommentSubmit', {
+            source: this,
+            annotation: this.annotation,
+            comment,
+        })
     }
 
     private assertParametersSet(): asserts this is this & {
         loggingProvider: LoggingProvider;
+        pdfjsContext: PdfjsContext;
         annotation: annotation;
     } {
         const missingParameters = [];
         if (!this.loggingProvider) { missingParameters.push('loggingProvider'); }
+        if (!this.pdfjsContext) { missingParameters.push('pdfjsContext'); }
         if (!this.annotation) { missingParameters.push('annotation'); }
         if (missingParameters.length > 0) {
             throw new Error(`Please provide a value for the parameters: ${missingParameters.join(', ')}`);
         }
+    }
+
+    private stateHasChanged() {
+        this.changeDetector.detectChanges();
     }
 }

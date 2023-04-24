@@ -3,12 +3,15 @@ import PdfjsContext, { annotateDrawId, annotateTextId, toolType } from "ngx-pill
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
-import { AnnotationEditorModeChangedEventType, AnnotationEditorType, PageRenderedEventType } from "../types/eventBus";
+import { AnnotationCommentSubmitEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, PageRenderedEventType } from "../types/eventBus";
 import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
-import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
+import annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
 import TextAnnotator from "ngx-pillow-pdf-viewer/annotator/textAnnotator";
 import LayerManager from "ngx-pillow-pdf-viewer/annotator/layerManager";
+
+export type annotationsSaveProviderDelegate = (annotation: annotation) => void | Promise<void>;
+export type annotationsCommentSaveProviderDelegate = (annotation: annotation, comment: AnnotationComment) => void | Promise<void>;
 
 @Component({
     selector: 'lib-pdf-viewer',
@@ -83,6 +86,12 @@ export class PdfViewerComponent implements OnInit {
 
     /** The provider that will fetch annotations asynchronously. */
     @Input() public annotationsProvider?: annotationsProviderDelegate;
+
+    /** The provider that will save annotations. */
+    @Input() public annotationsSaveProvider?: annotationsSaveProviderDelegate;
+
+    /** The provider that will save annotation comments. */
+    @Input() public annotationsCommentSaveProvider?: annotationsCommentSaveProviderDelegate;
 
     public get pdfjsContext() {
         return this._pdfjsContext;
@@ -168,6 +177,7 @@ export class PdfViewerComponent implements OnInit {
         this.pdfjsContext.subscribeEventBus('pagerendered', (e) => this.onPageRendered(e));
         this.pdfjsContext.subscribeEventBus('documentloaded', () => this.loggingProvider.sendDebug('Document has been loaded.', this._defaultLogSource));
         this.pdfjsContext.subscribeEventBus('pagesinit', () => this.loggingProvider.sendDebug('Pages are loading...', this._defaultLogSource));
+        this.pdfjsContext.subscribeEventBus('annotationCommentSubmit', (e) => this.onAnnotationCommentSubmit(e));
 
         // this.pdfjsContext.subscribeEventBus('resetlayers', (e) => console.log('resetlayers', e));
         // this.pdfjsContext.subscribeEventBus('textlayerrendered', (e) => console.log('textlayerrendered', e));
@@ -235,7 +245,7 @@ export class PdfViewerComponent implements OnInit {
         this.pdfjsContext.documentMouseUp.subscribe(() => this.onDocumentMouseUp());
     }
 
-    private onDocumentMouseUp() {
+    private async onDocumentMouseUp() {
         this.assertFileLoaded();
 
         // Proceed if we are working on a text annotation.
@@ -248,28 +258,40 @@ export class PdfViewerComponent implements OnInit {
             return;
         }
 
+        const annotation = this.uncompletedAnnotation;
         const selectionContext = this.pdfjsContext.getSelectedTextContext();
         
         if (selectionContext == null) {
             return;
         }
 
-        this.uncompletedAnnotation.setAnnotationReference({
+        // Set the annotation reference. This also marks it as "complete", making it a regular array.
+        annotation.setAnnotationReference({
             ...selectionContext
         });
 
-        this.textAnnotator.annotateSelection(selectionContext, this.uncompletedAnnotation.id);
-        this.textAnnotator.colorById(this.uncompletedAnnotation.id, this._pendingAnnotateColor);
+        this.textAnnotator.annotateSelection(selectionContext, annotation.id);
+        this.textAnnotator.colorById(annotation.id, this._pendingAnnotateColor);
 
         this.sidebarComponent.expand();
         this.stateHasChanged();
 
-        const uncompletedAnnotationComponent = this.sidebarComponent.annotationComponents.find(x => x.annotation == this.uncompletedAnnotation);
+        const uncompletedAnnotationComponent = this.sidebarComponent.annotationComponents.find(x => x.annotation == annotation);
         if (!uncompletedAnnotationComponent) {
-            throw new Error(`Expected the annotation component for ${this.uncompletedAnnotation.id} to exist.`);
+            throw new Error(`Expected the annotation component for ${annotation.id} to exist.`);
         }
-        
-        uncompletedAnnotationComponent.expand();
+
+        if (!this.annotationsSaveProvider) {
+            this.loggingProvider.sendWarning(`Please provide a value for \`annotationsSaveProvider\` in order to save annotations.`, this._defaultLogSource);
+        }
+        else {
+            uncompletedAnnotationComponent.loading = true;
+            this.stateHasChanged();
+
+            await this.annotationsSaveProvider(annotation);
+            uncompletedAnnotationComponent.loading = false;
+        }
+
         this.stateHasChanged();
     }
 
@@ -315,6 +337,29 @@ export class PdfViewerComponent implements OnInit {
     private onPageRendered(event: PageRenderedEventType) {
         this.assertFileLoaded();
         this.textAnnotator.onPageRendered(event);
+    }
+
+    private async onAnnotationCommentSubmit(event: AnnotationCommentSubmitEventType) {
+
+        const annotationComponent = this.sidebarComponent.annotationComponents.find(x => x.annotation === event.annotation);
+        if (!annotationComponent) {
+            throw new Error(`Expected the annotation component for ${event.annotation.id} to exist.`);
+        }
+
+        event.annotation.comments.push(event.comment);
+
+        if (!this.annotationsCommentSaveProvider) {
+            this.loggingProvider.sendWarning(`Please provide a value for \`annotationsCommentSaveProvider\` in order to save annotation comments.`, this._defaultLogSource);
+        }
+        else {
+            annotationComponent.inputLoading = true;
+            this.stateHasChanged();
+
+            await this.annotationsCommentSaveProvider(event.annotation, event.comment);
+            annotationComponent.inputLoading = false;
+        }
+
+        this.stateHasChanged();
     }
 
     private onAnnotationEditorModeChanged(event: AnnotationEditorModeChangedEventType) {

@@ -63,12 +63,22 @@ export class PdfSidebarComponent implements OnInit {
         return this._expanded;
     }
 
-    public get completedAnnotations() {
-        return this._annotations.filter(x => x.state === 'completed');
+    public get annotations() {
+        return this._annotations
+            .slice()
+            .sort((a: annotation, b: annotation) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime())
+            .reverse();
     }
 
-    public get uncompletedAnnotation() {
-        return this._annotations.filter(x => x.state !== 'completed')[0];
+    @Input()
+    public set loading(loading: boolean) {
+        this.assertParametersSet();
+
+        this._loadingCount += loading ? 1 : -1;
+        if (this._loadingCount < 0) {
+            this.loggingProvider.sendWarning('The loading count went below 0 which should not happen.', this._defaultLogSource);
+            this._loadingCount = 0;
+        }
     }
 
     public get loading() {
@@ -111,10 +121,10 @@ export class PdfSidebarComponent implements OnInit {
 
         // Fetch the annotations. After fetching make sure we are still on the same page.
         // If we scroll quickly and fetch annotations of a previous page, we don't want to show the wrong annotations.
-        this._loadingCount++;
+        this.loading = true;
         this.stateHasChanged();
         const annotations = await this.annotationsProvider(targetPage);
-        this._loadingCount--;
+        this.loading = false;
         this.stateHasChanged();
 
         this._fetchingPages = this._fetchingPages.filter(x => x !== targetPage);
