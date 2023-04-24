@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
-import PdfjsContext, { toolType } from "ngx-pillow-pdf-viewer/pdfjsContext";
+import PdfjsContext, { annotateDrawId, annotateTextId, toolType } from "ngx-pillow-pdf-viewer/pdfjsContext";
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
@@ -113,8 +113,6 @@ export class PdfViewerComponent implements OnInit {
         return this._textAnnotator;
     }
 
-    private readonly _annotateTextId = 'annotate-text';
-    private readonly _annotateDrawId = 'annotate-draw';
     private readonly _defaultLogSource = PdfViewerComponent.name;
 
     private _relativeViewerPath?: string;
@@ -123,7 +121,7 @@ export class PdfViewerComponent implements OnInit {
     private _pdfjsContext?: pdfjsContext;
     private _layerManager?: LayerManager;
     private _textAnnotator?: TextAnnotator;
-    private _disabledTools?: toolType[];
+    private _disabledTools: toolType[] = [];
     private _annotations: annotation[] = [];
     private _annotationMode: AnnotationType | 'none' = 'none';
 
@@ -176,26 +174,22 @@ export class PdfViewerComponent implements OnInit {
         // this.pdfjsContext.subscribeEventBus('layersloaded', (e) => console.log('layersloaded', e));
         // this.pdfjsContext.subscribeEventBus('pagerender', (e) => console.log('pagerender', e));
 
-        if (!this._disabledTools) {
-            return;
-        }
-
         // Inject the text and draw annotation tool buttons.
         const textAnnotateStyle = `
-            #${this._annotateTextId}::before
+            #${annotateTextId}::before
             {
                 -webkit-mask-image: var(--toolbarButton-editorFreeText-icon);
             }
         `;
         const drawAnnotateStyle = `
-            #${this._annotateDrawId}::before
+            #${annotateDrawId}::before
             {
                 -webkit-mask-image: var(--toolbarButton-editorInk-icon);
             }
         `;
 
         const sharedStyle = `
-            #${this._annotateDrawId}::after, #${this._annotateTextId}::after
+            #${annotateDrawId}::after, #${annotateTextId}::after
             {
                 content: 'A';
                 font-size: 8px;
@@ -206,15 +200,15 @@ export class PdfViewerComponent implements OnInit {
                 color: var(--main-color);
                 opacity: var(--toolbar-icon-opacity);
             }
-            #${this._annotateDrawId}::before, #${this._annotateTextId}::before
+            #${annotateDrawId}::before, #${annotateTextId}::before
             {
                 color: var(--main-color);
                 opacity: var(--toolbar-icon-opacity);
             }
         `;
 
-        const annotateDrawButton = this.pdfjsContext.insertToolButton(this._annotateDrawId, 'beforebegin', 'textEditor', true);
-        const annotateTextButton = this.pdfjsContext.insertToolButton(this._annotateTextId, 'beforebegin', this._annotateDrawId, true);
+        const annotateDrawButton = this.pdfjsContext.insertToolButton(annotateDrawId, 'beforebegin', 'textEditor', true);
+        const annotateTextButton = this.pdfjsContext.insertToolButton(annotateTextId, 'beforebegin', annotateDrawId, true);
         this.pdfjsContext.injectStyle(textAnnotateStyle + drawAnnotateStyle + sharedStyle);
 
         annotateDrawButton.onclick = () => { throw new Error('Not implemented.') };
@@ -312,8 +306,8 @@ export class PdfViewerComponent implements OnInit {
         this.assertPdfjsContextExists();
 
         // Enable the annotation buttons
-        this.pdfjsContext.setToolDisabled(this._annotateDrawId, false);
-        this.pdfjsContext.setToolDisabled(this._annotateTextId, false);
+        this.pdfjsContext.setToolDisabled(annotateDrawId, false);
+        this.pdfjsContext.setToolDisabled(annotateTextId, false);
 
         this.loggingProvider.sendDebug('Pages have been loaded.', this._defaultLogSource)
     }
@@ -332,10 +326,6 @@ export class PdfViewerComponent implements OnInit {
             return;
         }
 
-        if (!this._disabledTools) {
-            return;
-        }
-
         // If the text editor or draw editor must be disabled, disable them if the annotation mode changed to not disabled.
         const toolsToDisable = this._disabledTools.filter(x => x === 'textEditor' || x === 'drawEditor');
         for (const toolId of toolsToDisable) {
@@ -345,6 +335,8 @@ export class PdfViewerComponent implements OnInit {
 
     public async fetchAnnotationsForPage(page: number)
     {
+        this.assertPdfjsContextExists();
+
         // Previously fetched.
         if (this._fetchedAnnotationPages.some(x => x === page)) {
             return this._annotations.filter(x => x.page === page);

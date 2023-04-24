@@ -7,7 +7,7 @@
         <p class="font-bold">{{annotation.dateCreated | date: 'h:mm:ss'}}</p>
     </header>
 
-    <div *ngIf="expanded">
+    <div [ngClass]="{'hidden': !expanded}">
         <blockquote class="quote" *ngIf="annotation.type === 'text'">
             <ng-container *ngIf="annotation.reference?.selectedText">
                 <p>{{annotation.reference?.selectedText}}</p>
@@ -18,8 +18,10 @@
         </blockquote>
 
         <!-- Comment form -->
-        <form class="form" *ngIf="annotation.reference">
-            <input #annotationComment
+        <form libClickStopPropagation *ngIf="annotation.reference"
+            class="form">
+
+            <input
                 attr.data-annotation-input="{{annotation.id}}"
                 type="text"
                 aria-label="Comment input" />

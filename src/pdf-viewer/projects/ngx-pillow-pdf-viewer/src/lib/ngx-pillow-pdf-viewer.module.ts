@@ -10,6 +10,7 @@ import { PdfViewerComponent } from './viewer/pdf-viewer.component';
 import { PdfSidebarComponent } from './sidebar/pdf-sidebar.component';
 import { CloseButtonComponent } from './components/close-button.component';
 import { PdfAnnotationComponent } from './annotation/pdf-annotation.component';
+import { ClickStopPropagationDirective } from './utils/stopPropagationDirective';
 
 @NgModule({
     declarations: [
@@ -19,6 +20,7 @@ import { PdfAnnotationComponent } from './annotation/pdf-annotation.component';
         CloseButtonComponent,
         PdfAnnotationComponent,
         PdfSidebarComponent,
+        ClickStopPropagationDirective,
         TranslatePipe,
     ],
     exports: [

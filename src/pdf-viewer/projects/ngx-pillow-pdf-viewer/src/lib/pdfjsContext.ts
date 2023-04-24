@@ -7,7 +7,9 @@ import DeferredPromise from "./utils/deferredPromise";
 import { PdfjsPageContext, SelectedTextContext } from "./pdfjsContextTypes";
 import { getElementXpath } from "./utils/xpath";
 
-export type toolType = 'openFile' | 'printing' | 'downloadPdf' | 'textEditor' | 'drawEditor';
+export type toolType = 'openFile' | 'printing' | 'downloadPdf' | 'textEditor' | 'drawEditor' | 'textAnnotator' | 'drawAnnotator';
+export const annotateTextId = 'annotate-text';
+export const annotateDrawId = 'annotate-draw';
 
 export default class PdfjsContext
 {
@@ -37,6 +39,8 @@ export default class PdfjsContext
         'downloadPdf': [ 'download', 'secondaryDownload' ],
         'textEditor': [ 'editorFreeText' ],
         'drawEditor': [ 'editorInk' ],
+        'textAnnotator': [ annotateTextId ],
+        'drawAnnotator': [ annotateDrawId ],
     };
 
     /** Gets the iframe document. */

@@ -30,7 +30,8 @@
                 <li *ngIf="uncompletedAnnotation">
                     <lib-pdf-annotation #annotation
                         [loggingProvider]="loggingProvider"
-                        [annotation]="uncompletedAnnotation">
+                        [annotation]="uncompletedAnnotation"
+                        [expanded]="true">
 
                     </lib-pdf-annotation>
                 </li>
