@@ -1,6 +1,6 @@
 .annotation-container {
     background-color: var(--annotation-background-color);
-    border-left: solid 1px var(--annotation-border-color);
+    box-shadow: -2px 2px 5px 0px rgba(var(--annotation-shadow-color), var(--annotation-shadow-opacity));
     border-radius: 5px;
     margin: 0 .25rem 0 .25rem;
     padding: .15rem .5rem .5rem 1rem;
