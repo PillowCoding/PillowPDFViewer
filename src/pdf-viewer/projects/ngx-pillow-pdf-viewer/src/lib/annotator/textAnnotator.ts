@@ -2,7 +2,6 @@ import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import { SelectedTextContext } from "ngx-pillow-pdf-viewer/pdfjsContextTypes";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 import LayerManager from "./layerManager";
-import { PageRenderedEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
 
 export type textContextElement = {
     parent: HTMLElement;
@@ -27,21 +26,25 @@ export default class TextAnnotator {
             this.injectLayerStyle();
         }
 
-    public async onPageRendered(event: PageRenderedEventType) {
-        const layerId = this.getLayerId(event.pageNumber);
+    public async renderLayer(page: number) {
+        const layerId = this.getLayerId(page);
         let layer = this._layerManager.getLayerById(layerId);
         if (!layer) {
-            layer = await this._layerManager.createLayer(layerId, event.pageNumber, this._layerClassName);
+            layer = await this._layerManager.createLayer(layerId, page, this._layerClassName);
         }
 
         this._layerManager.applyLayer(layer);
     }
     
     public annotateSelection(selection: SelectedTextContext, id: string) {
-        const selectionContextElements = Array.from(this.getTextContextElements(selection.startElement, selection.selectedText));
+        this.annotate(selection.startElement, selection.selectedText, selection.page, id);
+    }
+
+    public annotate(startElement: HTMLElement, selectedText: string, page: number, id: string) {
+        const selectionContextElements = Array.from(this.getTextContextElements(startElement, selectedText));
         this._loggingProvider.sendDebug('Selection elements:', this._defaultLogSource, selectionContextElements);
 
-        const layerId = this.getLayerId(selection.page);
+        const layerId = this.getLayerId(page);
         const layer = this._layerManager.getLayerById(layerId);
         if (!layer) {
             this._loggingProvider.sendWarning(`Annotation aborted: Layer ${layerId} was not found`, this._defaultLogSource);
@@ -56,18 +59,20 @@ export default class TextAnnotator {
         }
     }
 
-    public colorById(id: string, color: string) {
+    public colorById(color: string, ...ids: string[]) {
         this._pdfjsContext.assertPdfViewerApplicationExists();
         const elements = Array.from(this._pdfjsContext.pdfjsDocument.querySelectorAll(`[${this._annotatedTextAttribute}]`));
 
-        this._loggingProvider.sendDebug(`Coloring ${id} ${color} (elements: ${elements.length})...`, this._defaultLogSource);
-        if (elements.length === 0) {
-            this._loggingProvider.sendWarning(`Could not color ${id}: no elements found.`, this._defaultLogSource);
-            return;
-        }
+        for (const id of ids) {
+            this._loggingProvider.sendDebug(`Coloring ${id} ${color} (elements: ${elements.length})...`, this._defaultLogSource);
+            if (elements.length === 0) {
+                this._loggingProvider.sendWarning(`Could not color ${id}: no elements found.`, this._defaultLogSource);
+                return;
+            }
 
-        for (const element of elements) {
-            (element as HTMLElement).style.backgroundColor = color;
+            for (const element of elements) {
+                (element as HTMLElement).style.backgroundColor = color;
+            }
         }
     }
 

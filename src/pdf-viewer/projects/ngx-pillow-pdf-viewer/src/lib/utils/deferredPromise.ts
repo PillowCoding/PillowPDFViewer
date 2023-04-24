@@ -1,4 +1,4 @@
-export default class DeferredPromise<T> implements Promise<T> {
+export default class DeferredPromise<T = void> implements Promise<T> {
 
     private _resolve?: (value: T | PromiseLike<T>) => void;
     private _reject?: (reason: unknown) => void;

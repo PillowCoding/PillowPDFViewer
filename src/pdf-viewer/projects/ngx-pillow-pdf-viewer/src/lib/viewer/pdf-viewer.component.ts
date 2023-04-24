@@ -3,12 +3,13 @@ import PdfjsContext, { annotateDrawId, annotateTextId, toolType } from "ngx-pill
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
-import { AnnotationCommentSubmitEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, PageRenderedEventType } from "../types/eventBus";
+import { AnnotationCommentSubmitEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, PageChangingEventType, PageRenderedEventType } from "../types/eventBus";
 import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 import Annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
 import TextAnnotator from "ngx-pillow-pdf-viewer/annotator/textAnnotator";
 import LayerManager from "ngx-pillow-pdf-viewer/annotator/layerManager";
+import DeferredPromise from "ngx-pillow-pdf-viewer/utils/deferredPromise";
 
 export type annotationsSaveProviderDelegate = (annotation: Annotation) => void | Promise<void>;
 export type annotationsCommentSaveProviderDelegate = (annotation: Annotation, comment: AnnotationComment) => void | Promise<void>;
@@ -122,6 +123,10 @@ export class PdfViewerComponent implements OnInit {
         return this._textAnnotator;
     }
 
+    public get annotationPagePromises() {
+        return this._annotationPagePromises;
+    }
+
     private readonly _defaultLogSource = PdfViewerComponent.name;
 
     private _relativeViewerPath?: string;
@@ -134,15 +139,21 @@ export class PdfViewerComponent implements OnInit {
     private _annotations: Annotation[] = [];
     private _annotationMode: AnnotationType | 'none' = 'none';
 
-    private readonly _pendingAnnotateColor = '#00800040';
+    private readonly _defaultAnnotateColor = '#00800040';
 
     // Keeps track of pages that have had their annotations fetched.
     private readonly _fetchedAnnotationPages: number[] = [];
 
+    // Keeps track of pages that are having their annotations fetched.
+    private _fetchingAnnotationPages: number[] = [];
+
+    // Keeps an array of promises that can be awaited to wait for annotations to be fetched.
+    private _annotationPagePromises?: DeferredPromise[];
+
     constructor(
         private changeDetector: ChangeDetectorRef
     ) {
-        this.fetchAnnotationsForPage = this.fetchAnnotationsForPage.bind(this);
+        this.fetchSidebarAnnotationsForPage = this.fetchSidebarAnnotationsForPage.bind(this);
     }
 
     ngOnInit(): void {
@@ -175,8 +186,9 @@ export class PdfViewerComponent implements OnInit {
         this.pdfjsContext.subscribeEventBus('annotationeditormodechanged', (e) => this.onAnnotationEditorModeChanged(e));
         this.pdfjsContext.subscribeEventBus('pagesloaded', () => this.onPagesLoaded());
         this.pdfjsContext.subscribeEventBus('pagerendered', (e) => this.onPageRendered(e));
+        this.pdfjsContext.subscribeEventBus('pagechanging', (e) => this.onPageChanging(e));
         this.pdfjsContext.subscribeEventBus('pagesdestroy', () => this.loggingProvider.sendDebug('Document has been unloaded.', this._defaultLogSource));
-        this.pdfjsContext.subscribeEventBus('documentloaded', () => this.loggingProvider.sendDebug('Document has been loaded.', this._defaultLogSource));
+        this.pdfjsContext.subscribeEventBus('documentloaded', () => this.onDocumentLoaded());
         this.pdfjsContext.subscribeEventBus('pagesinit', () => this.loggingProvider.sendDebug('Pages are loading...', this._defaultLogSource));
         this.pdfjsContext.subscribeEventBus('annotationCommentSubmit', (e) => this.onAnnotationCommentSubmit(e));
 
@@ -272,7 +284,7 @@ export class PdfViewerComponent implements OnInit {
         });
 
         this.textAnnotator.annotateSelection(selectionContext, annotation.id);
-        this.textAnnotator.colorById(annotation.id, this._pendingAnnotateColor);
+        this.textAnnotator.colorById(this._defaultAnnotateColor, annotation.id);
 
         this.sidebarComponent.expand();
         this.stateHasChanged();
@@ -324,7 +336,7 @@ export class PdfViewerComponent implements OnInit {
         this._annotations = this._annotations.filter(x => x.id !== annotation.id);
     }
 
-    private onPagesLoaded() {
+    private async onPagesLoaded() {
 
         this.assertPdfjsContextExists();
 
@@ -332,12 +344,30 @@ export class PdfViewerComponent implements OnInit {
         this.pdfjsContext.setToolDisabled(annotateDrawId, false);
         this.pdfjsContext.setToolDisabled(annotateTextId, false);
 
+        await this.fetchAnnotationsForPage(this.pdfjsContext.page);
         this.loggingProvider.sendDebug('Pages have been loaded.', this._defaultLogSource)
     }
 
     private onPageRendered(event: PageRenderedEventType) {
         this.assertFileLoaded();
-        this.textAnnotator.onPageRendered(event);
+        this.textAnnotator.renderLayer(event.pageNumber);
+    }
+
+    private onDocumentLoaded() {
+
+        this.assertPdfjsContextExists();
+
+        const pageCount = this.pdfjsContext.pages?.length;
+        if (!pageCount) {
+            throw new Error('Expected the page count to exist.');
+        }
+
+        // Fill the list of promises
+        this._annotationPagePromises = Array.from({ length: pageCount }, () => {
+            return new DeferredPromise();
+        });
+
+        this.loggingProvider.sendDebug('Document has been loaded.', this._defaultLogSource)
     }
 
     private async onAnnotationCommentSubmit(event: AnnotationCommentSubmitEventType) {
@@ -379,25 +409,57 @@ export class PdfViewerComponent implements OnInit {
         }
     }
 
+    public async onPageChanging(event: PageChangingEventType) {
+        await this.fetchAnnotationsForPage(event.pageNumber);
+    }
+
     public async fetchAnnotationsForPage(page: number)
     {
         this.assertPdfjsContextExists();
 
-        // Previously fetched.
-        if (this._fetchedAnnotationPages.some(x => x === page)) {
-            return this._annotations.filter(x => x.page === page);
+        // Already fetching
+        if (this._fetchingAnnotationPages.find(x => x === page)) {
+            this.loggingProvider.sendDebug(`Aborting fetch because page ${page} is already being fetched. Waiting for completion...`, this._defaultLogSource);
+            await this.waitForPageAnnotations(page);
+            return;
         }
 
-        this._fetchedAnnotationPages.push(page);
+        // Previously fetched.
+        if (this._fetchedAnnotationPages.find(x => x === page)) {
+            return;
+        }
+
+        this._fetchingAnnotationPages.push(page);
 
         // Check if the provider is set.
         if (!this.annotationsProvider) {
             this.loggingProvider.sendWarning(`Please provide a value for \`annotationsProvider\` in order to asynchronously fetch annotations for page ${page}.`, this._defaultLogSource);
-            return [];
+            return;
         }
 
         this.loggingProvider.sendDebug(`Fetching annotations for page ${page}...`, this._defaultLogSource);
-        return await this.annotationsProvider(page);
+        const annotations = await this.annotationsProvider(page);
+
+        this._fetchingAnnotationPages = this._fetchingAnnotationPages.filter(x => x !== page);
+        this._fetchedAnnotationPages.push(page);
+
+        this.annotations.push(...annotations);
+        this.markPageAnnotationsFetched(page);
+    }
+
+    public async fetchSidebarAnnotationsForPage(page: number) {
+        await this.waitForPageAnnotations(page);
+        return this.annotations.filter(x => x.page === page);
+    }
+
+    public waitForPageAnnotations(page: number) {
+        this.assertFileLoaded();
+        return this.annotationPagePromises[page - 1] as Promise<void>;
+    }
+
+    public markPageAnnotationsFetched(page: number) {
+        this.assertFileLoaded();
+        this.annotationPagePromises[page - 1].resolve();
     }
 
     public assertPdfjsContextExists(): asserts this is this & {
@@ -412,6 +474,7 @@ export class PdfViewerComponent implements OnInit {
         pdfjsContext: PdfjsContext;
         layerManager: LayerManager;
         textAnnotator: TextAnnotator;
+        annotationPagePromises: DeferredPromise[];
     } {
         this.assertPdfjsContextExists();
         if (this.pdfjsContext.fileState !== 'loaded') {

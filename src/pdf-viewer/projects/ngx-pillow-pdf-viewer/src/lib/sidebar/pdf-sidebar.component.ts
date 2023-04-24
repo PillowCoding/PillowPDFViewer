@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, Input, OnInit, QueryList, ViewChildren } 
 import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfAnnotationComponent } from "ngx-pillow-pdf-viewer/annotation/pdf-annotation.component";
 import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
-import { DeleteAnnotationEventType, StartAnnotationEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
+import { StartAnnotationEventType, DeleteAnnotationEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 
 export type annotationsProviderDelegate = (page: number) => Promise<annotation[]>;
@@ -37,11 +37,10 @@ export class PdfSidebarComponent implements OnInit {
     private _expandedSidebarWidth = 480;
     private _expanded = false;
 
+    public annotations: annotation[] = [];
+
     // The completed annotations and its provider.
     @Input() public annotationsProvider?: annotationsProviderDelegate;
-    private _annotations: annotation[] = [];
-    private _fetchingPages: number[] = [];
-    private _fetchedPage?: number;
 
     @Input() public pdfjsContext?: PdfjsContext;
     @Input() public loggingProvider?: LoggingProvider;
@@ -61,13 +60,6 @@ export class PdfSidebarComponent implements OnInit {
     public get expanded()
     {
         return this._expanded;
-    }
-
-    public get annotations() {
-        return this._annotations
-            .slice()
-            .sort((a: annotation, b: annotation) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime())
-            .reverse();
     }
 
     @Input()
@@ -95,29 +87,21 @@ export class PdfSidebarComponent implements OnInit {
         this.assertParametersSet();
 
         await this.pdfjsContext.loadViewerPromise;
-        this.pdfjsContext.subscribeEventBus('pagechanging', () => this.callFetchAnnotations());
+        this.pdfjsContext.subscribeEventBus('pagechanging', () => this.fetchAnnotations());
         this.pdfjsContext.subscribeEventBus('annotationStarted', (e) => this.onAnnotationStarted(e));
         this.pdfjsContext.subscribeEventBus('annotationDeleted', (e) => this.onAnnotationDeleted(e));
 
         await this.pdfjsContext.loadFilePromise;
-        this.fileLoaded();
+        await this.fetchAnnotations();
+        this.stateHasChanged();
     }
 
-    private fileLoaded() {
+    private async fetchAnnotations() {
         this.assertParametersSet();
-        this.callFetchAnnotations();
-    }
 
-    private async callFetchAnnotations() {
-        this.assertParametersSet();
         const targetPage = this.pdfjsContext.page;
-
-        // Check if we fetched the current page already.
-        if (this._fetchedPage == targetPage || this._fetchingPages.some(x => x == targetPage)) {
-            return;
-        }
-
-        this._fetchingPages.push(targetPage);
+        this.loggingProvider.sendDebug(`Fetching page ${targetPage}...`, this._defaultLogSource);
+        this.annotations = [];
 
         // Fetch the annotations. After fetching make sure we are still on the same page.
         // If we scroll quickly and fetch annotations of a previous page, we don't want to show the wrong annotations.
@@ -125,24 +109,24 @@ export class PdfSidebarComponent implements OnInit {
         this.stateHasChanged();
         const annotations = await this.annotationsProvider(targetPage);
         this.loading = false;
-        this.stateHasChanged();
 
-        this._fetchingPages = this._fetchingPages.filter(x => x !== targetPage);
         if (this.pdfjsContext.page !== targetPage) {
             this.loggingProvider.sendWarning(`Aborting annotation fetch. Page ${targetPage} is no longer in focus.`, this._defaultLogSource);
+            this.stateHasChanged();
             return;
         }
 
-        this._fetchedPage = targetPage;
-        this._annotations = annotations;
+        this.annotations = annotations
+            .sort((a: annotation, b: annotation) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime())
+            .reverse();
+        this.stateHasChanged();
     }
 
     private onAnnotationStarted(event: StartAnnotationEventType) {
-        this._annotations.push(event.annotation);
+        this.annotations.unshift(event.annotation);
     }
-
     private onAnnotationDeleted(event: DeleteAnnotationEventType) {
-        this._annotations = this._annotations.filter(x => x.id !== event.annotation.id);
+        this.annotations = this.annotations.filter(x => x.id !== event.annotation.id);
     }
 
     public expand()

@@ -6,6 +6,6 @@
         *ngIf="pdfjsContext?.viewerState === 'loaded'"
         [pdfjsContext]="pdfjsContext"
         [loggingProvider]="loggingProvider"
-        [annotationsProvider]="fetchAnnotationsForPage">
+        [annotationsProvider]="fetchSidebarAnnotationsForPage">
     </lib-pdf-sidebar>
 </div>
