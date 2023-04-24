@@ -5,13 +5,13 @@ import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultL
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 import { AnnotationCommentSubmitEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, PageRenderedEventType } from "../types/eventBus";
 import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
-import annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
+import Annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
 import TextAnnotator from "ngx-pillow-pdf-viewer/annotator/textAnnotator";
 import LayerManager from "ngx-pillow-pdf-viewer/annotator/layerManager";
 
-export type annotationsSaveProviderDelegate = (annotation: annotation) => void | Promise<void>;
-export type annotationsCommentSaveProviderDelegate = (annotation: annotation, comment: AnnotationComment) => void | Promise<void>;
+export type annotationsSaveProviderDelegate = (annotation: Annotation) => void | Promise<void>;
+export type annotationsCommentSaveProviderDelegate = (annotation: Annotation, comment: AnnotationComment) => void | Promise<void>;
 
 @Component({
     selector: 'lib-pdf-viewer',
@@ -61,7 +61,7 @@ export class PdfViewerComponent implements OnInit {
      * Note that any asynchronous fetches should be done using the `annotationProvider` input.
      */
     @Input()
-    public set annotations(annotations: annotation[]) {
+    public set annotations(annotations: Annotation[]) {
 
         // It is too late to load annotations this way.
         if (this.pdfjsContext?.fileState === 'loaded') {
@@ -131,7 +131,7 @@ export class PdfViewerComponent implements OnInit {
     private _layerManager?: LayerManager;
     private _textAnnotator?: TextAnnotator;
     private _disabledTools: toolType[] = [];
-    private _annotations: annotation[] = [];
+    private _annotations: Annotation[] = [];
     private _annotationMode: AnnotationType | 'none' = 'none';
 
     private readonly _pendingAnnotateColor = '#00800040';
@@ -305,7 +305,7 @@ export class PdfViewerComponent implements OnInit {
         }
 
         this._annotationMode = type;
-        const newAnnotation = new annotation({ type, page: 1 });
+        const newAnnotation = new Annotation(type, 1);
         this._annotations.push(newAnnotation);
         this.pdfjsContext.dispatchEventBus('annotationStarted', {
             source: this,
@@ -313,7 +313,7 @@ export class PdfViewerComponent implements OnInit {
         });
     }
 
-    private deleteAnnotation(annotation: annotation) {
+    private deleteAnnotation(annotation: Annotation) {
         this.loggingProvider.sendDebug(`Deleting ${annotation.state} annotation: ${annotation.id}`, this._defaultLogSource);
         this.assertPdfjsContextExists();
         this.pdfjsContext.dispatchEventBus('annotationDeleted', {
@@ -399,7 +399,7 @@ export class PdfViewerComponent implements OnInit {
         return await this.annotationsProvider(page);
     }
 
-    private assertPdfjsContextExists(): asserts this is this & {
+    public assertPdfjsContextExists(): asserts this is this & {
         pdfjsContext: PdfjsContext;
     } {
         if (!this.pdfjsContext) {
@@ -407,7 +407,7 @@ export class PdfViewerComponent implements OnInit {
         }
     }
 
-    private assertFileLoaded(): asserts this is this & {
+    public assertFileLoaded(): asserts this is this & {
         pdfjsContext: PdfjsContext;
         layerManager: LayerManager;
         textAnnotator: TextAnnotator;

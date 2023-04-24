@@ -1,20 +1,5 @@
 import { AnnotationState, AnnotationType, textSelection } from "./annotationTypes";
 
-export type AnnotationCommentConstructType =
-    string | {
-        content: string;
-        dateCreated: Date;
-    };
-
-export type AnnotationConstructType = {
-    type: AnnotationType;
-    page: number;
-    id?: string;
-    dateCreated?: Date;
-    comments?: Array<AnnotationComment>;
-    reference?: textSelection;
-};
-
 export class AnnotationComment {
     private _dateCreated: Date;
     private _content: string;
@@ -27,27 +12,42 @@ export class AnnotationComment {
         return this._content;
     }
 
-    constructor(
-        args: AnnotationCommentConstructType) {
-        
-        if (typeof args === 'string') {
-            this._content = args;
-            this._dateCreated = new Date();
-            return;
-        }
+    constructor(content: string) {
+        this._content = content;
+        this._dateCreated = new Date();
+    }
 
-        this._content = args.content;
-        this._dateCreated = args.dateCreated;
+    public serialize() {
+        return JSON.stringify(this.toObject());
+    }
+
+    public static deserialize(serializedContent: string) {
+        return AnnotationComment.fromObject(JSON.parse(serializedContent));
+    }
+
+    public toObject() {
+        return {
+            content: this.content,
+            dateCreated: this.dateCreated,
+        }
+    }
+
+    // TODO: Validate object
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public static fromObject(commentObject: any) {
+
+        const comment = new AnnotationComment(commentObject.content);
+        comment._dateCreated = commentObject.dateCreated;
+        return comment;
     }
 }
 
-export default class annotation {
+export default class Annotation {
     private _type: AnnotationType;
     private _id: string;
     private _dateCreated: Date;
     private _comments: Array<AnnotationComment>;
     private _page: number;
-    private _state: AnnotationState;
 
     private _reference: textSelection | null;
 
@@ -71,8 +71,8 @@ export default class annotation {
         return this._page;
     }
 
-    public get state() {
-        return this._state;
+    public get state(): AnnotationState {
+        return this.reference ? 'completed' : 'pending';
     }
 
     public get reference() {
@@ -80,34 +80,55 @@ export default class annotation {
     }
 
     constructor(
-        args: AnnotationConstructType) {
-
-        if (!args.id || !args.dateCreated || !args.comments || !args.reference) {
-            this._type = args.type;
-            this._page = args.page;
-            this._id = this.generateGuid();
-            this._dateCreated = new Date();
-            this._comments = [];
-            this._reference = null;
-            this._state = 'pending';
-            return;
-        }
-
-        this._type = args.type;
-        this._id = args.id;
-        this._dateCreated = args.dateCreated;
-        this._comments = args.comments;
-        this._page = args.page;
-        this._reference = args.reference;
-        this._state = 'completed';
+        type: AnnotationType,
+        page: number)
+    {
+        this._type = type;
+        this._page = page;
+        this._id = this.generateGuid();
+        this._dateCreated = new Date();
+        this._comments = [];
+        this._reference = null;
     }
 
     public setAnnotationReference(reference: textSelection) {
-        if (this._state != 'pending') {
+        if (this.state != 'pending') {
             throw new Error('It is not possible to add a reference to an annotation that already has one.');
         }
         this._reference = reference;
-        this._state = 'completed';
+    }
+
+    public serialize() {
+        return JSON.stringify(this.toObject());
+    }
+
+    public static deserialize(serializedContent: string) {
+        return Annotation.fromObject(JSON.parse(serializedContent));
+    }
+
+    public toObject() {
+        return {
+            type: this.type,
+            id: this.id,
+            dateCreated: this.dateCreated,
+            comments: this.comments.map(x => x.toObject()),
+            page: this.page,
+            reference: this.reference,
+        }
+    }
+
+    // TODO: Validate object
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public static fromObject(annotationObject: any) {
+
+        const annotation = new Annotation(annotationObject.type, annotationObject.page);
+        annotation._id = annotationObject.id;
+        annotation._dateCreated = annotationObject.dateCreated;
+        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        annotation._comments = (annotationObject.comments as any[]).map(x => AnnotationComment.fromObject(x));
+        annotation._reference = annotationObject.reference;
+        return annotation;
     }
 
     private generateGuid()
