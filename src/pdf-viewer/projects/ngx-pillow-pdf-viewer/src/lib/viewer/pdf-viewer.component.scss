@@ -1,3 +1,8 @@
+.container {
+    border-left: solid 1px var(--border-color);
+}
+
 iframe {
     width: 100%;
+    border: none;
 }
