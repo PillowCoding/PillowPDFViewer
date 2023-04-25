@@ -327,9 +327,8 @@ export class PdfViewerComponent implements OnInit {
         this.loggingProvider.sendDebug(`Start new ${type} annotation...`, this._defaultLogSource);
         this.assertPdfjsContextExists();
 
-        const uncompletedAnnotation = this.uncompletedAnnotation;
-        if (uncompletedAnnotation) {
-            this.deleteAnnotation(uncompletedAnnotation);
+        if (this.annotationMode !== 'none') {
+            this.stopAnnotating();
         }
 
         this.setAnnotationMode(type);
@@ -455,9 +454,9 @@ export class PdfViewerComponent implements OnInit {
 
     public async onPageChanging(event: PageChangingEventType) {
 
-        // Remove the pending annotation if it exists.
-        if (this.uncompletedAnnotation) {
-            this.deleteAnnotation(this.uncompletedAnnotation);
+        if (this.annotationMode !== 'none') {
+            this.stopAnnotating();
+            this.stateHasChanged();
         }
 
         await this.fetchAnnotationsForPage(event.pageNumber);
