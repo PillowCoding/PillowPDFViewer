@@ -25,6 +25,9 @@
                 class="loading-indicator">
                 <lib-loading-ring></lib-loading-ring>
             </div>
+            <div *ngIf="!loading && annotations.length === 0">
+                <p class="no-annotations">There are no annotations on this page.</p>
+            </div>
             <ol *ngIf="!loading">
                 <li *ngFor="let annotation of annotations">
                     <lib-pdf-annotation #annotation
