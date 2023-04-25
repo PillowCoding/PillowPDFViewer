@@ -46,7 +46,7 @@ export class PdfSidebarComponent implements OnInit {
     @Input() public loggingProvider?: LoggingProvider;
 
     // If loadingCount is higher than 0, the sidebar is loading.
-    private _loadingCount = 0;
+    private _loadingPages: number[] = [];
 
     public get annotationComponents() {
         return Array.from(this._annotationComponents);
@@ -62,19 +62,14 @@ export class PdfSidebarComponent implements OnInit {
         return this._expanded;
     }
 
-    @Input()
-    public set loading(loading: boolean) {
+    public get canShowAnnotations() {
         this.assertParametersSet();
-
-        this._loadingCount += loading ? 1 : -1;
-        if (this._loadingCount < 0) {
-            this.loggingProvider.sendWarning('The loading count went below 0 which should not happen.', this._defaultLogSource);
-            this._loadingCount = 0;
-        }
+        return this.pdfjsContext.fileState === 'loaded';
     }
 
-    public get loading() {
-        return this._loadingCount > 0;
+    public get currentShownPage() {
+        this.assertParametersSet();
+        return this.pdfjsContext.page;
     }
 
     constructor(
@@ -96,18 +91,18 @@ export class PdfSidebarComponent implements OnInit {
     private async fetchAnnotations() {
         this.assertParametersSet();
 
-        const targetPage = this.pdfjsContext.page;
+        const targetPage = this.currentShownPage;
         this.loggingProvider.sendDebug(`Fetching page ${targetPage}...`, this._defaultLogSource);
         this.annotations = [];
 
         // Fetch the annotations. After fetching make sure we are still on the same page.
         // If we scroll quickly and fetch annotations of a previous page, we don't want to show the wrong annotations.
-        this.loading = true;
+        this._loadingPages.push(targetPage);
         this.stateHasChanged();
         const annotations = await this.annotationsProvider(targetPage);
-        this.loading = false;
+        this._loadingPages = this._loadingPages.filter(x => x !== targetPage);
 
-        if (this.pdfjsContext.page !== targetPage) {
+        if (this.currentShownPage !== targetPage) {
             this.loggingProvider.sendDebug(`Aborting annotation fetch. Page ${targetPage} is no longer in focus.`, this._defaultLogSource);
             this.stateHasChanged();
             return;
@@ -160,6 +155,10 @@ export class PdfSidebarComponent implements OnInit {
 
     public onSidebarWidthChanged(difference: number) {
         this._expandedSidebarWidth += difference;
+    }
+
+    public isLoading(page: number) {
+        return this._loadingPages.includes(page);
     }
 
     private assertParametersSet(): asserts this is this & {

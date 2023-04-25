@@ -20,15 +20,16 @@
                 (closed)="collapse()"/>
         </div>
 
-        <div [ngClass]="{'hidden': !expanded}" class="annotation-container">
-            <div *ngIf="loading"
+        <div *ngIf="canShowAnnotations"
+            [ngClass]="{'hidden': !expanded}" class="annotation-container">
+            <div *ngIf="isLoading(currentShownPage)"
                 class="loading-indicator">
                 <lib-loading-ring></lib-loading-ring>
             </div>
-            <div *ngIf="!loading && annotations.length === 0">
+            <div *ngIf="!isLoading(currentShownPage) && annotations.length === 0">
                 <p class="no-annotations">There are no annotations on this page.</p>
             </div>
-            <ol *ngIf="!loading">
+            <ol *ngIf="!isLoading(currentShownPage)">
                 <li *ngFor="let annotation of annotations">
                     <lib-pdf-annotation #annotation
                         [loggingProvider]="loggingProvider"
