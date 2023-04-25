@@ -13,6 +13,11 @@ export default class TextAnnotator {
     private readonly _defaultLogSource = TextAnnotator.name;
     private readonly _annotatedTextAttribute = 'Text-annotated';
     private readonly _layerClassName = 'textAnnotateLayer';
+    private readonly _annotatedIds: string[] = [];
+
+    public get annotatedIds() {
+        return this._annotatedIds;
+    }
 
     constructor(
         private readonly _loggingProvider: LoggingProvider,
@@ -69,6 +74,8 @@ export default class TextAnnotator {
             elementCopy.setAttribute(this._annotatedTextAttribute, id);
             layer.element.insertAdjacentElement('beforeend', elementCopy);
         }
+
+        this._annotatedIds.push(id);
     }
 
     public colorById(color: string, ...ids: string[]) {
