@@ -161,7 +161,7 @@ export class PdfViewerComponent implements OnInit {
             this._relativeViewerPath = 'assets/pdfjs/web/viewer.html';
         }
         if (!this._loggingProvider) {
-            this._loggingProvider = new DefaultLoggingProvider([], 50);
+            this._loggingProvider = new DefaultLoggingProvider([/*'EventBus', 'PdfViewerComponent', 'PdfjsContext', 'TextAnnotator', 'DrawAnnotator', 'LayerManager', 'PdfSidebarComponent'*/], 50);
         }
 
         this._pdfjsContext = new PdfjsContext(this._loggingProvider, this._relativeViewerPath, this._iframeWrapper.nativeElement);
