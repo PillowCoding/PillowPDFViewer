@@ -379,7 +379,10 @@ export class PdfViewerComponent implements OnInit {
         this.pdfjsContext.setToolDisabled(annotateDrawId, false);
         this.pdfjsContext.setToolDisabled(annotateTextId, false);
 
-        await this.fetchAnnotationsForPage(this.pdfjsContext.page);
+        const initialPage = this.pdfjsContext.page;
+        await this.fetchAnnotationsForPage(initialPage);
+        this.textAnnotatePage(initialPage);
+        
         this.loggingProvider.sendDebug('Pages have been loaded.', this._defaultLogSource)
     }
 
@@ -452,14 +455,46 @@ export class PdfViewerComponent implements OnInit {
         }
     }
 
-    public async onPageChanging(event: PageChangingEventType) {
+    public async onPageChanging({ pageNumber }: PageChangingEventType) {
 
         if (this.annotationMode !== 'none') {
             this.stopAnnotating();
             this.stateHasChanged();
         }
+        
+        // Don't try to annotate if the page is already being fetched.
+        // This avoids issues with async code.
+        const alreadyBeingFetched = this._fetchingAnnotationPages.find(x => x === pageNumber);
 
-        await this.fetchAnnotationsForPage(event.pageNumber);
+        await this.fetchAnnotationsForPage(pageNumber);
+
+        // Try annotating.
+        if (alreadyBeingFetched) {
+            return;
+        }
+
+        this.textAnnotatePage(pageNumber);
+    }
+
+    private textAnnotatePage(page: number) {
+        this.assertFileLoaded();
+        const annotations = this.annotations.filter(x => x.type === 'text' && x.page === page);
+        for (const annotation of annotations) {
+
+            // Already annotated.
+            if (this.textAnnotator.annotatedIds.includes(annotation.id)) {
+                continue;
+            }
+
+            const textSelection = annotation.tryGetTextSelection();
+            if (!textSelection) {
+                this.loggingProvider.sendWarning(`Unable to annotate ${annotation.id}: not a text annotation.`, this._defaultLogSource);
+                continue;
+            }
+
+            this.textAnnotator.annotateXpath(textSelection.xpath, textSelection.selectedText, page, annotation.id);
+            this.textAnnotator.colorById(this._defaultAnnotateColor, annotation.id);
+        }
     }
 
     public async fetchAnnotationsForPage(page: number)

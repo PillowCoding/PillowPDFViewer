@@ -131,6 +131,14 @@ export default class Annotation {
         return annotation;
     }
 
+    public tryGetTextSelection() {
+        if (this.type !== 'text' || !this.reference || !('xpath' in this.reference)) {
+            return null;
+        }
+
+        return this.reference;
+    }
+
     private generateGuid()
     {
         const generateNext = () => {
