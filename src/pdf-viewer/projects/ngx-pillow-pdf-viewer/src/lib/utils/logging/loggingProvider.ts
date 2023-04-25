@@ -2,10 +2,13 @@ import { ReplaySubject } from "rxjs";
 
 export type pdfViewerLogSourceType = 'PdfViewerComponent' | 'PdfjsContext' | 'LayerManager' | 'PdfSidebarComponent' | 'TextAnnotator' | 'DrawAnnotator' | 'EventBus';
 export type logSourceType = pdfViewerLogSourceType | Omit<string, pdfViewerLogSourceType>
-export type logSeverity = 'debug' | 'info' | 'warning' | 'error';
+
+export const logSeverityArray = ['debug', 'info', 'warning', 'error'] as const;
+export type logSeverity = typeof logSeverityArray[number];
 
 export default abstract class LoggingProvider {
     public abstract messages: ReplaySubject<unknown>;
+    public abstract minimumLogSeverity: logSeverity;
     public abstract send(message: unknown, severity: logSeverity, source: logSourceType, ...args: unknown[]): void;
 
     public sendDebug(message: unknown, source: logSourceType, ...args: unknown[]) { this.send(message, 'debug', source, ...args); }

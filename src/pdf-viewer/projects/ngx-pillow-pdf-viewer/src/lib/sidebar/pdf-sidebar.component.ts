@@ -111,7 +111,7 @@ export class PdfSidebarComponent implements OnInit {
         this.loading = false;
 
         if (this.pdfjsContext.page !== targetPage) {
-            this.loggingProvider.sendWarning(`Aborting annotation fetch. Page ${targetPage} is no longer in focus.`, this._defaultLogSource);
+            this.loggingProvider.sendDebug(`Aborting annotation fetch. Page ${targetPage} is no longer in focus.`, this._defaultLogSource);
             this.stateHasChanged();
             return;
         }

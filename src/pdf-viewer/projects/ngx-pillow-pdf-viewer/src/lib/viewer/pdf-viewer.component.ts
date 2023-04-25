@@ -164,7 +164,7 @@ export class PdfViewerComponent implements OnInit {
             this._relativeViewerPath = 'assets/pdfjs/web/viewer.html';
         }
         if (!this._loggingProvider) {
-            this._loggingProvider = new DefaultLoggingProvider([/*'EventBus', 'PdfViewerComponent', 'PdfjsContext', 'TextAnnotator', 'DrawAnnotator', 'LayerManager', 'PdfSidebarComponent'*/], 50);
+            this._loggingProvider = new DefaultLoggingProvider('warning', ['EventBus', 'PdfViewerComponent', 'PdfjsContext', 'TextAnnotator', 'DrawAnnotator', 'LayerManager', 'PdfSidebarComponent'], 50);
         }
 
         this._pdfjsContext = new PdfjsContext(this._loggingProvider, this._relativeViewerPath, this._iframeWrapper.nativeElement);
@@ -382,7 +382,7 @@ export class PdfViewerComponent implements OnInit {
         const initialPage = this.pdfjsContext.page;
         await this.fetchAnnotationsForPage(initialPage);
         this.textAnnotatePage(initialPage);
-        
+
         this.loggingProvider.sendDebug('Pages have been loaded.', this._defaultLogSource)
     }
 

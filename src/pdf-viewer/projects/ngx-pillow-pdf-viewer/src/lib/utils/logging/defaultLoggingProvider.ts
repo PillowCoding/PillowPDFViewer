@@ -1,24 +1,33 @@
 import { ReplaySubject } from 'rxjs';
-import LoggingProvider, { logSeverity, logSourceType } from './loggingProvider';
+import LoggingProvider, { logSeverity, logSeverityArray, logSourceType } from './loggingProvider';
 
 export default class DefaultLoggingProvider extends LoggingProvider {
-    
-    public readonly excludedLogSourceTypes: readonly logSourceType[];
-    messages: ReplaySubject<unknown>;
+    public override messages: ReplaySubject<unknown>;
+    public override minimumLogSeverity: logSeverity;
 
-    constructor(excludedLogSourceTypes: logSourceType[] = [], bufferedMessageCount = 50) {
+    public readonly includedLogSourceTypes: readonly logSourceType[];
+
+    constructor(minimumLogSeverity: logSeverity = 'debug', includedLogSourceTypes: logSourceType[] = [], bufferedMessageCount = 50) {
         super();
-        this.excludedLogSourceTypes = excludedLogSourceTypes;
+        
         this.messages = new ReplaySubject(bufferedMessageCount);
+        this.minimumLogSeverity = minimumLogSeverity;
+        this.includedLogSourceTypes = includedLogSourceTypes;
     }
 
     send(message: unknown, severity: logSeverity, source: logSourceType, ...args: unknown[]): void {
 
         // Check if the source should be logged.
-        if (this.excludedLogSourceTypes.includes(source)) {
+        const minimum = logSeverityArray.indexOf(this.minimumLogSeverity);
+        if (logSeverityArray.indexOf(severity) < minimum) {
             return;
         }
 
+        if (!this.includedLogSourceTypes.includes(source)) {
+            return;
+        }
+
+        // Log the message based on what has been provided.
         source = `[${severity}] ${source} -`;
         const logMethod: (message: unknown, ...args: unknown[]) => void =
             severity === 'error' ? console.error :
