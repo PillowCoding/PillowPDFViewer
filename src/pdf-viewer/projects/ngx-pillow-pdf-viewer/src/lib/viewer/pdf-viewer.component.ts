@@ -3,7 +3,7 @@ import PdfjsContext, { annotateDrawId, annotateTextId, toolType } from "ngx-pill
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
-import { AnnotationCommentSubmitEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, PageChangingEventType, PageRenderedEventType } from "../types/eventBus";
+import { AnnotationCommentSubmitEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, PageRenderedEventType, TextLayerRenderedEventType } from "../types/eventBus";
 import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 import Annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
@@ -189,7 +189,8 @@ export class PdfViewerComponent implements OnInit {
         this.pdfjsContext.subscribeEventBus('annotationeditormodechanged', (e) => this.onAnnotationEditorModeChanged(e));
         this.pdfjsContext.subscribeEventBus('pagesloaded', () => this.onPagesLoaded());
         this.pdfjsContext.subscribeEventBus('pagerendered', (e) => this.onPageRendered(e));
-        this.pdfjsContext.subscribeEventBus('pagechanging', (e) => this.onPageChanging(e));
+        this.pdfjsContext.subscribeEventBus('textlayerrendered', (e) => this.textLayerRendered(e));
+        this.pdfjsContext.subscribeEventBus('pagechanging', () => this.onPageChanging());
         this.pdfjsContext.subscribeEventBus('pagesdestroy', () => this.loggingProvider.sendDebug('Document has been unloaded.', this._defaultLogSource));
         this.pdfjsContext.subscribeEventBus('documentloaded', () => this.onDocumentLoaded());
         this.pdfjsContext.subscribeEventBus('pagesinit', () => this.loggingProvider.sendDebug('Pages are loading...', this._defaultLogSource));
@@ -379,16 +380,18 @@ export class PdfViewerComponent implements OnInit {
         this.pdfjsContext.setToolDisabled(annotateDrawId, false);
         this.pdfjsContext.setToolDisabled(annotateTextId, false);
 
-        const initialPage = this.pdfjsContext.page;
-        await this.fetchAnnotationsForPage(initialPage);
-        this.textAnnotatePage(initialPage);
-
         this.loggingProvider.sendDebug('Pages have been loaded.', this._defaultLogSource)
     }
 
-    private onPageRendered(event: PageRenderedEventType) {
+    private onPageRendered({ pageNumber }: PageRenderedEventType) {
         this.assertFileLoaded();
-        this.textAnnotator.renderLayer(event.pageNumber);
+
+        this.fetchAnnotationsForPage(pageNumber);
+        this.textAnnotator.renderLayer(pageNumber);
+    }
+
+    private textLayerRendered({ pageNumber }: TextLayerRenderedEventType) {
+        this.textAnnotatePage(pageNumber);
     }
 
     private iframeResize() {
@@ -455,25 +458,12 @@ export class PdfViewerComponent implements OnInit {
         }
     }
 
-    public async onPageChanging({ pageNumber }: PageChangingEventType) {
+    public async onPageChanging() {
 
         if (this.annotationMode !== 'none') {
             this.stopAnnotating();
             this.stateHasChanged();
         }
-        
-        // Don't try to annotate if the page is already being fetched.
-        // This avoids issues with async code.
-        const alreadyBeingFetched = this._fetchingAnnotationPages.find(x => x === pageNumber);
-
-        await this.fetchAnnotationsForPage(pageNumber);
-
-        // Try annotating.
-        if (alreadyBeingFetched) {
-            return;
-        }
-
-        this.textAnnotatePage(pageNumber);
     }
 
     private textAnnotatePage(page: number) {

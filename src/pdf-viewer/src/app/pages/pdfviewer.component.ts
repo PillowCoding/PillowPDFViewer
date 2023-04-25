@@ -16,7 +16,7 @@ export class pdfViewerComponent
 
     // Fake delay can imitate I/O operations.
     // Adjust the value to change the time it takes.
-    private readonly delay = () => { return new Promise<void>( resolve => setTimeout(resolve, 0) ); }
+    private readonly delay = () => { return new Promise<void>(resolve => setTimeout(resolve, 0)); }
 
     private readonly _storedAnnotationKey = 'storedAnnotations';
 
