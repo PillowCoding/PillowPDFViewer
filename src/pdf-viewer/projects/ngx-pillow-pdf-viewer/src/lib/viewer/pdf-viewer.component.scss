@@ -6,3 +6,32 @@ iframe {
     width: 100%;
     border: none;
 }
+
+.annotate-info-container {
+    display: flex;
+    position: absolute;
+    height: 7rem;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.annotate-info {
+    display: flex;
+    background-color: rgba(#000000, 0.6);
+    box-shadow: -2px 2px 5px 0px rgba(30, 30, 30, .6);
+    border-radius: 5px;
+    margin-top: 2rem;
+    width: 14rem;
+    text-align: center;
+    flex-direction: column;
+    align-items: center;
+    
+    p {
+        color: rgba(#FFFFFF, 0.9);
+    }
+
+    button {
+        width: 50%;
+        pointer-events: all;
+    }
+}

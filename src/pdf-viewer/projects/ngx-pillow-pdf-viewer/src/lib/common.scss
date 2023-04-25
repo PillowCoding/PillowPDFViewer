@@ -77,6 +77,43 @@
     }
 }
 
+.button {
+    cursor: pointer;
+    border: solid var(--button-border-color) 1px;
+    background-color: var(--button-background-color);
+    appearance: none;
+
+    &:hover {
+        background-color: var(--button-background-hover-color);
+    }
+
+    &:focus {
+        background-color: var(--button-background-focus-color);
+    }
+
+    &:disabled {
+        background-color: var(--button-background-disabled-color);
+    }
+
+    &.danger {
+        background-color: var(--button-danger-background-color);
+        border: solid var(--button-danger-border-color) 1px;
+        color: var(--button-danger-color);
+
+        &:hover {
+            background-color: var(--button-danger-background-hover-color);
+        }
+
+        &:focus {
+            background-color: var(--button-danger-background-focus-color);
+        }
+
+        &:disabled {
+            background-color: var(--button-danger-background-disabled-color);
+        }
+    }
+}
+
 .form
 {
     display: flex;
@@ -111,13 +148,11 @@
         background-color: var(--input-background-color);
         appearance: none;
 
-        &:hover
-        {
+        &:hover {
             background-color: var(--input-background-hover-color);
         }
 
-        &:focus
-        {
+        &:focus {
             background-color: var(--input-background-focus-color);
         }
 
@@ -151,6 +186,18 @@
     --input-background-focus-color: rgb(226, 226, 226);
     --input-background-disabled-color: rgb(200, 200, 200);
     --input-border-color: rgb(204, 204, 204);
+
+    --button-background-color: rgb(255, 255, 255);
+    --button-background-hover-color: rgb(233, 233, 233);
+    --button-background-focus-color: rgb(226, 226, 226);
+    --button-background-disabled-color: rgb(218, 218, 218);
+    --button-border-color: rgb(243, 243, 243);
+    --button-danger-color: rgb(228, 228, 228);
+    --button-danger-background-color: rgb(180, 48, 48);
+    --button-danger-background-hover-color: rgb(167, 45, 45);
+    --button-danger-background-focus-color: rgb(158, 42, 42);
+    --button-danger-background-disabled-color: rgb(214, 60, 60);
+    --button-danger-border-color: rgb(122, 34, 34);
 
     --loading-color: rgb(0, 0, 0);
     --loading-color-opacity: .4;

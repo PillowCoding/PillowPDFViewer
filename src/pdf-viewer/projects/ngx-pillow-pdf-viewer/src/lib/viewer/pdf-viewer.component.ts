@@ -23,6 +23,9 @@ export class PdfViewerComponent implements OnInit {
     /** The iframe wrapper used to display the pdfjs viewer. */
     @ViewChild('iframeWrapper', { static: true }) private _iframeWrapper!: ElementRef<HTMLIFrameElement>;
 
+    /** Annotation info that is displayed when annotating. */
+    @ViewChild('annotateInfo', { static: true }) private _annotateInfo!: ElementRef<HTMLDivElement>;
+
     /** The sidebar of the viewer */
     @ViewChild('sidebar') private _sidebar?: PdfSidebarComponent;
 
@@ -197,6 +200,11 @@ export class PdfViewerComponent implements OnInit {
         // this.pdfjsContext.subscribeEventBus('layersloaded', (e) => console.log('layersloaded', e));
         // this.pdfjsContext.subscribeEventBus('pagerender', (e) => console.log('pagerender', e));
 
+        // Watch iframe resize
+        // TODO: maybe store this observer is we plan on destroying it at some point.
+        const observer = new ResizeObserver(() => this.iframeResize());
+        observer.observe(this._iframeWrapper.nativeElement);
+
         // Inject the text and draw annotation tool buttons.
         const textAnnotateStyle = `
             #${annotateTextId}::before
@@ -277,6 +285,12 @@ export class PdfViewerComponent implements OnInit {
         if (selectionContext == null) {
             return;
         }
+        
+        // Ensure the pages match sao we avoid selections on a different page.
+        if (this.uncompletedAnnotation.page !== selectionContext.page) {
+            this.loggingProvider.sendDebug(`Text annotation selection, pages do not match (${this.uncompletedAnnotation.page} !== ${selectionContext.page}).`, this._defaultLogSource);
+            return;
+        }
 
         // Set the annotation reference. This also marks it as "complete", making it a regular array.
         annotation.setAnnotationReference({
@@ -286,6 +300,7 @@ export class PdfViewerComponent implements OnInit {
         this.textAnnotator.annotateSelection(selectionContext, annotation.id);
         this.textAnnotator.colorById(this._defaultAnnotateColor, annotation.id);
 
+        this.stopAnnotating();
         this.sidebarComponent.expand();
         this.stateHasChanged();
 
@@ -317,13 +332,34 @@ export class PdfViewerComponent implements OnInit {
             this.deleteAnnotation(uncompletedAnnotation);
         }
 
-        this._annotationMode = type;
+        this.setAnnotationMode(type);
         const newAnnotation = new Annotation(type, 1);
         this._annotations.push(newAnnotation);
         this.pdfjsContext.dispatchEventBus('annotationStarted', {
             source: this,
             annotation: newAnnotation,
         });
+    }
+
+    public setAnnotationMode(type: AnnotationType) {
+        if (this.annotationMode !== 'none') {
+            this.loggingProvider.sendWarning(`Tried to set the annotation mode, but it is currently ${this.annotationMode}.`, this._defaultLogSource);
+        }
+
+        this._annotationMode = type;
+    }
+
+    public stopAnnotating() {
+        if (this.annotationMode === 'none') {
+            this.loggingProvider.sendWarning(`Tried to stop the annotating, but it is already stopped.`, this._defaultLogSource);
+        }
+
+        // Make sure to delete pending annotations if they exist.
+        if (this.uncompletedAnnotation) {
+            this.deleteAnnotation(this.uncompletedAnnotation);
+        }
+
+        this._annotationMode = 'none';
     }
 
     private deleteAnnotation(annotation: Annotation) {
@@ -351,6 +387,14 @@ export class PdfViewerComponent implements OnInit {
     private onPageRendered(event: PageRenderedEventType) {
         this.assertFileLoaded();
         this.textAnnotator.renderLayer(event.pageNumber);
+    }
+
+    private iframeResize() {
+        // Set annotate info width.
+        this._annotateInfo.nativeElement.style.width = `${this._iframeWrapper.nativeElement.offsetWidth}px`;
+
+        // Set the y position of the info to the iframe.
+        this._annotateInfo.nativeElement.style.top = `${this._iframeWrapper.nativeElement.getBoundingClientRect().top + 32}px`;
     }
 
     private onDocumentLoaded() {
@@ -410,6 +454,12 @@ export class PdfViewerComponent implements OnInit {
     }
 
     public async onPageChanging(event: PageChangingEventType) {
+
+        // Remove the pending annotation if it exists.
+        if (this.uncompletedAnnotation) {
+            this.deleteAnnotation(this.uncompletedAnnotation);
+        }
+
         await this.fetchAnnotationsForPage(event.pageNumber);
     }
 
@@ -482,7 +532,7 @@ export class PdfViewerComponent implements OnInit {
         }
     }
 
-    private stateHasChanged() {
+    public stateHasChanged() {
         this.changeDetector.detectChanges();
     }
 }

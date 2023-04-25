@@ -179,7 +179,7 @@ export class PdfSidebarComponent implements OnInit {
         }
     }
 
-    private stateHasChanged() {
+    public stateHasChanged() {
         this.changeDetector.detectChanges();
     }
 }

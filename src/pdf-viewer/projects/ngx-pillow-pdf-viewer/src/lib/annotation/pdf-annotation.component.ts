@@ -129,7 +129,7 @@ export class PdfAnnotationComponent implements OnInit {
         }
     }
 
-    private stateHasChanged() {
+    public stateHasChanged() {
         this.changeDetector.detectChanges();
     }
 }
