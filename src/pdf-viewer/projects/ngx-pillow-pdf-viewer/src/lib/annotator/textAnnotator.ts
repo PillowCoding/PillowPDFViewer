@@ -35,6 +35,18 @@ export default class TextAnnotator {
 
         this._layerManager.applyLayer(layer);
     }
+
+    public annotateXpath(xpath: string, selectedText: string, page: number, id: string) {
+        this._pdfjsContext.assertfileLoaded();
+
+        const relevantNode = this._pdfjsContext.pdfjsDocument.evaluate(xpath, this._pdfjsContext.pdfjsDocument, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        if (!relevantNode) {
+            this._loggingProvider.sendWarning(`Annotation ${id} could not be annotated due to a missing start node.`, this._defaultLogSource);
+            return;
+        }
+        
+        this.annotate(relevantNode as HTMLDivElement, selectedText, page, id);
+    }
     
     public annotateSelection(selection: SelectedTextContext, id: string) {
         this.annotate(selection.startElement, selection.selectedText, selection.page, id);
