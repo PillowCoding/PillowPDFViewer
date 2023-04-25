@@ -14,7 +14,10 @@ export class pdfViewerComponent
 {
     @ViewChild('pdfViewer') private _pdfViewer!: PdfViewerComponent;
 
-    private readonly delay = (ms: number) => { return new Promise( resolve => setTimeout(resolve, ms) ); }
+    // Fake delay can imitate I/O operations.
+    // Adjust the value to change the time it takes.
+    private readonly delay = () => { return new Promise<void>( resolve => setTimeout(resolve, 0) ); }
+
     private readonly _storedAnnotationKey = 'storedAnnotations';
 
     private _annotations?: Array<annotation>;
@@ -31,7 +34,7 @@ export class pdfViewerComponent
             this._annotations = this.getLocallyStoredAnnotations();
         }
 
-        await this.delay(1000);
+        await this.delay();
         return this._annotations.filter(x => x.page === page);
     }
 
@@ -41,7 +44,7 @@ export class pdfViewerComponent
             throw new Error('Expected annotations to exist.');
         }
 
-        await this.delay(1000);
+        await this.delay();
         this._annotations.push(annotation);
         this.setLocallyStoredAnnotations(this._annotations);
     }
@@ -52,7 +55,7 @@ export class pdfViewerComponent
             throw new Error('Expected annotations to exist.');
         }
 
-        await this.delay(1000);
+        await this.delay();
         this.setLocallyStoredAnnotations(this._annotations);
     }
 
