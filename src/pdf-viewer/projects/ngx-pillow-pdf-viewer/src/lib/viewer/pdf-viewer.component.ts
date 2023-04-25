@@ -390,7 +390,11 @@ export class PdfViewerComponent implements OnInit {
         this.textAnnotator.renderLayer(pageNumber);
     }
 
-    private textLayerRendered({ pageNumber }: TextLayerRenderedEventType) {
+    private async textLayerRendered({ pageNumber }: TextLayerRenderedEventType) {
+
+        // Wait for the page fetch to finish.
+        await this.waitForPageAnnotations(pageNumber);
+
         this.textAnnotatePage(pageNumber);
     }
 
