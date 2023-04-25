@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
 import annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
+import { EventBusEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 
 export type annotationsProviderDelegate = (page: number) => Promise<annotation[]>;
@@ -51,6 +52,8 @@ export class PdfAnnotationComponent implements OnInit {
     public get inputLoading() {
         return this._inputLoadingCount > 0;
     }
+
+    @Input() focused = false;
 
     // If loadingCount is higher than 0, the component is loading.
     private _loadingCount = 0;
@@ -113,6 +116,18 @@ export class PdfAnnotationComponent implements OnInit {
             annotation: this.annotation,
             comment,
         })
+    }
+
+    public toggleFocus() {
+        this.assertParametersSet();
+        this.focused = !this.focused;
+
+        const event: EventBusEventType = this.focused ? 'annotationFocus' : 'annotationUnfocus';
+        this.pdfjsContext.dispatchEventBus(event, {
+            source: this,
+            annotation: this.annotation,
+        });
+        this.stateHasChanged();
     }
 
     private assertParametersSet(): asserts this is this & {

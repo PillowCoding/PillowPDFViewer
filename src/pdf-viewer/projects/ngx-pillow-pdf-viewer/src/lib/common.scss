@@ -22,6 +22,10 @@
     color: var(--text-muted-color);
 }
 
+.grow {
+    flex-grow: 1;
+}
+
 .loading-indicator {
     display: flex;
     justify-content: center;

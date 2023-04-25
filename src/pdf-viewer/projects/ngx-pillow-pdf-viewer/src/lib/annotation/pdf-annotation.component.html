@@ -1,69 +1,83 @@
 <div *ngIf="annotation"
     (click)="expanded ? collapse() : expand()"
-    [ngClass]="{'expanded': expanded}"
+    [ngClass]="{'expanded': expanded, 'focus': focused}"
     class="annotation-container"
     attr.data-annotation="{{annotation.id}}">
 
-    <div *ngIf="loading && expanded"
-        class="loading-indicator">
-        <lib-loading-ring></lib-loading-ring>
-    </div>
+    <div class="flex">
 
-    <header class="header">
-        <!-- Left side -->
-        <div class="header-left">
-            <div *ngIf="loading && !expanded"
-                class="loading-indicator inline">
+        <!-- left -->
+        <div class="focus-selector flex">
+            <button libClickStopPropagation
+                (click)="toggleFocus()">
+                <span>&#10092;</span>
+            </button>
+        </div>
+
+        <!-- right -->
+        <div class="main-annotation grow">
+            <div *ngIf="loading && expanded"
+                class="loading-indicator">
                 <lib-loading-ring></lib-loading-ring>
             </div>
+
+            <header class="header">
+                <!-- Left side -->
+                <div class="header-left">
+                    <div *ngIf="loading && !expanded"
+                        class="loading-indicator inline">
+                        <lib-loading-ring></lib-loading-ring>
+                    </div>
+                </div>
+
+                <!-- Right side -->
+                <div class="header-right">
+                    <p class="font-bold">{{annotation.dateCreated | date: 'h:mm:ss'}}</p>
+                </div>
+            </header>
+
+            <blockquote class="quote" *ngIf="annotation.type === 'text'">
+                <ng-container *ngIf="annotation.reference?.selectedText">
+                    <p>{{annotation.reference?.selectedText}}</p>
+                </ng-container>
+                <ng-container *ngIf="!annotation.reference?.selectedText">
+                    <p>...</p>
+                </ng-container>
+            </blockquote>
+
+            <!-- Collapsed latest comment -->
+            <div [ngClass]="{'hidden': annotation.comments.length === 0 || expanded}"
+                class="collapsed-initial-comment">
+                <p class="comment">
+                    <span class="font-bold">{{annotation.comments.at(-1)?.dateCreated | date: 'h:mm:ss'}}:</span> {{annotation.comments.at(-1)?.content}}
+                </p>
+                <p *ngIf="annotation.comments.length > 1"
+                    class="more-text muted">+ {{annotation.comments.length - 1}} more...</p>
+            </div>
+
+            <!-- Comments -->
+            <div [ngClass]="{'hidden': annotation.comments.length === 0 || !expanded}"
+                class="comments">
+
+                <p *ngFor="let comment of annotation.comments"
+                    class="comment">
+                    <span class="font-bold">{{comment.dateCreated | date: 'h:mm:ss'}}:</span> {{comment.content}}
+                </p>
+            </div>
+
+            <!-- Comment form -->
+            <form libClickStopPropagation
+                [ngClass]="{'hidden': !expanded}"
+                class="form">
+                
+                <input #annotationCommentInput
+                    [disabled]="inputLoading || annotation.state !== 'completed'"
+                    type="text"
+                    aria-label="Comment input" />
+                <input [disabled]="inputLoading || annotation.state !== 'completed'"
+                    (click)="onCommentSubmit()"
+                    type="submit" role="button" value="Post" />
+            </form>
         </div>
-
-        <!-- Right side -->
-        <div class="header-right">
-            <p class="font-bold">{{annotation.dateCreated | date: 'h:mm:ss'}}</p>
-        </div>
-    </header>
-
-    <blockquote class="quote" *ngIf="annotation.type === 'text'">
-        <ng-container *ngIf="annotation.reference?.selectedText">
-            <p>{{annotation.reference?.selectedText}}</p>
-        </ng-container>
-        <ng-container *ngIf="!annotation.reference?.selectedText">
-            <p>...</p>
-        </ng-container>
-    </blockquote>
-
-    <!-- Collapsed latest comment -->
-    <div [ngClass]="{'hidden': annotation.comments.length === 0 || expanded}"
-        class="collapsed-initial-comment">
-        <p class="comment">
-            <span class="font-bold">{{annotation.comments.at(-1)?.dateCreated | date: 'h:mm:ss'}}:</span> {{annotation.comments.at(-1)?.content}}
-        </p>
-        <p *ngIf="annotation.comments.length > 1"
-            class="more-text muted">+ {{annotation.comments.length - 1}} more...</p>
     </div>
-
-    <!-- Comments -->
-    <div [ngClass]="{'hidden': annotation.comments.length === 0 || !expanded}"
-        class="comments">
-
-        <p *ngFor="let comment of annotation.comments"
-            class="comment">
-            <span class="font-bold">{{comment.dateCreated | date: 'h:mm:ss'}}:</span> {{comment.content}}
-        </p>
-    </div>
-
-    <!-- Comment form -->
-    <form libClickStopPropagation
-        [ngClass]="{'hidden': !expanded}"
-        class="form">
-        
-        <input #annotationCommentInput
-            [disabled]="inputLoading || annotation.state !== 'completed'"
-            type="text"
-            aria-label="Comment input" />
-        <input [disabled]="inputLoading || annotation.state !== 'completed'"
-            (click)="onCommentSubmit()"
-            type="submit" role="button" value="Post" />
-    </form>
 </div>

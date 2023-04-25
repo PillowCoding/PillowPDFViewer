@@ -3,7 +3,7 @@ import PdfjsContext, { annotateDrawId, annotateTextId, toolType } from "ngx-pill
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
-import { AnnotationCommentSubmitEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, PageRenderedEventType, TextLayerRenderedEventType } from "../types/eventBus";
+import { AnnotationCommentSubmitEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, AnnotationFocusEventType, AnnotationUnfocusEventType, PageRenderedEventType, TextLayerRenderedEventType } from "../types/eventBus";
 import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 import Annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
@@ -143,6 +143,7 @@ export class PdfViewerComponent implements OnInit {
     private _annotationMode: AnnotationType | 'none' = 'none';
 
     private readonly _defaultAnnotateColor = '#00800040';
+    private readonly _defaultFocusAnnotateColor = '#FF802040';
 
     // Keeps track of pages that have had their annotations fetched.
     private readonly _fetchedAnnotationPages: number[] = [];
@@ -195,11 +196,8 @@ export class PdfViewerComponent implements OnInit {
         this.pdfjsContext.subscribeEventBus('documentloaded', () => this.onDocumentLoaded());
         this.pdfjsContext.subscribeEventBus('pagesinit', () => this.loggingProvider.sendDebug('Pages are loading...', this._defaultLogSource));
         this.pdfjsContext.subscribeEventBus('annotationCommentSubmit', (e) => this.onAnnotationCommentSubmit(e));
-
-        // this.pdfjsContext.subscribeEventBus('resetlayers', (e) => console.log('resetlayers', e));
-        // this.pdfjsContext.subscribeEventBus('textlayerrendered', (e) => console.log('textlayerrendered', e));
-        // this.pdfjsContext.subscribeEventBus('layersloaded', (e) => console.log('layersloaded', e));
-        // this.pdfjsContext.subscribeEventBus('pagerender', (e) => console.log('pagerender', e));
+        this.pdfjsContext.subscribeEventBus('annotationFocus', (e) => this.onAnnotationFocus(e));
+        this.pdfjsContext.subscribeEventBus('annotationUnfocus', (e) => this.onAnnotationUnfocus(e));
 
         // Watch iframe resize
         // TODO: maybe store this observer is we plan on destroying it at some point.
@@ -444,6 +442,20 @@ export class PdfViewerComponent implements OnInit {
         }
 
         this.stateHasChanged();
+    }
+
+    private onAnnotationFocus(event: AnnotationFocusEventType) {
+        this.assertFileLoaded();
+
+        this.loggingProvider.sendDebug(`Focusing ${event.annotation.id}...`, this._defaultLogSource);
+        this.textAnnotator.colorById(this._defaultFocusAnnotateColor, event.annotation.id);
+    }
+
+    private onAnnotationUnfocus(event: AnnotationUnfocusEventType) {
+        this.assertFileLoaded();
+
+        this.loggingProvider.sendDebug(`Unfocusing ${event.annotation.id}...`, this._defaultLogSource);
+        this.textAnnotator.colorById(this._defaultAnnotateColor, event.annotation.id);
     }
 
     private onAnnotationEditorModeChanged(event: AnnotationEditorModeChangedEventType) {

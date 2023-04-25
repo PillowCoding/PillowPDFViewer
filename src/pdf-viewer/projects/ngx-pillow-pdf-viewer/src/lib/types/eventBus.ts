@@ -86,6 +86,8 @@ export interface EventBusEventTypePayloadMap {
     "annotationStarted": StartAnnotationEventType;
     "annotationDeleted": DeleteAnnotationEventType;
     "annotationCommentSubmit": AnnotationCommentSubmitEventType;
+    "annotationFocus": AnnotationFocusEventType;
+    "annotationUnfocus": AnnotationUnfocusEventType;
 }
 
 /**
@@ -281,3 +283,9 @@ export type AnnotationCommentSubmitEventType = EventBusEvent<PdfAnnotationCompon
     annotation: annotation;
     comment: AnnotationComment;
 }
+
+export type AnnotationFocusEventType = EventBusEvent<PdfAnnotationComponent> & {
+    annotation: annotation;
+}
+
+export type AnnotationUnfocusEventType = AnnotationFocusEventType;
