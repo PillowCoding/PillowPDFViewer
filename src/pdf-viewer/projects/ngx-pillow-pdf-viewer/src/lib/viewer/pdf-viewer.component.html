@@ -8,17 +8,17 @@
         [loggingProvider]="loggingProvider"
         [annotationsProvider]="fetchSidebarAnnotationsForPage">
     </lib-pdf-sidebar>
+</div>
 
-    <div #annotateInfo
-        [ngClass]="{'hidden': annotationMode === 'none'}"
-        class="annotate-info-container">
-        
-        <div class="annotate-info">
-            <p>Annotating</p>
-            <button (click)="stopAnnotating()"
-                class="button danger">
-                Stop
-            </button>
-        </div>
+<div #annotateInfo
+    [ngClass]="{'hidden': annotationMode === 'none'}"
+    class="annotate-info-container">
+    
+    <div class="annotate-info">
+        <p>Annotating</p>
+        <button (click)="stopAnnotating()"
+            class="button danger">
+            Stop
+        </button>
     </div>
 </div>
