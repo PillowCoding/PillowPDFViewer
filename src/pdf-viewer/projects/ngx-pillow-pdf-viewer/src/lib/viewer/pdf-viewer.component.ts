@@ -343,7 +343,7 @@ export class PdfViewerComponent implements OnInit {
 
     public setAnnotationMode(type: AnnotationType) {
         if (this.annotationMode !== 'none') {
-            this.loggingProvider.sendWarning(`Tried to set the annotation mode, but it is currently ${this.annotationMode}.`, this._defaultLogSource);
+            this.loggingProvider.sendWarning(`Tried to set the annotation mode to ${type}, but it is currently ${this.annotationMode}.`, this._defaultLogSource);
         }
 
         this._annotationMode = type;
