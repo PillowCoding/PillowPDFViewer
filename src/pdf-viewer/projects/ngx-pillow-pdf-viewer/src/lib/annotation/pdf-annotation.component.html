@@ -32,7 +32,8 @@
                     <div *ngIf="!loading && annotation.state === 'completed'"
                         class="delete-annotation" >
                         <lib-close-button libClickStopPropagation
-                            [useCustomColor]="true" />
+                            [useCustomColor]="true"
+                            (closed)="onDelete()" />
                     </div>
                 </div>
 

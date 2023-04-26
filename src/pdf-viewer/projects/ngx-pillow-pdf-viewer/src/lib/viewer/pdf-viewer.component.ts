@@ -3,7 +3,7 @@ import PdfjsContext, { annotateDrawId, annotateTextId, toolType } from "ngx-pill
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
-import { AnnotationCommentSubmitEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, AnnotationFocusEventType, AnnotationUnfocusEventType, PageRenderedEventType, TextLayerRenderedEventType } from "../types/eventBus";
+import { AnnotationCommentSubmitEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, AnnotationFocusEventType, AnnotationUnfocusEventType, DeleteAnnotationEventType, PageRenderedEventType, TextLayerRenderedEventType } from "../types/eventBus";
 import { AnnotationType, boundingBox } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 import Annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
@@ -223,6 +223,7 @@ export class PdfViewerComponent implements OnInit {
         this.pdfjsContext.subscribeEventBus('documentloaded', () => this.onDocumentLoaded());
         this.pdfjsContext.subscribeEventBus('pagesinit', () => this.loggingProvider.sendDebug('Pages are loading...', this._defaultLogSource));
         this.pdfjsContext.subscribeEventBus('annotationCommentSubmit', (e) => this.onAnnotationCommentSubmit(e));
+        this.pdfjsContext.subscribeEventBus('annotationDeleted', (e) => this.onAnnotationDeleted(e));
         this.pdfjsContext.subscribeEventBus('annotationFocus', (e) => this.onAnnotationFocus(e));
         this.pdfjsContext.subscribeEventBus('annotationUnfocus', (e) => this.onAnnotationUnfocus(e));
 
@@ -404,14 +405,20 @@ export class PdfViewerComponent implements OnInit {
                 this.drawAnnotator.clearCanvas(this.uncompletedAnnotation.page, true);
             }
 
-            this.deleteAnnotation(this.uncompletedAnnotation);
+            this.deletePendingAnnotation(this.uncompletedAnnotation);
         }
 
         this._annotationMode = 'none';
     }
 
-    private deleteAnnotation(annotation: Annotation) {
-        this.loggingProvider.sendDebug(`Deleting ${annotation.state} annotation: ${annotation.id}`, this._defaultLogSource);
+    private deletePendingAnnotation(annotation: Annotation) {
+
+        if (annotation.state !== 'pending') {
+            this.loggingProvider.sendWarning(`Tried to delete annotation ${annotation.id} which is not pending.`, this._defaultLogSource);
+            return;
+        }
+
+        this.loggingProvider.sendDebug(`Deleting pending annotation: ${annotation.id}`, this._defaultLogSource);
         this.assertPdfjsContextExists();
         this.pdfjsContext.dispatchEventBus('annotationDeleted', {
             source: this,
@@ -595,6 +602,17 @@ export class PdfViewerComponent implements OnInit {
         }
 
         this.stateHasChanged();
+    }
+
+    private onAnnotationDeleted({ source, annotation}: DeleteAnnotationEventType) {
+
+        // Ignore from self.
+        if (source === this) {
+            return;
+        }
+
+        this.loggingProvider.sendDebug(`Deleting ${annotation.state} annotation: ${annotation.id}`, this._defaultLogSource);
+        this._annotations = this._annotations.filter(x => x.id !== annotation.id);
     }
 
     private async saveAnnotation(annotation: Annotation) {

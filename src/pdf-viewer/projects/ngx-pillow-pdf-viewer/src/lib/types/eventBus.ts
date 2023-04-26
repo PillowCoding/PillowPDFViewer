@@ -277,7 +277,9 @@ export type StartAnnotationEventType = EventBusEvent<PdfViewerComponent> & {
     annotation: annotation;
 }
 
-export type DeleteAnnotationEventType = StartAnnotationEventType;
+export type DeleteAnnotationEventType = EventBusEvent<PdfViewerComponent | PdfAnnotationComponent> & {
+    annotation: annotation;
+}
 
 export type AnnotationCommentSubmitEventType = EventBusEvent<PdfAnnotationComponent> & {
     annotation: annotation;

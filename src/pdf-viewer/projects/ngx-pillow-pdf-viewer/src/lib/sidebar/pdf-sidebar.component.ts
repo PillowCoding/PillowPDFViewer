@@ -116,9 +116,11 @@ export class PdfSidebarComponent implements OnInit {
 
     private onAnnotationStarted(event: StartAnnotationEventType) {
         this.annotations.unshift(event.annotation);
+        this.stateHasChanged();
     }
     private onAnnotationDeleted(event: DeleteAnnotationEventType) {
         this.annotations = this.annotations.filter(x => x.id !== event.annotation.id);
+        this.stateHasChanged();
     }
 
     public expand()

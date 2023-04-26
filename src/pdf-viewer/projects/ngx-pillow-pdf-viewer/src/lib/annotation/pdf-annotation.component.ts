@@ -138,6 +138,14 @@ export class PdfAnnotationComponent implements OnInit {
         this.stateHasChanged();
     }
 
+    public onDelete() {
+        this.assertParametersSet();
+        this.pdfjsContext.dispatchEventBus('annotationDeleted', {
+            source: this,
+            annotation: this.annotation
+        })
+    }
+
     private assertParametersSet(): asserts this is this & {
         loggingProvider: LoggingProvider;
         pdfjsContext: PdfjsContext;
