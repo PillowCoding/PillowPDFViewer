@@ -28,6 +28,12 @@
                         class="loading-indicator inline">
                         <lib-loading-ring></lib-loading-ring>
                     </div>
+
+                    <div *ngIf="!loading && annotation.state === 'completed'">
+                        <lib-close-button libClickStopPropagation
+                            [useCustomColor]="true"
+                            class="delete-annotation" />
+                    </div>
                 </div>
 
                 <!-- Right side -->

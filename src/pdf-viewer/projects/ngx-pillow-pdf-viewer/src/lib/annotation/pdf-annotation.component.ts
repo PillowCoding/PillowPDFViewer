@@ -106,9 +106,17 @@ export class PdfAnnotationComponent implements OnInit {
     public onCommentSubmit()
     {
         this.assertParametersSet();
+
+        const annotationComment = this._annotationCommentInput.nativeElement.value.trim();
+
+        // Ignore empty.
+        if (!annotationComment) {
+            return;
+        }
+
         this.loggingProvider.sendDebug('Submitting comment...', this._defaultLogSource);
 
-        const comment = new AnnotationComment(this._annotationCommentInput.nativeElement.value);
+        const comment = new AnnotationComment(annotationComment);
         this._annotationCommentInput.nativeElement.value = '';
 
         this.pdfjsContext.dispatchEventBus('annotationCommentSubmit', {

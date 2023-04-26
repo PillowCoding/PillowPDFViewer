@@ -104,6 +104,11 @@
     }
 }
 
+// Darker button color on hover
+.delete-annotation .toolbar-button.close:hover {
+    background-color: rgb(185, 185, 185);
+}
+
 .main-annotation {
     padding: .15rem .5rem .5rem 0;
 

@@ -62,7 +62,7 @@
     }
 
     &:hover {
-        background-color: var(--button-hover-background-color);
+        background-color: var(--button-background-hover-color);
     }
 
     &::before {
@@ -183,8 +183,6 @@
     --annotation-shadow-color: 64, 64, 64;
     --annotation-shadow-opacity: .4;
 
-    --button-hover-background-color: rgb(221, 222, 223);
-
     --input-background-color: rgb(255, 255, 255);
     --input-background-hover-color: rgb(233, 233, 233);
     --input-background-focus-color: rgb(226, 226, 226);
@@ -192,8 +190,8 @@
     --input-border-color: rgb(204, 204, 204);
 
     --button-background-color: rgb(255, 255, 255);
-    --button-background-hover-color: rgb(233, 233, 233);
-    --button-background-focus-color: rgb(226, 226, 226);
+    --button-background-hover-color: rgb(221, 222, 223);
+    --button-background-focus-color: rgb(209, 209, 209);
     --button-background-disabled-color: rgb(218, 218, 218);
     --button-border-color: rgb(243, 243, 243);
     --button-danger-color: rgb(228, 228, 228);
@@ -227,7 +225,7 @@
         --annotation-shadow-color: 20, 20, 20;
         --annotation-shadow-opacity: .4;
 
-        --button-hover-background-color: rgb(102, 102, 103);
+        --button-background-hover-color: rgb(102, 102, 103);
 
         --input-background-color: rgb(74, 74, 79);
         --input-background-focus-color: rgb(75, 75, 75);
