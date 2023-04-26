@@ -31,7 +31,7 @@ export class LocalisationService
         this.localisation = this.localisationTemplates[languageToUse];
     }
 
-    public Translate(key: string, args?: string[])
+    public Translate(key: string, args?: (string | number)[])
     {
         if (!this.localisation) {
             console.warn(`Localisation has not loaded.`);
@@ -44,7 +44,7 @@ export class LocalisationService
         }
 
         // Simulated C#'s `String.Format` method.
-        const StringFormat = (str: string, ...args: string[]) => str.replace(/{(\d+)}/g, (match, index) => args[index] || '');
+        const StringFormat = (str: string, ...args: (string | number)[]) => str.replace(/{(\d+)}/g, (match, index) => args[index]?.toString() || '');
 
         // Translate
         const translation = this.localisation[key];

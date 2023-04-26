@@ -7,6 +7,7 @@
 
     "annotations.nonePage": "Deze pagina bevat geen annotaties.",
     "annotations.post": "Plaats",
+    "annotate.moreComments": "+ {0} meer...",
 
     "textAnnotator.enabled": "Nieuwe tekst annotatie",
     "drawAnnotator.enabled": "Nieuwe teken annotatie",

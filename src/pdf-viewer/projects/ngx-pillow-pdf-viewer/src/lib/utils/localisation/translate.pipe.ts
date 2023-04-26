@@ -11,7 +11,7 @@ export class TranslatePipe implements PipeTransform
     {
     }
 
-	transform(key: string, ...args: string[])
+	transform(key: string, ...args: (string | number)[])
 	{
 		return this.localisationService.Translate(key, args);
 	}

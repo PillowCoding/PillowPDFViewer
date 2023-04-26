@@ -52,7 +52,7 @@
                     <span class="font-bold">{{annotation.comments.at(-1)?.dateCreated | date: 'h:mm:ss'}}:</span> {{annotation.comments.at(-1)?.content}}
                 </p>
                 <p *ngIf="annotation.comments.length > 1"
-                    class="more-text muted">+ {{annotation.comments.length - 1}} more...</p>
+                    class="more-text muted">{{'annotate.moreComments' | translate: annotation.comments.length - 1}}</p>
             </div>
 
             <!-- Comments -->
