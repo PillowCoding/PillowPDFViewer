@@ -4,14 +4,14 @@ import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 import { AnnotationCommentSubmitEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, AnnotationFocusEventType, AnnotationUnfocusEventType, PageRenderedEventType, TextLayerRenderedEventType } from "../types/eventBus";
-import { AnnotationType } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
+import { AnnotationType, boundingBox } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 import Annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
 import TextAnnotator from "ngx-pillow-pdf-viewer/annotator/textAnnotator";
 import LayerManager from "ngx-pillow-pdf-viewer/annotator/layerManager";
 import DeferredPromise from "ngx-pillow-pdf-viewer/utils/deferredPromise";
 import { LocalisationService } from "ngx-pillow-pdf-viewer/utils/localisation/localisation.service";
-import DrawAnnotator from "ngx-pillow-pdf-viewer/annotator/drawAnnotator";
+import DrawAnnotator, { canvasMouseType } from "ngx-pillow-pdf-viewer/annotator/drawAnnotator";
 
 export type annotationsSaveProviderDelegate = (annotation: Annotation) => void | Promise<void>;
 export type annotationsCommentSaveProviderDelegate = (annotation: Annotation, comment: AnnotationComment) => void | Promise<void>;
@@ -93,10 +93,15 @@ export class PdfViewerComponent implements OnInit {
     }
 
     public get uncompletedAnnotation() {
-        return this._annotations.filter(x => x.state !== 'completed')[0];
+        return this._annotations.find(x => x.state !== 'completed');
     }
 
     @Input() public sidebarEnabled = true;
+
+    @Input() public defaultTextAnnotationColor = '#00800040';
+    @Input() public defaultTextAnnotationFocusColor = '#FF802040';
+    @Input() public defaultPendingDrawAnnotationColor = '#00FF00';
+    @Input() public defaultDrawAnnotationColor = '#FFA500';
 
     /** The provider that will fetch annotations asynchronously. */
     @Input() public annotationsProvider?: annotationsProviderDelegate;
@@ -153,9 +158,6 @@ export class PdfViewerComponent implements OnInit {
     private _hiddenTools: toolType[] = [];
     private _annotations: Annotation[] = [];
     private _annotationMode: AnnotationType | 'none' = 'none';
-
-    private readonly _defaultAnnotateColor = '#00800040';
-    private readonly _defaultFocusAnnotateColor = '#FF802040';
 
     // Keeps track of pages that have had their annotations fetched.
     private readonly _fetchedAnnotationPages: number[] = [];
@@ -337,7 +339,7 @@ export class PdfViewerComponent implements OnInit {
         annotation.reference = { ...selectionContext };
 
         this.textAnnotator.annotateSelection(selectionContext, annotation.id);
-        this.textAnnotator.colorById(this._defaultAnnotateColor, annotation.id);
+        this.textAnnotator.colorById(this.defaultTextAnnotationColor, annotation.id);
 
         this.stopAnnotating();
 
@@ -349,28 +351,7 @@ export class PdfViewerComponent implements OnInit {
         this.sidebarComponent?.expand();
         this.stateHasChanged();
 
-        // Get the annotation component. This should also exist if the sidebar is enabled.
-        const uncompletedAnnotationComponent = this.sidebarComponent?.annotationComponents.find(x => x.annotation == annotation);
-        if (this.sidebarEnabled && !uncompletedAnnotationComponent) {
-            throw new Error(`Expected the annotation component for ${annotation.id} to exist.`);
-        }
-
-        if (!this.annotationsSaveProvider) {
-            this.loggingProvider.sendWarning(`Please provide a value for \`annotationsSaveProvider\` in order to save annotations.`, this._defaultLogSource);
-        }
-        else {
-            if (uncompletedAnnotationComponent) {
-                uncompletedAnnotationComponent.loading = true;
-                this.stateHasChanged();
-            }
-
-            await this.annotationsSaveProvider(annotation);
-            
-            if (uncompletedAnnotationComponent) {
-                uncompletedAnnotationComponent.loading = false;
-                this.stateHasChanged();
-            }
-        }
+        this.saveAnnotation(annotation);
     }
 
     private beginNewAnnotation(type: AnnotationType) {
@@ -420,6 +401,7 @@ export class PdfViewerComponent implements OnInit {
             // Make sure draw annotations have their pending canvas disabled.
             if (this.uncompletedAnnotation.type === 'draw') {
                 this.drawAnnotator.disableDrawCanvas(this.uncompletedAnnotation.page, true);
+                this.drawAnnotator.clearCanvas(this.uncompletedAnnotation.page, true);
             }
 
             this.deleteAnnotation(this.uncompletedAnnotation);
@@ -449,7 +431,7 @@ export class PdfViewerComponent implements OnInit {
 
         this.fetchAnnotationsForPage(pageNumber);
         this.textAnnotator.renderLayer(pageNumber);
-        this.drawAnnotator.renderLayers(pageNumber, this.canvasOnMouse);
+        this.drawAnnotator.renderLayers(pageNumber, (e, type) => this.canvasOnMouse(e, type));
     }
 
     private async textLayerRendered({ pageNumber }: TextLayerRenderedEventType) {
@@ -460,8 +442,80 @@ export class PdfViewerComponent implements OnInit {
         this.textAnnotatePage(pageNumber);
     }
 
-    private canvasOnMouse(event: MouseEvent, mouseDown: boolean) {
-        console.log(event, mouseDown);
+    private canvasOnMouse(event: MouseEvent, type: canvasMouseType) {
+
+        this.assertFileLoaded();
+
+        const annotation = this.uncompletedAnnotation;
+        if (!annotation || annotation.type !== 'draw') {
+            this.loggingProvider.sendWarning('The uncompleted annotation was not found, or is not a draw annotation.', this._defaultLogSource);
+            return;
+        }
+
+        // TODO: Check if we draw the right page, even if it's not possible.
+        // TODO: Cache the pending canvas we draw on to make this faster?
+
+        const annotationBounds = annotation.tryGetBoundingBox();
+
+        // When the annotation has no start reference, and the mouse is pressed.
+        if (!annotationBounds?.start && type === 'mousedown') {
+            const relativePosition = this.drawAnnotator.getRelativePosition(annotation.page, true, event);
+            if (!relativePosition) {
+                this.loggingProvider.sendWarning('Relative position could not be determined for the mouse event.', this._defaultLogSource);
+                return;
+            }
+
+            annotation.reference = {
+                start: { ...relativePosition }
+            }
+        }
+
+        // When the annotation has a start reference, and the mouse is being moved on the canvas.
+        if (annotationBounds?.start && type === 'mousemove') {
+            const relativePosition = this.drawAnnotator.getRelativePosition(annotation.page, true, event);
+            if (!relativePosition) {
+                this.loggingProvider.sendWarning('Relative position could not be determined for the mouse event.', this._defaultLogSource);
+                return;
+            }
+
+            const boundingBox: boundingBox = {
+                start: annotationBounds.start,
+                end: relativePosition
+            }
+
+            this.drawAnnotator.drawCanvasRectangle(annotation.page, true, true, this.defaultPendingDrawAnnotationColor, 1, boundingBox);
+        }
+
+        // When the annotation has a start reference, and the mouse button goes up.
+        if (annotationBounds?.start && type === 'mouseup') {
+            const relativePosition = this.drawAnnotator.getRelativePosition(annotation.page, true, event);
+            if (!relativePosition) {
+                this.loggingProvider.sendWarning('Relative position could not be determined for the mouse event.', this._defaultLogSource);
+                return;
+            }
+
+            const boundingBox: boundingBox = {
+                start: { ...annotationBounds.start },
+                end: { ...relativePosition }
+            }
+
+            annotation.reference = boundingBox;
+            this.drawAnnotator.drawCanvasRectangle(annotation.page, false, false, this.defaultDrawAnnotationColor, 1, boundingBox);
+            this.drawAnnotator.clearCanvas(annotation.page, true);
+            this.drawAnnotator.disableDrawCanvas(annotation.page, true);
+
+            this.stopAnnotating();
+
+            // Check if the sidebar exists if enabled.
+            if (!this.sidebarComponent && this.sidebarEnabled) {
+                throw new Error('Expected the sidebar component to exist when enabled.');
+            }
+
+            this.sidebarComponent?.expand();
+            this.stateHasChanged();
+
+            this.saveAnnotation(annotation);
+        }
     }
 
     private iframeResize() {
@@ -529,13 +583,40 @@ export class PdfViewerComponent implements OnInit {
         this.stateHasChanged();
     }
 
+    private async saveAnnotation(annotation: Annotation) {
+
+        // Get the annotation component. This should also exist if the sidebar is enabled.
+        const uncompletedAnnotationComponent = this.sidebarComponent?.annotationComponents.find(x => x.annotation == annotation);
+        if (this.sidebarEnabled && !uncompletedAnnotationComponent) {
+            throw new Error(`Expected the annotation component for ${annotation.id} to exist.`);
+        }
+
+        if (!this.annotationsSaveProvider) {
+            this.loggingProvider.sendWarning(`Please provide a value for \`annotationsSaveProvider\` in order to save annotations.`, this._defaultLogSource);
+            return;
+        }
+
+        this.loggingProvider.sendDebug(`Saving annotaton ${annotation.id}...`, this._defaultLogSource);
+        if (uncompletedAnnotationComponent) {
+            uncompletedAnnotationComponent.loading = true;
+            this.stateHasChanged();
+        }
+
+        await this.annotationsSaveProvider(annotation);
+        
+        if (uncompletedAnnotationComponent) {
+            uncompletedAnnotationComponent.loading = false;
+            this.stateHasChanged();
+        }
+    }
+
     private onAnnotationFocus(event: AnnotationFocusEventType) {
         this.assertFileLoaded();
 
         this.loggingProvider.sendDebug(`Focusing ${event.annotation.id}...`, this._defaultLogSource);
         
         if (event.annotation.type === 'text') {
-            this.textAnnotator.colorById(this._defaultFocusAnnotateColor, event.annotation.id);
+            this.textAnnotator.colorById(this.defaultTextAnnotationFocusColor, event.annotation.id);
         }
     }
 
@@ -545,7 +626,7 @@ export class PdfViewerComponent implements OnInit {
         this.loggingProvider.sendDebug(`Unfocusing ${event.annotation.id}...`, this._defaultLogSource);
 
         if (event.annotation.type === 'text') {
-            this.textAnnotator.colorById(this._defaultAnnotateColor, event.annotation.id);
+            this.textAnnotator.colorById(this.defaultTextAnnotationColor, event.annotation.id);
         }
     }
 
@@ -594,7 +675,7 @@ export class PdfViewerComponent implements OnInit {
             }
 
             this.textAnnotator.annotateXpath(textSelection.xpath, textSelection.selectedText, page, annotation.id);
-            this.textAnnotator.colorById(this._defaultAnnotateColor, annotation.id);
+            this.textAnnotator.colorById(this.defaultTextAnnotationColor, annotation.id);
         }
     }
 
