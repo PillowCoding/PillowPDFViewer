@@ -25,14 +25,16 @@ export default class DrawAnnotator {
             this.injectLayerStyle();
         }
 
-    public async renderLayers(page: number) {
+    public async renderLayers(page: number, mouseListener: (e: MouseEvent, mouseDown: boolean) => void) {
         const layerIds = this.getLayerIds(page);
         for (const layerIdKey of Object.keys(layerIds) as Array<keyof typeof layerIds>) {
             const layerId = layerIds[layerIdKey];
             let layer = this._layerManager.getLayerById(layerId);
             if (!layer) {
                 layer = await this._layerManager.createLayer(layerId, page);
-                this.insertCanvas(layer);
+                const canvas = this.insertCanvas(layer);
+                canvas.addEventListener('mousedown', (e) => mouseListener(e, true));
+                canvas.addEventListener('mouseup', (e) => mouseListener(e, false));
             }
 
             this._layerManager.applyLayer(layer);
@@ -47,12 +49,11 @@ export default class DrawAnnotator {
         const canvas = this.getDrawCanvas(source, pending);
         if (!canvas) {
             this._loggingProvider.sendWarning(`The draw canvas could not be found. Using source ${stringedSource}.`, this._defaultLogSource);
-            return null;
+            return;
         }
 
         this._loggingProvider.sendDebug(`Enabling draw canvas ${stringedSource}...`, this._defaultLogSource);
         canvas.style.pointerEvents = 'all';
-        return canvas;
     }
 
     public disableDrawCanvas<T extends layer | string | number>(
@@ -63,12 +64,11 @@ export default class DrawAnnotator {
         const canvas = this.getDrawCanvas(source, pending);
         if (!canvas) {
             this._loggingProvider.sendWarning(`The draw canvas could not be found. Using source ${stringedSource}.`, this._defaultLogSource);
-            return null;
+            return;
         }
 
         this._loggingProvider.sendDebug(`Disabling draw canvas ${stringedSource}...`, this._defaultLogSource);
         canvas.style.pointerEvents = 'none';
-        return canvas;
     }
     
     /**
@@ -115,6 +115,7 @@ export default class DrawAnnotator {
         layer.element.insertAdjacentElement('beforeend', canvasElement);
 
         canvasElement.classList.add(this._drawCanvasClassName);
+        return canvasElement;
     }
 
     private getLayerIds(page: number) {

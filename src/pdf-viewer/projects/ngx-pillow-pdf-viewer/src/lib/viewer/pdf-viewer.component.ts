@@ -388,6 +388,7 @@ export class PdfViewerComponent implements OnInit {
         this._annotations.push(newAnnotation);
 
         // Draw annotations have their pending canvas enabled for drawing.
+        // We listen for mouse input to allow drawing.
         if (type === 'draw') {
             this.drawAnnotator.enableDrawCanvas(targetPage, true);
         }
@@ -448,7 +449,7 @@ export class PdfViewerComponent implements OnInit {
 
         this.fetchAnnotationsForPage(pageNumber);
         this.textAnnotator.renderLayer(pageNumber);
-        this.drawAnnotator.renderLayers(pageNumber);
+        this.drawAnnotator.renderLayers(pageNumber, this.canvasOnMouse);
     }
 
     private async textLayerRendered({ pageNumber }: TextLayerRenderedEventType) {
@@ -457,6 +458,10 @@ export class PdfViewerComponent implements OnInit {
         await this.waitForPageAnnotations(pageNumber);
 
         this.textAnnotatePage(pageNumber);
+    }
+
+    private canvasOnMouse(event: MouseEvent, mouseDown: boolean) {
+        console.log(event, mouseDown);
     }
 
     private iframeResize() {
