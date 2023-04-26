@@ -1,4 +1,4 @@
-import { AnnotationState, AnnotationType, textSelection } from "./annotationTypes";
+import { AnnotationState, AnnotationType, ReferenceType } from "./annotationTypes";
 
 export class AnnotationComment {
     private _dateCreated: Date;
@@ -49,7 +49,7 @@ export default class Annotation {
     private _comments: Array<AnnotationComment>;
     private _page: number;
 
-    private _reference: textSelection | null;
+    private _reference: ReferenceType | null;
 
     public get type() {
         return this._type;
@@ -91,7 +91,7 @@ export default class Annotation {
         this._reference = null;
     }
 
-    public setAnnotationReference(reference: textSelection) {
+    public setAnnotationReference(reference: ReferenceType) {
         if (this.state != 'pending') {
             throw new Error('It is not possible to add a reference to an annotation that already has one.');
         }
@@ -133,6 +133,14 @@ export default class Annotation {
 
     public tryGetTextSelection() {
         if (this.type !== 'text' || !this.reference || !('xpath' in this.reference)) {
+            return null;
+        }
+
+        return this.reference;
+    }
+
+    public tryGetDrawSelection() {
+        if (this.type !== 'draw' || !this.reference || !('start' in this.reference)) {
             return null;
         }
 

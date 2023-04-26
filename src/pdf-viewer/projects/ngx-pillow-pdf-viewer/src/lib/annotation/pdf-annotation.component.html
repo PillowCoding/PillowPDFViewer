@@ -37,10 +37,10 @@
             </header>
 
             <blockquote class="quote" *ngIf="annotation.type === 'text'">
-                <ng-container *ngIf="annotation.reference?.selectedText">
-                    <p>{{annotation.reference?.selectedText}}</p>
+                <ng-container *ngIf="annotation.tryGetTextSelection()">
+                    <p>{{annotation.tryGetTextSelection()?.selectedText}}</p>
                 </ng-container>
-                <ng-container *ngIf="!annotation.reference?.selectedText">
+                <ng-container *ngIf="!annotation.tryGetTextSelection()">
                     <p>...</p>
                 </ng-container>
             </blockquote>

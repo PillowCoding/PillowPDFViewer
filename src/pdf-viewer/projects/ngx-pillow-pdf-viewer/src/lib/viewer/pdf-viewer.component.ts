@@ -268,7 +268,7 @@ export class PdfViewerComponent implements OnInit {
 
         this.pdfjsContext.injectStyle(textAnnotateStyle + drawAnnotateStyle + sharedStyle);
 
-        annotateDrawButton.onclick = () => { throw new Error('Not implemented.') };
+        annotateDrawButton.onclick = () => this.beginNewAnnotation('draw');
         annotateTextButton.onclick = () => this.beginNewAnnotation('text');
 
         // Collect the tools to disable.
@@ -309,7 +309,7 @@ export class PdfViewerComponent implements OnInit {
         }
 
         // Proceed if we have an uncompleted annotation with no reference.
-        if (!this.uncompletedAnnotation || this.uncompletedAnnotation.state !== 'pending') {
+        if (!this.uncompletedAnnotation) {
             return;
         }
 
