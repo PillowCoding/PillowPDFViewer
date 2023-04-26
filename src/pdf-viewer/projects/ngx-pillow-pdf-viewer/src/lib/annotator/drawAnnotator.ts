@@ -3,17 +3,23 @@ import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider
 import LayerManager, { layer } from "./layerManager";
 import { boundingBox } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 
-export type canvasMouseType = 'mouseup' | 'mousedown' | 'mousemove'
+export type canvasMouseType = 'mouseup' | 'mousedown' | 'mousemove';
+export type drawData = {
+    id: string;
+    color: string;
+    borderWidth: number;
+    bounds: boundingBox;
+}
 
 export default class DrawAnnotator {
     private readonly _defaultLogSource = DrawAnnotator.name;
     private readonly _pendingLayerClassName = 'drawAnnotateLayerPending';
     private readonly _actualLayerClassName = 'drawAnnotateLayerActual';
     private readonly _drawCanvasClassName = 'drawCanvas';
-    private readonly _annotatedIds: string[] = [];
+    private readonly _coloredIds: string[] = [];
 
-    public get annotatedIds() {
-        return this._annotatedIds;
+    public get coloredIds() {
+        return this._coloredIds;
     }
 
     constructor(
@@ -142,9 +148,7 @@ export default class DrawAnnotator {
         source: T,
         pending: T extends number ? boolean : never,
         clearCanvas: boolean,
-        color: string,
-        borderWidth: number,
-        ...bounds: boundingBox[]
+        ...drawData: drawData[]
     ) {
         const stringedSource = typeof source === 'object' ? source.id :
             source instanceof HTMLCanvasElement ? '[canvas element]' :
@@ -175,20 +179,27 @@ export default class DrawAnnotator {
             canvasContext.clearRect(0, 0, canvas.width, canvas.height);
         }
 
-        for (const boundingBox of bounds) {
+        const drawDataStrings = drawData.map(x => `[${x.id} - {${x.bounds.start.x}, ${x.bounds.start.y}}, {${x.bounds.end.x}, ${x.bounds.end.y}}]`);
+        this._loggingProvider.sendDebug(`Drawing ${drawData.length} rectangle(s): ${drawDataStrings.join(', ')}...`, this._defaultLogSource);
+
+        for (const data of drawData) {
+
+            // Push the id and mark it as colored.
+            this._coloredIds.push(data.id);
+
             // Determine the proper bounds of the rectangle.
             // The initial boundingBox is the normalised relative position based on the size of the page.
             // We get the actual coordinates and draw using these.
-            const x = boundingBox.start.x * canvas.width;
-            const y = boundingBox.start.y * canvas.height;
-            const width = (boundingBox.end.x - boundingBox.start.x) * canvas.width;
-            const height = (boundingBox.end.y - boundingBox.start.y) * canvas.height;
-            const borderColor = color;
-            const fillColor = color + this.getOpacityHex(.1);
+            const x = data.bounds.start.x * canvas.width;
+            const y = data.bounds.start.y * canvas.height;
+            const width = (data.bounds.end.x - data.bounds.start.x) * canvas.width;
+            const height = (data.bounds.end.y - data.bounds.start.y) * canvas.height;
+            const borderColor = data.color;
+            const fillColor = data.color + this.getOpacityHex(.1);
 
             canvasContext.fillStyle = fillColor;
             canvasContext.strokeStyle = borderColor;
-            canvasContext.lineWidth = borderWidth;
+            canvasContext.lineWidth = data.borderWidth;
             canvasContext.fillRect(x, y, width, height);
             canvasContext.strokeRect(x, y, width, height);
         }

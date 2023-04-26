@@ -11,7 +11,7 @@ import TextAnnotator from "ngx-pillow-pdf-viewer/annotator/textAnnotator";
 import LayerManager from "ngx-pillow-pdf-viewer/annotator/layerManager";
 import DeferredPromise from "ngx-pillow-pdf-viewer/utils/deferredPromise";
 import { LocalisationService } from "ngx-pillow-pdf-viewer/utils/localisation/localisation.service";
-import DrawAnnotator, { canvasMouseType } from "ngx-pillow-pdf-viewer/annotator/drawAnnotator";
+import DrawAnnotator, { canvasMouseType, drawData } from "ngx-pillow-pdf-viewer/annotator/drawAnnotator";
 
 export type annotationsSaveProviderDelegate = (annotation: Annotation) => void | Promise<void>;
 export type annotationsCommentSaveProviderDelegate = (annotation: Annotation, comment: AnnotationComment) => void | Promise<void>;
@@ -440,6 +440,7 @@ export class PdfViewerComponent implements OnInit {
         await this.waitForPageAnnotations(pageNumber);
 
         this.textAnnotatePage(pageNumber);
+        this.drawAnnotatePage(pageNumber);
     }
 
     private canvasOnMouse(event: MouseEvent, type: canvasMouseType) {
@@ -483,7 +484,13 @@ export class PdfViewerComponent implements OnInit {
                 end: relativePosition
             }
 
-            this.drawAnnotator.drawCanvasRectangle(annotation.page, true, true, this.defaultPendingDrawAnnotationColor, 1, boundingBox);
+            const drawData: drawData = {
+                id: annotation.id,
+                color: this.defaultPendingDrawAnnotationColor,
+                borderWidth: 1,
+                bounds: boundingBox,
+            }
+            this.drawAnnotator.drawCanvasRectangle(annotation.page, true, true, drawData);
         }
 
         // When the annotation has a start reference, and the mouse button goes up.
@@ -499,11 +506,18 @@ export class PdfViewerComponent implements OnInit {
                 end: { ...relativePosition }
             }
 
-            annotation.reference = boundingBox;
-            this.drawAnnotator.drawCanvasRectangle(annotation.page, false, false, this.defaultDrawAnnotationColor, 1, boundingBox);
+            const drawData: drawData = {
+                id: annotation.id,
+                color: this.defaultDrawAnnotationColor,
+                borderWidth: 1,
+                bounds: boundingBox,
+            }
+
+            this.drawAnnotator.drawCanvasRectangle(annotation.page, false, false, drawData);
             this.drawAnnotator.clearCanvas(annotation.page, true);
             this.drawAnnotator.disableDrawCanvas(annotation.page, true);
 
+            annotation.reference = boundingBox;
             this.stopAnnotating();
 
             // Check if the sidebar exists if enabled.
@@ -670,13 +684,44 @@ export class PdfViewerComponent implements OnInit {
 
             const textSelection = annotation.tryGetTextSelection();
             if (!textSelection) {
-                this.loggingProvider.sendWarning(`Unable to annotate ${annotation.id}: not a text annotation.`, this._defaultLogSource);
+                this.loggingProvider.sendWarning(`Unable to annotate ${annotation.id}: not a valid text annotation.`, this._defaultLogSource);
                 continue;
             }
 
             this.textAnnotator.annotateXpath(textSelection.xpath, textSelection.selectedText, page, annotation.id);
             this.textAnnotator.colorById(this.defaultTextAnnotationColor, annotation.id);
         }
+    }
+
+    private drawAnnotatePage(page: number) {
+        this.assertFileLoaded();
+
+        const annotations = this.annotations.filter(x => x.type === 'draw' && x.page === page);
+        const drawDataCollection: (drawData | null)[] = annotations.map(x => {
+            const boundingBox = x.tryGetCompletedBoundingBox();
+            if (!boundingBox) {
+                this.loggingProvider.sendWarning(`Unable to annotate ${x.id}: not a valid draw annotation, or the bounding box is not complete.`, this._defaultLogSource);
+                return null;
+            }
+
+            // Ignore if already colored.
+            // (Draw annotator is guaranteed to exist)
+            if (this.drawAnnotator?.coloredIds.includes(x.id)) {
+                return null;
+            }
+
+            return {
+                id: x.id,
+                color: this.defaultDrawAnnotationColor,
+                borderWidth: 1,
+                bounds: boundingBox,
+            }
+        });
+
+        // Filter invalid data
+        const filteredDrawData = drawDataCollection.filter(x => x !== null) as drawData[];
+
+        this.drawAnnotator.drawCanvasRectangle(page, false, false, ...filteredDrawData);
     }
 
     public async fetchAnnotationsForPage(page: number)
