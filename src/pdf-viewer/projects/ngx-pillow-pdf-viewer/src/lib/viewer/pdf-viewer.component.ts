@@ -11,6 +11,7 @@ import TextAnnotator from "ngx-pillow-pdf-viewer/annotator/textAnnotator";
 import LayerManager from "ngx-pillow-pdf-viewer/annotator/layerManager";
 import DeferredPromise from "ngx-pillow-pdf-viewer/utils/deferredPromise";
 import { LocalisationService } from "ngx-pillow-pdf-viewer/utils/localisation/localisation.service";
+import DrawAnnotator from "ngx-pillow-pdf-viewer/annotator/drawAnnotator";
 
 export type annotationsSaveProviderDelegate = (annotation: Annotation) => void | Promise<void>;
 export type annotationsCommentSaveProviderDelegate = (annotation: Annotation, comment: AnnotationComment) => void | Promise<void>;
@@ -131,6 +132,10 @@ export class PdfViewerComponent implements OnInit {
         return this._textAnnotator;
     }
 
+    public get drawAnnotator() {
+        return this._drawAnnotator;
+    }
+
     public get annotationPagePromises() {
         return this._annotationPagePromises;
     }
@@ -143,6 +148,7 @@ export class PdfViewerComponent implements OnInit {
     private _pdfjsContext?: pdfjsContext;
     private _layerManager?: LayerManager;
     private _textAnnotator?: TextAnnotator;
+    private _drawAnnotator?: DrawAnnotator;
     private _disabledTools: toolType[] = [];
     private _hiddenTools: toolType[] = [];
     private _annotations: Annotation[] = [];
@@ -295,6 +301,7 @@ export class PdfViewerComponent implements OnInit {
         // Hook annotation classes
         this._layerManager = new LayerManager(this.loggingProvider, this.pdfjsContext);
         this._textAnnotator = new TextAnnotator(this.loggingProvider, this.pdfjsContext, this._layerManager);
+        this._drawAnnotator = new DrawAnnotator(this.loggingProvider, this.pdfjsContext, this._layerManager);
 
         // Hook document-specific events.
         this.pdfjsContext.documentMouseUp.subscribe(() => this.onDocumentMouseUp());
@@ -427,6 +434,7 @@ export class PdfViewerComponent implements OnInit {
 
         this.fetchAnnotationsForPage(pageNumber);
         this.textAnnotator.renderLayer(pageNumber);
+        this.drawAnnotator.renderLayers(pageNumber);
     }
 
     private async textLayerRendered({ pageNumber }: TextLayerRenderedEventType) {
@@ -506,14 +514,20 @@ export class PdfViewerComponent implements OnInit {
         this.assertFileLoaded();
 
         this.loggingProvider.sendDebug(`Focusing ${event.annotation.id}...`, this._defaultLogSource);
-        this.textAnnotator.colorById(this._defaultFocusAnnotateColor, event.annotation.id);
+        
+        if (event.annotation.type === 'text') {
+            this.textAnnotator.colorById(this._defaultFocusAnnotateColor, event.annotation.id);
+        }
     }
 
     private onAnnotationUnfocus(event: AnnotationUnfocusEventType) {
         this.assertFileLoaded();
 
         this.loggingProvider.sendDebug(`Unfocusing ${event.annotation.id}...`, this._defaultLogSource);
-        this.textAnnotator.colorById(this._defaultAnnotateColor, event.annotation.id);
+
+        if (event.annotation.type === 'text') {
+            this.textAnnotator.colorById(this._defaultAnnotateColor, event.annotation.id);
+        }
     }
 
     private onAnnotationEditorModeChanged(event: AnnotationEditorModeChangedEventType) {
@@ -654,6 +668,7 @@ export class PdfViewerComponent implements OnInit {
         pdfjsContext: PdfjsContext;
         layerManager: LayerManager;
         textAnnotator: TextAnnotator;
+        drawAnnotator: DrawAnnotator;
         annotationPagePromises: DeferredPromise[];
     } {
         this.assertPdfjsContextExists();
