@@ -1,6 +1,7 @@
 export type AnnotationState = 'pending' | 'completed';
 export type AnnotationType = 'text' | 'draw';
 export type ReferenceType = textSelection | boundingBox;
+export type PartialReferenceType = ReferenceType | Partial<boundingBox>;
 
 // Text types
 export type textSelection = { xpath: string, selectedText: string, selectedTextOffset: number; }

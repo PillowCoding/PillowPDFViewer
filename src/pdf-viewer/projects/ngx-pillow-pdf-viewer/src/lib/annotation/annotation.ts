@@ -1,4 +1,4 @@
-import { AnnotationState, AnnotationType, ReferenceType } from "./annotationTypes";
+import { AnnotationState, AnnotationType, PartialReferenceType, boundingBox } from "./annotationTypes";
 
 export class AnnotationComment {
     private _dateCreated: Date;
@@ -49,7 +49,7 @@ export default class Annotation {
     private _comments: Array<AnnotationComment>;
     private _page: number;
 
-    private _reference: ReferenceType | null;
+    public reference: PartialReferenceType | null;
 
     public get type() {
         return this._type;
@@ -71,12 +71,12 @@ export default class Annotation {
         return this._page;
     }
 
+    // The state is determined by the reference, and if that reference has valid parameters.
     public get state(): AnnotationState {
-        return this.reference ? 'completed' : 'pending';
-    }
-
-    public get reference() {
-        return this._reference;
+        return (this.type === 'text' && this.tryGetTextSelection()) ||
+            (this.type === 'draw' && this.tryGetCompletedBoundingBox()) ?
+                'completed' :
+                'pending';
     }
 
     constructor(
@@ -88,14 +88,7 @@ export default class Annotation {
         this._id = this.generateGuid();
         this._dateCreated = new Date();
         this._comments = [];
-        this._reference = null;
-    }
-
-    public setAnnotationReference(reference: ReferenceType) {
-        if (this.state != 'pending') {
-            throw new Error('It is not possible to add a reference to an annotation that already has one.');
-        }
-        this._reference = reference;
+        this.reference = null;
     }
 
     public serialize() {
@@ -127,7 +120,7 @@ export default class Annotation {
         
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         annotation._comments = (annotationObject.comments as any[]).map(x => AnnotationComment.fromObject(x));
-        annotation._reference = annotationObject.reference;
+        annotation.reference = annotationObject.reference;
         return annotation;
     }
 
@@ -139,12 +132,21 @@ export default class Annotation {
         return this.reference;
     }
 
-    public tryGetDrawSelection() {
+    public tryGetBoundingBox() {
         if (this.type !== 'draw' || !this.reference || !('start' in this.reference)) {
             return null;
         }
 
         return this.reference;
+    }
+
+    public tryGetCompletedBoundingBox() {
+        const boundingBox = this.tryGetBoundingBox();
+        if (!boundingBox?.start || !boundingBox.end) {
+            return null
+        }
+
+        return boundingBox as boundingBox;
     }
 
     private generateGuid()

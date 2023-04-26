@@ -47,11 +47,12 @@ export default class DrawAnnotator {
         const canvas = this.getDrawCanvas(source, pending);
         if (!canvas) {
             this._loggingProvider.sendWarning(`The draw canvas could not be found. Using source ${stringedSource}.`, this._defaultLogSource);
-            return;
+            return null;
         }
 
         this._loggingProvider.sendDebug(`Enabling draw canvas ${stringedSource}...`, this._defaultLogSource);
         canvas.style.pointerEvents = 'all';
+        return canvas;
     }
 
     public disableDrawCanvas<T extends layer | string | number>(
@@ -62,11 +63,12 @@ export default class DrawAnnotator {
         const canvas = this.getDrawCanvas(source, pending);
         if (!canvas) {
             this._loggingProvider.sendWarning(`The draw canvas could not be found. Using source ${stringedSource}.`, this._defaultLogSource);
-            return;
+            return null;
         }
 
         this._loggingProvider.sendDebug(`Disabling draw canvas ${stringedSource}...`, this._defaultLogSource);
         canvas.style.pointerEvents = 'none';
+        return canvas;
     }
     
     /**

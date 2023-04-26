@@ -334,9 +334,7 @@ export class PdfViewerComponent implements OnInit {
         }
 
         // Set the annotation reference. This also marks it as "complete", making it a regular array.
-        annotation.setAnnotationReference({
-            ...selectionContext
-        });
+        annotation.reference = { ...selectionContext };
 
         this.textAnnotator.annotateSelection(selectionContext, annotation.id);
         this.textAnnotator.colorById(this._defaultAnnotateColor, annotation.id);
@@ -377,15 +375,23 @@ export class PdfViewerComponent implements OnInit {
 
     private beginNewAnnotation(type: AnnotationType) {
         this.loggingProvider.sendDebug(`Start new ${type} annotation...`, this._defaultLogSource);
-        this.assertPdfjsContextExists();
+        this.assertFileLoaded();
 
         if (this.annotationMode !== 'none') {
             this.stopAnnotating();
         }
 
         this.setAnnotationMode(type);
-        const newAnnotation = new Annotation(type, this.pdfjsContext.page);
+
+        const targetPage = this.pdfjsContext.page;
+        const newAnnotation = new Annotation(type, targetPage);
         this._annotations.push(newAnnotation);
+
+        // Draw annotations have their pending canvas enabled for drawing.
+        if (type === 'draw') {
+            this.drawAnnotator.enableDrawCanvas(targetPage, true);
+        }
+
         this.pdfjsContext.dispatchEventBus('annotationStarted', {
             source: this,
             annotation: newAnnotation,
@@ -401,12 +407,20 @@ export class PdfViewerComponent implements OnInit {
     }
 
     public stopAnnotating() {
+        this.assertFileLoaded();
+
         if (this.annotationMode === 'none') {
             this.loggingProvider.sendWarning(`Tried to stop the annotating, but it is already stopped.`, this._defaultLogSource);
         }
 
         // Make sure to delete pending annotations if they exist.
         if (this.uncompletedAnnotation) {
+
+            // Make sure draw annotations have their pending canvas disabled.
+            if (this.uncompletedAnnotation.type === 'draw') {
+                this.drawAnnotator.disableDrawCanvas(this.uncompletedAnnotation.page, true);
+            }
+
             this.deleteAnnotation(this.uncompletedAnnotation);
         }
 
