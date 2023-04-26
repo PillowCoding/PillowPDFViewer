@@ -259,6 +259,13 @@ export class PdfViewerComponent implements OnInit {
         // Insert the new buttons. Start disabled by default as they are only used with loaded files.
         const annotateDrawButton = this.pdfjsContext.insertToolButton(annotateDrawId, 'beforebegin', 'textEditor', true);
         const annotateTextButton = this.pdfjsContext.insertToolButton(annotateTextId, 'beforebegin', annotateDrawId, true);
+
+        const drawTranslation = this._localisationService.Translate(this.toolTypeTranslationMap['drawAnnotator'].disabled);
+        this.pdfjsContext.setToolTitle('drawAnnotator', drawTranslation);
+
+        const textTranslation = this._localisationService.Translate(this.toolTypeTranslationMap['textAnnotator'].disabled);
+        this.pdfjsContext.setToolTitle('textAnnotator', textTranslation);
+
         this.pdfjsContext.injectStyle(textAnnotateStyle + drawAnnotateStyle + sharedStyle);
 
         annotateDrawButton.onclick = () => { throw new Error('Not implemented.') };
