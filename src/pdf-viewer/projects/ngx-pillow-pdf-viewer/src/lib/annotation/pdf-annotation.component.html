@@ -29,10 +29,10 @@
                         <lib-loading-ring></lib-loading-ring>
                     </div>
 
-                    <div *ngIf="!loading && annotation.state === 'completed'">
+                    <div *ngIf="!loading && annotation.state === 'completed'"
+                        class="delete-annotation" >
                         <lib-close-button libClickStopPropagation
-                            [useCustomColor]="true"
-                            class="delete-annotation" />
+                            [useCustomColor]="true" />
                     </div>
                 </div>
 
