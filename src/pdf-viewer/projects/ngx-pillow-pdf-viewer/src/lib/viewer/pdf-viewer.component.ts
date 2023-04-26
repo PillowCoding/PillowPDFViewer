@@ -720,6 +720,9 @@ export class PdfViewerComponent implements OnInit {
 
         // Filter invalid data
         const filteredDrawData = drawDataCollection.filter(x => x !== null) as drawData[];
+        if (filteredDrawData.length === 0) {
+            return;
+        }
 
         this.drawAnnotator.drawCanvasRectangle(page, false, false, ...filteredDrawData);
     }
