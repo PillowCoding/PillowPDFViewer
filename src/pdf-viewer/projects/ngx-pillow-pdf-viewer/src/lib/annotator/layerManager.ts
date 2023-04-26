@@ -9,6 +9,8 @@ export type pageLayers = {
 export type layer = {
     id: string;
     page: number;
+    width: number;
+    height: number;
     element: HTMLDivElement;
 }
 
@@ -60,6 +62,8 @@ export default class LayerManager {
         const layer: layer = {
             id,
             page,
+            width,
+            height,
             element
         }
 
