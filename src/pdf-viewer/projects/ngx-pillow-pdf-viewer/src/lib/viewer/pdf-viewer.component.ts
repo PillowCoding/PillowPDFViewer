@@ -256,6 +256,7 @@ export class PdfViewerComponent implements OnInit {
             }
         `;
 
+        // Insert the new buttons. Start disabled by default as they are only used with loaded files.
         const annotateDrawButton = this.pdfjsContext.insertToolButton(annotateDrawId, 'beforebegin', 'textEditor', true);
         const annotateTextButton = this.pdfjsContext.insertToolButton(annotateTextId, 'beforebegin', annotateDrawId, true);
         this.pdfjsContext.injectStyle(textAnnotateStyle + drawAnnotateStyle + sharedStyle);
@@ -264,10 +265,10 @@ export class PdfViewerComponent implements OnInit {
         annotateTextButton.onclick = () => this.beginNewAnnotation('text');
 
         // Collect the tools to disable.
-        // The text editor and draw editor are disabled after the initial render.
-        // This is due to the fact that these are manually disabled by the viewer.
-        const toolsToDisable = this._disabledTools.filter(x => x !== 'textEditor' && x !== 'drawEditor');
-
+        // The text and draw editor/annotator are disabled after the initial render.
+        // This is due to the fact that the editor buttons are manually disabled by the viewer, and the annotator buttons can only be used with loaded files.
+        // The editor buttons are enabled with a different EventBus event, and the annotator buttons are enabled when a file is loaded.
+        const toolsToDisable = this._disabledTools.filter(x => x !== 'textEditor' && x !== 'drawEditor' && x !== 'textAnnotator' && x !== 'drawAnnotator');
         for (const toolId of toolsToDisable) {
 
             const translation = this._localisationService.Translate(this.toolTypeTranslationMap[toolId].disabled);
@@ -441,6 +442,19 @@ export class PdfViewerComponent implements OnInit {
 
         this.assertPdfjsContextExists();
 
+        // Enable the text and draw annotator if not disabled.
+        const disabledAnnotationButtons = this._disabledTools.filter(x => x === 'textAnnotator' || x === 'drawAnnotator');
+        if (!disabledAnnotationButtons.includes('drawAnnotator')) {
+            const enabledTranslation = this._localisationService.Translate(this.toolTypeTranslationMap["drawAnnotator"].enabled);
+            this.pdfjsContext.setToolDisabled("drawAnnotator", false);
+            this.pdfjsContext.setToolTitle("drawAnnotator", enabledTranslation);
+        }
+        if (!disabledAnnotationButtons.includes('textAnnotator')) {
+            const enabledTranslation = this._localisationService.Translate(this.toolTypeTranslationMap["textAnnotator"].enabled);
+            this.pdfjsContext.setToolDisabled("textAnnotator", false);
+            this.pdfjsContext.setToolTitle("textAnnotator", enabledTranslation);
+        }
+
         const pageCount = this.pdfjsContext.pages?.length;
         if (!pageCount) {
             throw new Error('Expected the page count to exist.');
@@ -571,12 +585,14 @@ export class PdfViewerComponent implements OnInit {
         this.loggingProvider.sendDebug(`Fetching annotations for page ${page}...`, this._defaultLogSource);
 
         // Disable the annotation buttons if not already disabled.
-        if (!this.pdfjsContext.getToolDisabled("drawAnnotator")) {
+        const drawAnnotatorDisabled = this.pdfjsContext.getToolDisabled("drawAnnotator");
+        const textAnnotatorDisabled = this.pdfjsContext.getToolDisabled("textAnnotator");
+        if (!drawAnnotatorDisabled) {
             const disabledTranslation = this._localisationService.Translate(this.toolTypeTranslationMap["drawAnnotator"].disabled);
             this.pdfjsContext.setToolDisabled("drawAnnotator", true);
             this.pdfjsContext.setToolTitle("drawAnnotator", disabledTranslation);
         }
-        if (!this.pdfjsContext.getToolDisabled("textAnnotator")) {
+        if (!textAnnotatorDisabled) {
             const disabledTranslation = this._localisationService.Translate(this.toolTypeTranslationMap["textAnnotator"].disabled);
             this.pdfjsContext.setToolDisabled("textAnnotator", true);
             this.pdfjsContext.setToolTitle("textAnnotator", disabledTranslation);
@@ -584,14 +600,14 @@ export class PdfViewerComponent implements OnInit {
         
         const annotations = await this.annotationsProvider(page);
 
-        // Enable the annotation buttons if not explicitly disabled through the settings.
+        // Enable the annotation buttons if not explicitly disabled through the settings, and if it wasn't already disabled.
         const disabledAnnotationButtons = this._disabledTools.filter(x => x === 'textAnnotator' || x === 'drawAnnotator');
-        if (!disabledAnnotationButtons.includes('drawAnnotator')) {
+        if (!drawAnnotatorDisabled && !disabledAnnotationButtons.includes('drawAnnotator')) {
             const enabledTranslation = this._localisationService.Translate(this.toolTypeTranslationMap["drawAnnotator"].enabled);
             this.pdfjsContext.setToolDisabled("drawAnnotator", false);
             this.pdfjsContext.setToolTitle("drawAnnotator", enabledTranslation);
         }
-        if (!disabledAnnotationButtons.includes('textAnnotator')) {
+        if (!textAnnotatorDisabled && !disabledAnnotationButtons.includes('textAnnotator')) {
             const enabledTranslation = this._localisationService.Translate(this.toolTypeTranslationMap["textAnnotator"].enabled);
             this.pdfjsContext.setToolDisabled("textAnnotator", false);
             this.pdfjsContext.setToolTitle("textAnnotator", enabledTranslation);
