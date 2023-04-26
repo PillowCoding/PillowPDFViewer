@@ -3,7 +3,7 @@
     </iframe>
 
     <lib-pdf-sidebar #sidebar
-        *ngIf="pdfjsContext?.viewerState === 'loaded'"
+        *ngIf="pdfjsContext?.viewerState === 'loaded' && sidebarEnabled"
         [pdfjsContext]="pdfjsContext"
         [loggingProvider]="loggingProvider"
         [annotationsProvider]="fetchSidebarAnnotationsForPage">

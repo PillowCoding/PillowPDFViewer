@@ -26,7 +26,7 @@ export class PdfViewerComponent implements OnInit {
     /** Annotation info that is displayed when annotating. */
     @ViewChild('annotateInfo', { static: true }) private _annotateInfo!: ElementRef<HTMLDivElement>;
 
-    /** The sidebar of the viewer */
+    /** The sidebar of the viewer. Will be undefined if `sidebarEnabled` is false. */
     @ViewChild('sidebar') private _sidebar?: PdfSidebarComponent;
 
     /** The logging provider that will be used to send log messages. */
@@ -94,6 +94,8 @@ export class PdfViewerComponent implements OnInit {
         return this._annotations.filter(x => x.state !== 'completed')[0];
     }
 
+    @Input() public sidebarEnabled = true;
+
     /** The provider that will fetch annotations asynchronously. */
     @Input() public annotationsProvider?: annotationsProviderDelegate;
 
@@ -111,10 +113,6 @@ export class PdfViewerComponent implements OnInit {
         this.assertPdfjsContextExists();
         if (this.pdfjsContext.viewerState !== 'loaded') {
             throw new Error('The sidebar has not been loaded yet.');
-        }
-
-        if (!this._sidebar) {
-            throw new Error('The sidebar component could not be found.');
         }
 
         return this._sidebar;
@@ -312,11 +310,18 @@ export class PdfViewerComponent implements OnInit {
         this.textAnnotator.colorById(this._defaultAnnotateColor, annotation.id);
 
         this.stopAnnotating();
-        this.sidebarComponent.expand();
+
+        // Check if the sidebar exists if enabled.
+        if (!this.sidebarComponent && this.sidebarEnabled) {
+            throw new Error('Expected the sidebar component to exist when enabled.');
+        }
+
+        this.sidebarComponent?.expand();
         this.stateHasChanged();
 
-        const uncompletedAnnotationComponent = this.sidebarComponent.annotationComponents.find(x => x.annotation == annotation);
-        if (!uncompletedAnnotationComponent) {
+        // Get the annotation component. This should also exist if the sidebar is enabled.
+        const uncompletedAnnotationComponent = this.sidebarComponent?.annotationComponents.find(x => x.annotation == annotation);
+        if (this.sidebarEnabled && !uncompletedAnnotationComponent) {
             throw new Error(`Expected the annotation component for ${annotation.id} to exist.`);
         }
 
@@ -324,14 +329,18 @@ export class PdfViewerComponent implements OnInit {
             this.loggingProvider.sendWarning(`Please provide a value for \`annotationsSaveProvider\` in order to save annotations.`, this._defaultLogSource);
         }
         else {
-            uncompletedAnnotationComponent.loading = true;
-            this.stateHasChanged();
+            if (uncompletedAnnotationComponent) {
+                uncompletedAnnotationComponent.loading = true;
+                this.stateHasChanged();
+            }
 
             await this.annotationsSaveProvider(annotation);
-            uncompletedAnnotationComponent.loading = false;
+            
+            if (uncompletedAnnotationComponent) {
+                uncompletedAnnotationComponent.loading = false;
+                this.stateHasChanged();
+            }
         }
-
-        this.stateHasChanged();
     }
 
     private beginNewAnnotation(type: AnnotationType) {
@@ -434,6 +443,10 @@ export class PdfViewerComponent implements OnInit {
     }
 
     private async onAnnotationCommentSubmit(event: AnnotationCommentSubmitEventType) {
+
+        if (!this.sidebarComponent) {
+            throw new Error('Unable to submit comment: sidebar component was not found.');
+        }
 
         const annotationComponent = this.sidebarComponent.annotationComponents.find(x => x.annotation === event.annotation);
         if (!annotationComponent) {
