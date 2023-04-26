@@ -80,10 +80,11 @@ export default class TextAnnotator {
 
     public colorById(color: string, ...ids: string[]) {
         this._pdfjsContext.assertPdfViewerApplicationExists();
-        const elements = Array.from(this._pdfjsContext.pdfjsDocument.querySelectorAll(`[${this._annotatedTextAttribute}]`));
-
+        
         for (const id of ids) {
+            const elements = Array.from(this._pdfjsContext.pdfjsDocument.querySelectorAll(`[${this._annotatedTextAttribute}="${id}"]`));
             this._loggingProvider.sendDebug(`Coloring ${id} ${color} (elements: ${elements.length})...`, this._defaultLogSource);
+
             if (elements.length === 0) {
                 this._loggingProvider.sendWarning(`Could not color ${id}: no elements found.`, this._defaultLogSource);
                 return;
@@ -95,17 +96,21 @@ export default class TextAnnotator {
         }
     }
 
-    public removeById(id: string) {
+    public removeById(...ids: string[]) {
         this._pdfjsContext.assertPdfViewerApplicationExists();
-        const elements = Array.from(this._pdfjsContext.pdfjsDocument.querySelectorAll(`[${this._annotatedTextAttribute}]`));
-        this._loggingProvider.sendDebug(`Removing ${id} (elements: ${elements.length})...`, this._defaultLogSource);
-        if (elements.length === 0) {
-            this._loggingProvider.sendWarning(`Could not remove ${id}: no elements found.`, this._defaultLogSource);
-            return;
-        }
+        
 
-        for (const element of elements) {
-            element.remove();
+        for (const id of ids) {
+            const elements = Array.from(this._pdfjsContext.pdfjsDocument.querySelectorAll(`[${this._annotatedTextAttribute}="${id}"]`));
+            this._loggingProvider.sendDebug(`Removing ${id} (elements: ${elements.length})...`, this._defaultLogSource);
+            if (elements.length === 0) {
+                this._loggingProvider.sendWarning(`Could not remove ${id}: no elements found.`, this._defaultLogSource);
+                return;
+            }
+
+            for (const element of elements) {
+                element.remove();
+            }
         }
     }
 

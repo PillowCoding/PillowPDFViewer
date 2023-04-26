@@ -343,7 +343,7 @@ export class PdfViewerComponent implements OnInit {
         }
 
         this.setAnnotationMode(type);
-        const newAnnotation = new Annotation(type, 1);
+        const newAnnotation = new Annotation(type, this.pdfjsContext.page);
         this._annotations.push(newAnnotation);
         this.pdfjsContext.dispatchEventBus('annotationStarted', {
             source: this,
