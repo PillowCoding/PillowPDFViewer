@@ -10,6 +10,7 @@ import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf
 import TextAnnotator from "ngx-pillow-pdf-viewer/annotator/textAnnotator";
 import LayerManager from "ngx-pillow-pdf-viewer/annotator/layerManager";
 import DeferredPromise from "ngx-pillow-pdf-viewer/utils/deferredPromise";
+import { LocalisationService } from "ngx-pillow-pdf-viewer/utils/localisation/localisation.service";
 
 export type annotationsSaveProviderDelegate = (annotation: Annotation) => void | Promise<void>;
 export type annotationsCommentSaveProviderDelegate = (annotation: Annotation, comment: AnnotationComment) => void | Promise<void>;
@@ -159,8 +160,21 @@ export class PdfViewerComponent implements OnInit {
     // Keeps an array of promises that can be awaited to wait for annotations to be fetched.
     private _annotationPagePromises?: DeferredPromise[];
 
+    // TODO: Maybe improve this.
+    /** Represents an easy way to determine the translation key of the various build in toolbar buttons, when setting the title. */
+    private readonly toolTypeTranslationMap: { [key in toolType]: { enabled: string, disabled: string }; } = {
+        'openFile': { enabled: 'openFile.enabled', disabled: 'openFile.disabled'},
+        'printing': { enabled: 'printing.enabled', disabled: 'printing.disabled'},
+        'downloadPdf': { enabled: 'downloadPdf.enabled', disabled: 'downloadPdf.disabled'},
+        'textEditor': { enabled: 'textEditor.enabled', disabled: 'textEditor.disabled'},
+        'drawEditor': { enabled: 'drawEditor.enabled', disabled: 'drawEditor.disabled'},
+        'textAnnotator': { enabled: 'textAnnotator.enabled', disabled: 'textAnnotator.disabled'},
+        'drawAnnotator': { enabled: 'drawAnnotator.enabled', disabled: 'drawAnnotator.disabled'},
+    };
+
     constructor(
-        private changeDetector: ChangeDetectorRef
+        private readonly changeDetector: ChangeDetectorRef,
+        private readonly _localisationService: LocalisationService,
     ) {
         this.fetchSidebarAnnotationsForPage = this.fetchSidebarAnnotationsForPage.bind(this);
     }
@@ -255,7 +269,10 @@ export class PdfViewerComponent implements OnInit {
         const toolsToDisable = this._disabledTools.filter(x => x !== 'textEditor' && x !== 'drawEditor');
 
         for (const toolId of toolsToDisable) {
+
+            const translation = this._localisationService.Translate(this.toolTypeTranslationMap[toolId].disabled);
             this.pdfjsContext.setToolDisabled(toolId);
+            this.pdfjsContext.setToolTitle(toolId, translation);
         }
 
         // Hide the tools that have been requested to be hidden.
@@ -395,9 +412,15 @@ export class PdfViewerComponent implements OnInit {
 
         this.assertPdfjsContextExists();
 
+        const drawTranslation = this._localisationService.Translate(this.toolTypeTranslationMap["drawAnnotator"].enabled);
+        const textTranslation = this._localisationService.Translate(this.toolTypeTranslationMap["textAnnotator"].enabled);
+
         // Enable the annotation buttons
-        this.pdfjsContext.setToolDisabled(annotateDrawId, false);
-        this.pdfjsContext.setToolDisabled(annotateTextId, false);
+        this.pdfjsContext.setToolDisabled("drawAnnotator", false);
+        this.pdfjsContext.setToolDisabled("textAnnotator", false);
+        
+        this.pdfjsContext.setToolTitle("drawAnnotator", drawTranslation);
+        this.pdfjsContext.setToolTitle("textAnnotator", textTranslation);
 
         this.loggingProvider.sendDebug('Pages have been loaded.', this._defaultLogSource)
     }
@@ -495,7 +518,11 @@ export class PdfViewerComponent implements OnInit {
         // If the text editor or draw editor must be disabled, disable them if the annotation mode changed to not disabled.
         const toolsToDisable = this._disabledTools.filter(x => x === 'textEditor' || x === 'drawEditor');
         for (const toolId of toolsToDisable) {
+            
+            const translation = this._localisationService.Translate(this.toolTypeTranslationMap[toolId].disabled);
+
             this.pdfjsContext.setToolDisabled(toolId);
+            this.pdfjsContext.setToolTitle(toolId, translation);
         }
     }
 

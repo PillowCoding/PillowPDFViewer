@@ -27,7 +27,7 @@
                 <lib-loading-ring></lib-loading-ring>
             </div>
             <div *ngIf="!isLoading(currentShownPage) && annotations.length === 0">
-                <p class="no-annotations">There are no annotations on this page.</p>
+                <p class="no-annotations">{{'annotations.nonePage' | translate}}</p>
             </div>
             <ol *ngIf="!isLoading(currentShownPage)">
                 <li *ngFor="let annotation of annotations">

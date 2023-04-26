@@ -2,21 +2,22 @@
     "sidebar.expand": "Expand",
     "sidebar.collapse": "Collapse",
 
-    "annotations.singular": "{0} annotation",
-    "annotations.plural": "{0} annotations",
+    "annotate.title": "Annotating...",
+    "annotate.cancelButton": "Cancel",
+    
     "annotations.nonePage": "There are no annotations on this page.",
     "annotations.post": "Post",
 
-    "textAnnotate.enabled": "Annotate by text",
-    "drawAnnotate.enabled": "Annotate by drawing",
+    "textAnnotator.enabled": "New text annotation",
+    "drawAnnotator.enabled": "New draw annotation",
     "openFile.enabled": "Open",
     "printing.enabled": "Print",
     "downloadPdf.enabled": "Save",
     "textEditor.enabled": "Text",
     "drawEditor.enabled": "Draw",
 
-    "textAnnotate.disabled": "Annotate by text has been disabled for this file.",
-    "drawAnnotate.disabled": "Annotate by drawing has been disabled for this file.",
+    "textAnnotator.disabled": "Annotate by text has been disabled.",
+    "drawAnnotator.disabled": "Annotate by drawing has been disabled.",
     "openFile.disabled": "Opening a file is disabled.",
     "printing.disabled": "Printing is disabled.",
     "downloadPdf.disabled": "Saving is disabled.",

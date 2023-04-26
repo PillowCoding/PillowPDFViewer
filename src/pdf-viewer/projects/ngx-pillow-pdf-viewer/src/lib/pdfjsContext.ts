@@ -207,6 +207,24 @@ export default class PdfjsContext
         });
     }
 
+    public setToolTitle(typeOrId: toolType | Omit<string, toolType>, title: string) {
+        this._loggingProvider.sendDebug(`Setting title of ${typeOrId.toString()} to ${title}...`, this._defaultLogSource);
+        this.assertViewerLoaded();
+
+        // Determine the relevant ids to set the title on.
+        const toolIds = this.getToolButtonIds(typeOrId);
+
+        for (const toolId of toolIds) {
+            const element = this.pdfjsDocument.getElementById(toolId);
+            if (!element) {
+                this._loggingProvider.sendWarning(`Tool element ${toolId} could not be found.`, this._defaultLogSource);
+                continue;
+            }
+
+            element.title = title;
+        }
+    }
+
     public insertToolButton(id: string, where: InsertPosition, whereReference: toolType | Omit<string, toolType>, startDisabled = false) {
         this.assertViewerLoaded();
         

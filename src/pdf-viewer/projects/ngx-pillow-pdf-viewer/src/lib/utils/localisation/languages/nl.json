@@ -2,21 +2,22 @@
     "sidebar.expand": "Vergroot",
     "sidebar.collapse": "Sluit",
 
-    "annotations.singular": "{0} annotatie",
-    "annotations.plural": "{0} annotaties",
+    "annotate.title": "Annoteren...",
+    "annotate.cancelButton": "Annuleer",
+
     "annotations.nonePage": "Deze pagina bevat geen annotaties.",
     "annotations.post": "Plaats",
 
-    "textAnnotate.enabled": "Tekst annotatie",
-    "drawAnnotate.enabled": "Teken annotatie",
+    "textAnnotator.enabled": "Nieuwe tekst annotatie",
+    "drawAnnotator.enabled": "Nieuwe teken annotatie",
     "openFile.enabled": "Open",
     "printing.enabled": "Print",
     "downloadPdf.enabled": "Opslaan",
     "textEditor.enabled": "Tekst",
     "drawEditor.enabled": "Teken",
 
-    "textAnnotate.disabled": "Tekst annotaties is niet mogelijk.",
-    "drawAnnotate.disabled": "Teken annotaties is niet mogelijk.",
+    "textAnnotator.disabled": "Nieuwe tekst annotaties is niet mogelijk.",
+    "drawAnnotator.disabled": "Nieuwe teken annotaties is niet mogelijk.",
     "openFile.disabled": "Het openen van bestanden is niet mogelijk.",
     "printing.disabled": "Het uitprinten van het bestand is niet mogelijk.",
     "downloadPdf.disabled": "Het opslaan van het bestand is niet mogelijk.",
