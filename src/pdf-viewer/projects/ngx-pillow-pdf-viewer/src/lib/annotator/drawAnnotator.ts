@@ -38,6 +38,36 @@ export default class DrawAnnotator {
             this._layerManager.applyLayer(layer);
         }
     }
+
+    public enableDrawCanvas<T extends layer | string | number>(
+        source: T,
+        pending: T extends number ? boolean : never
+    ) {
+        const stringedSource = typeof source === 'object' ? source.id : source.toString();
+        const canvas = this.getDrawCanvas(source, pending);
+        if (!canvas) {
+            this._loggingProvider.sendWarning(`The draw canvas could not be found. Using source ${stringedSource}.`, this._defaultLogSource);
+            return;
+        }
+
+        this._loggingProvider.sendDebug(`Enabling draw canvas ${stringedSource}...`, this._defaultLogSource);
+        canvas.style.pointerEvents = 'all';
+    }
+
+    public disableDrawCanvas<T extends layer | string | number>(
+        source: T,
+        pending: T extends number ? boolean : never
+    ) {
+        const stringedSource = typeof source === 'object' ? source.id : source.toString();
+        const canvas = this.getDrawCanvas(source, pending);
+        if (!canvas) {
+            this._loggingProvider.sendWarning(`The draw canvas could not be found. Using source ${stringedSource}.`, this._defaultLogSource);
+            return;
+        }
+
+        this._loggingProvider.sendDebug(`Disabling draw canvas ${stringedSource}...`, this._defaultLogSource);
+        canvas.style.pointerEvents = 'none';
+    }
     
     /**
      * 
@@ -75,7 +105,7 @@ export default class DrawAnnotator {
                 layer = source;
         }
 
-        return layer?.element.querySelector(this._drawCanvasClassName) as HTMLCanvasElement | null;
+        return layer?.element.querySelector(`.${this._drawCanvasClassName}`) as HTMLCanvasElement | null;
     }
 
     private insertCanvas(layer: layer) {
@@ -94,6 +124,7 @@ export default class DrawAnnotator {
             .${this._drawCanvasClassName} {
                 width: 100%;
                 height: 100%;
+                cursor: crosshair;
             }
         `;
 
