@@ -30,7 +30,7 @@ export class PdfSidebarComponent implements OnInit {
     @ViewChildren('annotation') private _annotationComponents!: QueryList<PdfAnnotationComponent>;
     
     private readonly _minExpandedSidebarWidth = 325;
-    private readonly _maxExpandedSidebarWidth = 600;
+    private readonly _maxExpandedSidebarWidth = 1000;
 
     private readonly _defaultLogSource = PdfSidebarComponent.name;
 
