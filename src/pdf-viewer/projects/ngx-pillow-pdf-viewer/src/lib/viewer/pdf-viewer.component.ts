@@ -61,6 +61,12 @@ export class PdfViewerComponent implements OnInit {
         this._disabledTools = Array.isArray(tools) ? tools : [tools];
     }
 
+    /** Represents tools to hide in the viewer. */
+    @Input()
+    public set hiddenTools(tools: toolType | toolType[]) {
+        this._hiddenTools = Array.isArray(tools) ? tools : [tools];
+    }
+
     /** If the annotations are retrieved synchronously, this input can be used to give them before the pdf has loaded.
      * Note that any asynchronous fetches should be done using the `annotationProvider` input.
      */
@@ -139,6 +145,7 @@ export class PdfViewerComponent implements OnInit {
     private _layerManager?: LayerManager;
     private _textAnnotator?: TextAnnotator;
     private _disabledTools: toolType[] = [];
+    private _hiddenTools: toolType[] = [];
     private _annotations: Annotation[] = [];
     private _annotationMode: AnnotationType | 'none' = 'none';
 
@@ -251,6 +258,11 @@ export class PdfViewerComponent implements OnInit {
 
         for (const toolId of toolsToDisable) {
             this.pdfjsContext.setToolDisabled(toolId);
+        }
+
+        // Hide the tools that have been requested to be hidden.
+        for (const toolId of this._hiddenTools) {
+            this.pdfjsContext.setToolHidden(toolId);
         }
     }
 

@@ -172,6 +172,41 @@ export default class PdfjsContext
         });
     }
 
+    public setToolHidden(typeOrId: toolType | Omit<string, toolType>, hide = true) {
+        this._loggingProvider.sendDebug(`${hide ? 'Hiding' : 'Unhiding'} ${typeOrId.toString()}...`, this._defaultLogSource);
+        this.assertViewerLoaded();
+
+        // Determine the relevant ids to hide/unhide.
+        const toolIds = this.getToolButtonIds(typeOrId);
+
+        for (const toolId of toolIds) {
+            const element = this.pdfjsDocument.getElementById(toolId);
+            if (!element) {
+                this._loggingProvider.sendWarning(`Tool element ${toolId} could not be found.`, this._defaultLogSource);
+                continue;
+            }
+
+            element.toggleAttribute('hidden', hide);
+            element.ariaHidden = String(hide);
+        }
+    }
+
+    public getToolHidden(typeOrId: toolType | Omit<string, toolType>) {
+        // Determine the relevant ids to check.
+        const toolIds = this.getToolButtonIds(typeOrId);
+
+        return toolIds.every(toolId => {
+            this.assertViewerLoaded();
+            const element = this.pdfjsDocument.getElementById(toolId);
+            if (!element) {
+                this._loggingProvider.sendWarning(`Tool element ${toolId} could not be found. Assuming hidden.`, this._defaultLogSource);
+                return true;
+            }
+
+            return element.ariaHidden === String(true);
+        });
+    }
+
     public insertToolButton(id: string, where: InsertPosition, whereReference: toolType | Omit<string, toolType>, startDisabled = false) {
         this.assertViewerLoaded();
         
