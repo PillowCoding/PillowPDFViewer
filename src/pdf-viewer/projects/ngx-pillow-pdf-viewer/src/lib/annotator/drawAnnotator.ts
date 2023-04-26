@@ -74,12 +74,8 @@ export default class DrawAnnotator {
             default:
                 layer = source;
         }
-        
-        if (!layer) {
-            return null;
-        }
 
-        return layer.element.querySelector(this._drawCanvasClassName) as HTMLCanvasElement | null;
+        return layer?.element.querySelector(this._drawCanvasClassName) as HTMLCanvasElement | null;
     }
 
     private insertCanvas(layer: layer) {
