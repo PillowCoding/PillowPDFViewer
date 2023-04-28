@@ -72,6 +72,11 @@ export class PdfSidebarComponent implements OnInit {
         return this.pdfjsContext.page;
     }
 
+    public get hasFocusedAnnotations() {
+        this.assertParametersSet();
+        return this.annotations.some(x => x.focused);
+    }
+
     constructor(
         private changeDetector: ChangeDetectorRef
     ) {
@@ -150,6 +155,12 @@ export class PdfSidebarComponent implements OnInit {
         this.loggingProvider.sendDebug('Collapsing sidebar...', this._defaultLogSource);
         this._expanded = false;
         this.stateHasChanged();
+    }
+
+    public unfocusAll() {
+        for (const annotation of this.annotationComponents) {
+            annotation.unFocus();
+        }
     }
 
     public sidebarWidthShouldResize(difference: number) {

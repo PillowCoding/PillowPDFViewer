@@ -9,7 +9,7 @@
 
         <div class="flex">
             <button *ngIf="!expanded"
-                class="toolbar-button"
+                class="toolbar-button icon"
                 id="expand-sidebar"
                 [disabled]="pdfjsContext?.fileState !== 'loaded'"
                 [title]="'expand'"
@@ -18,6 +18,12 @@
 
             <lib-close-button *ngIf="expanded"
                 (closed)="collapse()"/>
+
+            <button *ngIf="expanded && hasFocusedAnnotations"
+                (click)="unfocusAll()"
+                class="toolbar-button unfocus-all">
+                Unfocus all
+            </button>
         </div>
 
         <div *ngIf="canShowAnnotations"

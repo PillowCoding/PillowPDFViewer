@@ -126,9 +126,39 @@ export class PdfAnnotationComponent implements OnInit {
 
     public toggleFocus() {
         this.assertParametersSet();
-        this.annotation.focused = !this.annotation.focused;
+        if (this.annotation.focused) {
+            this.unFocus();
+            return;
+        }
 
-        const event: EventBusEventType = this.annotation.focused ? 'annotationFocus' : 'annotationUnfocus';
+        this.focus();
+    }
+
+    public focus() {
+        this.assertParametersSet();
+
+        if (this.annotation.focused) {
+            return;
+        }
+
+        this.annotation.focused = true;
+        const event: EventBusEventType = 'annotationFocus';
+        this.pdfjsContext.dispatchEventBus(event, {
+            source: this,
+            annotation: this.annotation,
+        });
+        this.stateHasChanged();
+    }
+
+    public unFocus() {
+        this.assertParametersSet();
+
+        if (!this.annotation.focused) {
+            return;
+        }
+        
+        this.annotation.focused = false;
+        const event: EventBusEventType = 'annotationUnfocus';
         this.pdfjsContext.dispatchEventBus(event, {
             source: this,
             annotation: this.annotation,

@@ -700,6 +700,7 @@ export class PdfViewerComponent implements OnInit {
 
         this.loggingProvider.sendDebug(`Focusing ${annotation.id}...`, this._defaultLogSource);
         this.rerenderAnnotationsPage(annotation.page);
+        this.stateHasChanged();
     }
 
     private onAnnotationUnfocus({ annotation }: AnnotationUnfocusEventType) {
@@ -707,6 +708,7 @@ export class PdfViewerComponent implements OnInit {
 
         this.loggingProvider.sendDebug(`Unfocusing ${annotation.id}...`, this._defaultLogSource);
         this.rerenderAnnotationsPage(annotation.page);
+        this.stateHasChanged();
     }
 
     private onAnnotationEditorModeChanged(event: AnnotationEditorModeChangedEventType) {

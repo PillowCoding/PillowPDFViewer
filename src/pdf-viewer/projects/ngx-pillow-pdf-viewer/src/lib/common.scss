@@ -42,8 +42,6 @@
 .toolbar-button
 {
     background: none;
-    width: 28px;
-    height: 28px;
     margin: 2px 1px;
     padding: 2px 6px 0;
     border: none;
@@ -57,27 +55,32 @@
     position: relative;
     float: left;
 
+    &.icon {
+        width: 28px;
+        height: 28px;
+
+        &::before {
+            opacity: var(--toolbar-icon-opacity);
+            top: 6px;
+            left: 6px;
+            position: absolute;
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            content: "";
+            background-color: black;
+            mask-size: cover;
+            mask-repeat: no-repeat;
+            mask-position: center;
+        }
+    }
+
     &[disabled] {
         opacity: 0.5;
     }
 
     &:hover {
         background-color: var(--button-background-hover-color);
-    }
-
-    &::before {
-        opacity: var(--toolbar-icon-opacity);
-        top: 6px;
-        left: 6px;
-        position: absolute;
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        content: "";
-        background-color: black;
-        mask-size: cover;
-        mask-repeat: no-repeat;
-        mask-position: center;
     }
 }
 
