@@ -360,8 +360,9 @@ export class PdfViewerComponent implements OnInit {
         this.sidebarComponent?.expand();
         this.stateHasChanged();
 
-        // Draw directly instead of rerendering the page.
+        // Color directly instead of rerendering the page.
         // This will show the resulting rectangle even when there are focussed annotations that are shown.
+        // TODO: Rerender anyway and automatically focus the annotation in order to keep it rendered?
         this.textAnnotator.colorById(this.defaultTextAnnotationColor, annotation.id);
         this.saveAnnotation(annotation);
     }
@@ -546,8 +547,9 @@ export class PdfViewerComponent implements OnInit {
             this.sidebarComponent?.expand();
             this.stateHasChanged();
 
-            // Draw directly instead of rerendering the page.
+            // Color directly instead of rerendering the page.
             // This will show the resulting rectangle even when there are focussed annotations that are shown.
+            // TODO: Rerender anyway and automatically focus the annotation in order to keep it rendered?
             this.drawAnnotator.drawCanvasRectangle(annotation.page, false, false, drawData);
             this.saveAnnotation(annotation);
         }
