@@ -108,11 +108,14 @@ export class PdfViewerComponent implements OnInit {
 
     @Input() public sidebarEnabled = true;
 
-    @Input() public defaultTextAnnotationColor = '#00800040';
-    @Input() public defaultTextAnnotationFocusColor = '#FF802040';
-    @Input() public defaultPendingDrawAnnotationColor = '#00FF00';
+    @Input() public defaultTextAnnotationColor = '#FFA50040';
     @Input() public defaultDrawAnnotationColor = '#FFA500';
+    @Input() public defaultTextAnnotationFocusColor = '#FF450040';
     @Input() public defaultDrawAnnotationFocusColor = '#FF4500';
+
+    // Default color matches Windows Chrome's background color when selecting text.
+    // (Specifically Chrome 26.0.1410.64 m Windows 8+)
+    @Input() public defaultPendingDrawAnnotationColor = '#3297FD';
 
     /** The provider that will fetch annotations asynchronously. */
     @Input() public annotationsProvider?: annotationsProviderDelegate;
