@@ -1,16 +1,13 @@
+import generateGuid from "ngx-pillow-pdf-viewer/utils/generateGuid";
 import { AnnotationState, AnnotationType, PartialReferenceType, boundingBox } from "./annotationTypes";
 
 export class AnnotationComment {
+
     private _dateCreated: Date;
     private _content: string;
-
-    public get dateCreated() {
-        return this._dateCreated;
-    }
-
-    public get content() {
-        return this._content;
-    }
+    
+    public get dateCreated() { return this._dateCreated; }
+    public get content() { return this._content; }
 
     constructor(content: string) {
         this._content = content;
@@ -52,25 +49,11 @@ export default class Annotation {
     public reference: PartialReferenceType | null;
     public focused = false;
 
-    public get type() {
-        return this._type;
-    }
-
-    public get id() {
-        return this._id;
-    }
-
-    public get dateCreated() {
-        return this._dateCreated;
-    }
-
-    public get comments() {
-        return this._comments;
-    }
-
-    public get page() {
-        return this._page;
-    }
+    public get type() { return this._type; }
+    public get id() { return this._id; }
+    public get dateCreated() { return this._dateCreated; }
+    public get comments() { return this._comments; }
+    public get page() { return this._page; }
 
     // The state is determined by the reference, and if that reference has valid parameters.
     public get state(): AnnotationState {
@@ -86,7 +69,7 @@ export default class Annotation {
     {
         this._type = type;
         this._page = page;
-        this._id = this.generateGuid();
+        this._id = generateGuid();
         this._dateCreated = new Date();
         this._comments = [];
         this.reference = null;
@@ -148,17 +131,5 @@ export default class Annotation {
         }
 
         return boundingBox as boundingBox;
-    }
-
-    private generateGuid()
-    {
-        const generateNext = () => {
-            return Math.floor((1 + Math.random()) * 0x10000)
-                .toString(16)
-                .substring(1);
-        }
-
-        // Return id of format 'aaaaaaaa'-'aaaa'-'aaaa'-'aaaa'-'aaaaaaaaaaaa'.
-        return generateNext() + generateNext() + '-' + generateNext() + '-' + generateNext() + '-' + generateNext() + '-' + generateNext() + generateNext() + generateNext();
     }
 }
