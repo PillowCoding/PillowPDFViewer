@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { ModuleWithProviders, NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RingLoadingComponent } from './components/loading-icons/ring-loading/ring-loading.component';
@@ -11,6 +11,8 @@ import { PdfSidebarComponent } from './sidebar/pdf-sidebar.component';
 import { CloseButtonComponent } from './components/close-button.component';
 import { PdfAnnotationComponent } from './annotation/pdf-annotation.component';
 import { ClickStopPropagationDirective } from './utils/stopPropagationDirective';
+import { PdfAnnotationCommentComponent } from './annotation/pdf-annotation-comment.component';
+import { InitialsAvatarComponent } from './components/initials-avatar';
 
 @NgModule({
     declarations: [
@@ -19,8 +21,10 @@ import { ClickStopPropagationDirective } from './utils/stopPropagationDirective'
         WestResizeableComponent,
         CloseButtonComponent,
         PdfAnnotationComponent,
+        PdfAnnotationCommentComponent,
         PdfSidebarComponent,
         ClickStopPropagationDirective,
+        InitialsAvatarComponent,
         TranslatePipe,
     ],
     exports: [
@@ -29,6 +33,9 @@ import { ClickStopPropagationDirective } from './utils/stopPropagationDirective'
     imports: [
         FormsModule,
         CommonModule,
+    ],
+    providers: [
+        DatePipe,
     ]
 })
 export class PdfViewerModule

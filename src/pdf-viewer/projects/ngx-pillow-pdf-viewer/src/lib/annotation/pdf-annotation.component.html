@@ -24,7 +24,7 @@
 
             <header class="header">
                 <!-- Left side -->
-                <div class="header-left" libClickStopPropagation>
+                <div libClickStopPropagation>
                     <div *ngIf="loading && !expanded"
                         class="loading-indicator inline">
                         <lib-loading-ring></lib-loading-ring>
@@ -36,6 +36,12 @@
                             [useCustomColor]="true"
                             (closed)="onDelete()" />
                     </div>
+                </div>
+
+                <!-- Middle -->
+                <div *ngIf="annotation.creator"
+                    class="header-middle">
+                    <p>{{annotation.creator}}</p>
                 </div>
 
                 <!-- Right side -->
@@ -57,7 +63,7 @@
             <div [ngClass]="{'hidden': annotation.comments.length === 0 || expanded}"
                 class="collapsed-initial-comment">
                 <p class="comment">
-                    <span class="font-bold">{{annotation.comments.at(-1)?.dateCreated | date: 'h:mm:ss'}}:</span> {{annotation.comments.at(-1)?.content}}
+                    <span class="font-bold">{{annotation.comments.at(-1)?.dateCreated | date: 'd/M/yy, H:mm'}}:</span> {{annotation.comments.at(-1)?.content}}
                 </p>
                 <p *ngIf="annotation.comments.length > 1"
                     class="more-text muted">{{'annotate.moreComments' | translate: annotation.comments.length - 1}}</p>
@@ -66,11 +72,10 @@
             <!-- Comments -->
             <div [ngClass]="{'hidden': annotation.comments.length === 0 || !expanded}"
                 class="comments">
-
-                <p *ngFor="let comment of annotation.comments"
-                    class="comment">
-                    <span class="font-bold">{{comment.dateCreated | date: 'h:mm:ss'}}:</span> {{comment.content}}
-                </p>
+                <lib-pdf-annotation-comment *ngFor="let comment of annotation.comments"
+                    class="comment"
+                    [annotationComment]="comment">
+                </lib-pdf-annotation-comment>
             </div>
 
             <!-- Comment form -->

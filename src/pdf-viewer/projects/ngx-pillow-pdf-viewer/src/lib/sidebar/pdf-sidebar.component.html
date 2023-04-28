@@ -27,7 +27,8 @@
         </div>
 
         <div *ngIf="canShowAnnotations"
-            [ngClass]="{'hidden': !expanded}" class="annotation-container">
+            [ngClass]="{'hidden': !expanded}"
+            class="annotation-container">
             <div *ngIf="isLoading(currentShownPage)"
                 class="loading-indicator">
                 <lib-loading-ring></lib-loading-ring>

@@ -1,0 +1,24 @@
+<div *ngIf="annotationComment?.creator">
+    <div class="header">
+        <img *ngIf="annotationComment?.creator && annotationComment?.creatorUrl"
+            src="{{annotationComment?.creatorUrl || 'https://simplyilm.com/wp-content/uploads/2017/08/temporary-profile-placeholder-1.jpg'}}"
+            height="24"
+            width="24"
+            size="24"
+            class="avatar" />
+        <lib-initials-avatar *ngIf="annotationComment?.creator && !annotationComment?.creatorUrl"
+            [input]="annotationComment?.creator">
+        </lib-initials-avatar>
+        <strong class="creator">{{annotationComment?.creator}}</strong> on {{dateDisplay}}
+    </div>
+    
+    <p class="comment">
+        {{annotationComment?.content}}
+    </p>
+</div>
+
+<div *ngIf="!annotationComment?.creator"
+    class="bordered">
+
+    <p class="inline-comment"><span class="font-bold">{{dateDisplay}}:</span> {{annotationComment?.content}}</p>
+</div>

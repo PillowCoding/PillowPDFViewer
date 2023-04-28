@@ -5,7 +5,13 @@ export class AnnotationComment {
 
     private _dateCreated: Date;
     private _content: string;
-    
+
+    /** Optional creator of the comment. */
+    public creator?: string;
+
+    /** Optional url to the profile pictute of the comment. */
+    public creatorUrl?: string;
+
     public get dateCreated() { return this._dateCreated; }
     public get content() { return this._content; }
 
@@ -25,6 +31,8 @@ export class AnnotationComment {
     public toObject() {
         return {
             content: this.content,
+            creator: this.creator,
+            creatorUrl: this.creatorUrl,
             dateCreated: this.dateCreated,
         }
     }
@@ -35,6 +43,9 @@ export class AnnotationComment {
 
         const comment = new AnnotationComment(commentObject.content);
         comment._dateCreated = commentObject.dateCreated;
+
+        comment.creator = commentObject.creator;
+        comment.creatorUrl = commentObject.creatorUrl;
         return comment;
     }
 }
@@ -46,8 +57,17 @@ export default class Annotation {
     private _comments: Array<AnnotationComment>;
     private _page: number;
 
+    /** The reference of the annotation. This represents a partial or full reference on the PDF page. */
     public reference: PartialReferenceType | null;
+
+    /** If true, the annotation is being focused by the application. */
     public focused = false;
+
+    /** Optional creator of the annotation. */
+    public creator?: string;
+
+    /** Optional url to the profile pictute of the creator. */
+    public creatorUrl?: string;
 
     public get type() { return this._type; }
     public get id() { return this._id; }
@@ -87,6 +107,8 @@ export default class Annotation {
         return {
             type: this.type,
             id: this.id,
+            creator: this.creator,
+            creatorUrl: this.creatorUrl,
             dateCreated: this.dateCreated,
             comments: this.comments.map(x => x.toObject()),
             page: this.page,
@@ -105,6 +127,9 @@ export default class Annotation {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         annotation._comments = (annotationObject.comments as any[]).map(x => AnnotationComment.fromObject(x));
         annotation.reference = annotationObject.reference;
+
+        annotation.creator = annotationObject.creator;
+        annotation.creatorUrl = annotationObject.creatorUrl;
         return annotation;
     }
 

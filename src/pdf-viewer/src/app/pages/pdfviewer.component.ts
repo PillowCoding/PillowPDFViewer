@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { PdfViewerComponent } from 'ngx-pillow-pdf-viewer';
-import Annotation from 'ngx-pillow-pdf-viewer/annotation/annotation';
+import Annotation, { AnnotationComment } from 'ngx-pillow-pdf-viewer/annotation/annotation';
 import annotation from 'ngx-pillow-pdf-viewer/annotation/annotation';
 
 type storedAnnotations = { fileName: string, baseUrl: string, annotations: Array<object> };
@@ -52,11 +52,12 @@ export class pdfViewerComponent
             await this.delay();
         }
 
+        annotation.creator = 'me';
         this._annotations.push(annotation);
         this.setLocallyStoredAnnotations(this._annotations);
     }
 
-    public async saveAnnotationComment(/*annotation: annotation, comment: AnnotationComment*/)
+    public async saveAnnotationComment(annotation: annotation, comment: AnnotationComment)
     {
         if (!this._annotations) {
             throw new Error('Expected annotations to exist.');
@@ -65,6 +66,8 @@ export class pdfViewerComponent
         if ('delay' in this && typeof this.delay === 'function') {
             await this.delay();
         }
+
+        comment.creator = 'me';
         this.setLocallyStoredAnnotations(this._annotations);
     }
 

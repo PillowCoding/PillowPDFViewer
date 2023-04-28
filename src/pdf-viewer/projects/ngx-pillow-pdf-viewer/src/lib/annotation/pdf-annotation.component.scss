@@ -122,20 +122,23 @@
     display: flex;
     justify-content: space-between;
 
-    .header-right {
-        padding-right: 50px;
+    .header-middle, .header-right {
+        line-height: 10px;
+    }
+
+    .header-middle {
+        margin: auto 5px auto 0;
+        border-bottom: solid 1px var(--annotation-border-color);
+        flex-grow: 1;
 
         p {
-            line-height: 10px;
+            margin: 0 5px 5px 5px;
         }
     }
-}
 
-.comments {
-    border-left: 5px ridge rgba(20, 20, 20, 0.1);
-    border-radius: 5px;
-    padding: 10px;
-    margin: 5px 0 0 5px;
+    .header-right {
+        padding-right: 50px;
+    }
 }
 
 .collapsed-initial-comment {
@@ -143,13 +146,13 @@
     margin-top: 5px;
 }
 
-.comment {
-    margin: 0;
-    word-wrap: break-word;
+.comments {
+    margin-top: 4px;
+}
 
-    &.small {
-        font-size: smaller;
-    }
+.comment {
+    display: block;
+    margin: 4px 0 4px 0;
 }
 
 .more-text {
