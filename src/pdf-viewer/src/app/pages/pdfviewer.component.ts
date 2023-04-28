@@ -16,7 +16,7 @@ export class pdfViewerComponent
 
     // Fake delay can imitate I/O operations.
     // Adjust the value to change the time it takes.
-    private readonly delay = () => { return new Promise<void>(resolve => setTimeout(resolve, 0)); }
+    private readonly delay = () => { return new Promise<void>(resolve => setTimeout(resolve, 1000)); }
 
     private readonly _storedAnnotationKey = 'storedAnnotations';
 
@@ -25,6 +25,7 @@ export class pdfViewerComponent
     constructor() {
         this.fetchAnnotationsForPage = this.fetchAnnotationsForPage.bind(this);
         this.saveAnnotation = this.saveAnnotation.bind(this);
+        this.deleteAnnotation = this.deleteAnnotation.bind(this);
         this.saveAnnotationComment = this.saveAnnotationComment.bind(this);
     }
 
@@ -35,7 +36,7 @@ export class pdfViewerComponent
         }
 
         await this.delay();
-        return this._annotations.filter(x => x.page === page);
+        return this._annotations.filter(x => x.page !== page);
     }
 
     public async saveAnnotation(annotation: annotation)
@@ -56,6 +57,17 @@ export class pdfViewerComponent
         }
 
         await this.delay();
+        this.setLocallyStoredAnnotations(this._annotations);
+    }
+
+    public async deleteAnnotation(annotation: annotation)
+    {
+        if (!this._annotations) {
+            throw new Error('Expected annotations to exist.');
+        }
+
+        await this.delay();
+        this._annotations = this._annotations.filter(x => x === annotation);
         this.setLocallyStoredAnnotations(this._annotations);
     }
 

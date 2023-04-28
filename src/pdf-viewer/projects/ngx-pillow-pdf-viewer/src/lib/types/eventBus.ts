@@ -83,8 +83,10 @@ export interface EventBusEventTypePayloadMap {
     "cursortoolchanged": object;
 
     // Custom events
-    "annotationStarted": StartAnnotationEventType;
-    "annotationDeleted": DeleteAnnotationEventType;
+    "pendingAnnotationStarted": PendingAnnotationStartedEventType;
+    "pendingAnnotationDeleted": PendingAnnotationDeletedEventType;
+    "annotationDelete": AnnotationDeleteEventType;
+    "annotationDeleted": AnnotationDeletedEventType;
     "annotationCommentSubmit": AnnotationCommentSubmitEventType;
     "annotationFocus": AnnotationFocusEventType;
     "annotationUnfocus": AnnotationUnfocusEventType;
@@ -273,11 +275,19 @@ export type TextLayerRenderedEventType = EventBusEvent<PDFPageView> & {
     source: PDFPageView;
 }
 
-export type StartAnnotationEventType = EventBusEvent<PdfViewerComponent> & {
+export type PendingAnnotationStartedEventType = EventBusEvent<PdfViewerComponent> & {
     annotation: annotation;
 }
 
-export type DeleteAnnotationEventType = EventBusEvent<PdfViewerComponent | PdfAnnotationComponent> & {
+export type PendingAnnotationDeletedEventType = EventBusEvent<PdfViewerComponent> & {
+    annotation: annotation;
+}
+
+export type AnnotationDeleteEventType = EventBusEvent<PdfViewerComponent | PdfAnnotationComponent> & {
+    annotation: annotation;
+}
+
+export type AnnotationDeletedEventType = EventBusEvent<PdfViewerComponent | PdfAnnotationComponent> & {
     annotation: annotation;
 }
 

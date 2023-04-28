@@ -24,15 +24,15 @@
 
             <header class="header">
                 <!-- Left side -->
-                <div class="header-left">
+                <div class="header-left" libClickStopPropagation>
                     <div *ngIf="loading && !expanded"
                         class="loading-indicator inline">
                         <lib-loading-ring></lib-loading-ring>
                     </div>
 
                     <div *ngIf="!loading && annotation.state === 'completed'"
-                        class="delete-annotation" >
-                        <lib-close-button libClickStopPropagation
+                        class="delete-annotation">
+                        <lib-close-button
                             [useCustomColor]="true"
                             (closed)="onDelete()" />
                     </div>

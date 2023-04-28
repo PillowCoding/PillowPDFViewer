@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, Input, OnInit, QueryList, ViewChildren } 
 import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfAnnotationComponent } from "ngx-pillow-pdf-viewer/annotation/pdf-annotation.component";
 import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
-import { StartAnnotationEventType, DeleteAnnotationEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
+import { AnnotationDeletedEventType, PendingAnnotationDeletedEventType, PendingAnnotationStartedEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 
 export type annotationsProviderDelegate = (page: number) => Promise<annotation[]>;
@@ -84,7 +84,8 @@ export class PdfSidebarComponent implements OnInit {
         await this.pdfjsContext.loadViewerPromise;
         this.pdfjsContext.subscribeEventBus('pagesloaded', () => this.fetchAnnotations());
         this.pdfjsContext.subscribeEventBus('pagechanging', () => this.fetchAnnotations());
-        this.pdfjsContext.subscribeEventBus('annotationStarted', (e) => this.onAnnotationStarted(e));
+        this.pdfjsContext.subscribeEventBus('pendingAnnotationStarted', (e) => this.onPendingAnnotationStarted(e));
+        this.pdfjsContext.subscribeEventBus('pendingAnnotationDeleted', (e) => this.onAnnotationDeleted(e));
         this.pdfjsContext.subscribeEventBus('annotationDeleted', (e) => this.onAnnotationDeleted(e));
     }
 
@@ -114,11 +115,11 @@ export class PdfSidebarComponent implements OnInit {
         this.stateHasChanged();
     }
 
-    private onAnnotationStarted(event: StartAnnotationEventType) {
+    private onPendingAnnotationStarted(event: PendingAnnotationStartedEventType) {
         this.annotations.unshift(event.annotation);
         this.stateHasChanged();
     }
-    private onAnnotationDeleted(event: DeleteAnnotationEventType) {
+    private onAnnotationDeleted(event: PendingAnnotationDeletedEventType | AnnotationDeletedEventType) {
         this.annotations = this.annotations.filter(x => x.id !== event.annotation.id);
         this.stateHasChanged();
     }

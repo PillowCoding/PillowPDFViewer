@@ -3,7 +3,7 @@ import PdfjsContext, { annotateDrawId, annotateTextId, toolType } from "ngx-pill
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
-import { AnnotationCommentSubmitEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, AnnotationFocusEventType, AnnotationUnfocusEventType, DeleteAnnotationEventType, PageRenderedEventType, TextLayerRenderedEventType } from "../types/eventBus";
+import { AnnotationCommentSubmitEventType, AnnotationDeleteEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, AnnotationFocusEventType, AnnotationUnfocusEventType, PageRenderedEventType, TextLayerRenderedEventType } from "../types/eventBus";
 import { AnnotationType, boundingBox } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
 import Annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
@@ -15,6 +15,7 @@ import DrawAnnotator, { canvasMouseType, drawData } from "ngx-pillow-pdf-viewer/
 import groupByKey from "ngx-pillow-pdf-viewer/utils/groupBy";
 
 export type annotationsSaveProviderDelegate = (annotation: Annotation) => void | Promise<void>;
+export type annotationsDeleteProviderDelegate = (annotation: Annotation) => void | Promise<void>;
 export type annotationsCommentSaveProviderDelegate = (annotation: Annotation, comment: AnnotationComment) => void | Promise<void>;
 
 /**
@@ -118,6 +119,9 @@ export class PdfViewerComponent implements OnInit {
 
     /** The provider that will save annotations. */
     @Input() public annotationsSaveProvider?: annotationsSaveProviderDelegate;
+
+    /** The provider that will save annotations. */
+    @Input() public annotationsDeleteProvider?: annotationsDeleteProviderDelegate;
 
     /** The provider that will save annotation comments. */
     @Input() public annotationsCommentSaveProvider?: annotationsCommentSaveProviderDelegate;
@@ -233,7 +237,7 @@ export class PdfViewerComponent implements OnInit {
         this.pdfjsContext.subscribeEventBus('documentloaded', () => this.onDocumentLoaded());
         this.pdfjsContext.subscribeEventBus('pagesinit', () => this.loggingProvider.sendDebug('Pages are loading...', this._defaultLogSource));
         this.pdfjsContext.subscribeEventBus('annotationCommentSubmit', (e) => this.onAnnotationCommentSubmit(e));
-        this.pdfjsContext.subscribeEventBus('annotationDeleted', (e) => this.onAnnotationDeleted(e));
+        this.pdfjsContext.subscribeEventBus('annotationDelete', (e) => this.onAnnotationDelete(e));
         this.pdfjsContext.subscribeEventBus('annotationFocus', (e) => this.onAnnotationFocus(e));
         this.pdfjsContext.subscribeEventBus('annotationUnfocus', (e) => this.onAnnotationUnfocus(e));
 
@@ -387,7 +391,7 @@ export class PdfViewerComponent implements OnInit {
             this.drawAnnotator.enableDrawCanvas(targetPage, true);
         }
 
-        this.pdfjsContext.dispatchEventBus('annotationStarted', {
+        this.pdfjsContext.dispatchEventBus('pendingAnnotationStarted', {
             source: this,
             annotation: newAnnotation,
         });
@@ -432,7 +436,7 @@ export class PdfViewerComponent implements OnInit {
 
         this.loggingProvider.sendDebug(`Deleting pending annotation: ${annotation.id}`, this._defaultLogSource);
         this.assertPdfjsContextExists();
-        this.pdfjsContext.dispatchEventBus('annotationDeleted', {
+        this.pdfjsContext.dispatchEventBus('pendingAnnotationDeleted', {
             source: this,
             annotation,
         });
@@ -620,24 +624,46 @@ export class PdfViewerComponent implements OnInit {
         this.stateHasChanged();
     }
 
-    private onAnnotationDeleted({ source, annotation }: DeleteAnnotationEventType) {
+    private async onAnnotationDelete({ annotation }: AnnotationDeleteEventType) {
 
         this.assertFileLoaded();
 
-        // Ignore from self.
-        if (source === this) {
-            return;
+        // Get the annotation component. This should also exist if the sidebar is enabled.
+        const uncompletedAnnotationComponent = this.sidebarComponent?.annotationComponents.find(x => x.annotation == annotation);
+        if (this.sidebarEnabled && !uncompletedAnnotationComponent) {
+            throw new Error(`Expected the annotation component for ${annotation.id} to exist.`);
         }
 
-        this.loggingProvider.sendDebug(`Deleting ${annotation.state} annotation: ${annotation.id}`, this._defaultLogSource);
-        this._annotations = this._annotations.filter(x => x.id !== annotation.id);
+        if (!this.annotationsDeleteProvider) {
+            this.loggingProvider.sendWarning(`Please provide a value for \`annotationsDeleteProvider\` in order to delete annotations.`, this._defaultLogSource);
+        }
+
+        this.loggingProvider.sendDebug(`Deleting annotaton ${annotation.id}...`, this._defaultLogSource);
+        if (uncompletedAnnotationComponent) {
+            uncompletedAnnotationComponent.loading = true;
+            this.stateHasChanged();
+        }
+
+        await this.annotationsDeleteProvider?.(annotation);
+        
+        // This is not really needed since the component is removed, but let's do it anyway.
+        if (uncompletedAnnotationComponent) {
+            uncompletedAnnotationComponent.loading = false;
+            this.stateHasChanged();
+        }
 
         // Text annotations need to be explicitly removed.
         if (annotation.type === 'text') {
             this.textAnnotator.removeAnnotationById(annotation.id);
         }
 
+        this._annotations = this._annotations.filter(x => x.id !== annotation.id);
         this.rerenderAnnotationsPage(annotation.page);
+
+        this.pdfjsContext.dispatchEventBus('annotationDeleted', {
+            source: this,
+            annotation: annotation,
+        });
     }
 
     private async saveAnnotation(annotation: Annotation) {
@@ -650,7 +676,6 @@ export class PdfViewerComponent implements OnInit {
 
         if (!this.annotationsSaveProvider) {
             this.loggingProvider.sendWarning(`Please provide a value for \`annotationsSaveProvider\` in order to save annotations.`, this._defaultLogSource);
-            return;
         }
 
         this.loggingProvider.sendDebug(`Saving annotaton ${annotation.id}...`, this._defaultLogSource);
@@ -659,7 +684,7 @@ export class PdfViewerComponent implements OnInit {
             this.stateHasChanged();
         }
 
-        await this.annotationsSaveProvider(annotation);
+        await this.annotationsSaveProvider?.(annotation);
         
         if (uncompletedAnnotationComponent) {
             uncompletedAnnotationComponent.loading = false;
