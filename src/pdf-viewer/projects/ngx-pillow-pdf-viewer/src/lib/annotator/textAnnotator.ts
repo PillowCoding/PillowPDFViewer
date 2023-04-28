@@ -14,9 +14,14 @@ export default class TextAnnotator {
     private readonly _annotatedTextAttribute = 'Text-annotated';
     private readonly _layerClassName = 'textAnnotateLayer';
     private _annotatedIds: string[] = [];
+    private _coloredIds: string[] = [];
 
     public get annotatedIds() {
         return this._annotatedIds;
+    }
+
+    public get coloredIds() {
+        return this._coloredIds;
     }
 
     constructor(
@@ -93,12 +98,13 @@ export default class TextAnnotator {
             for (const element of elements) {
                 (element as HTMLElement).style.backgroundColor = color;
             }
+
+            this._coloredIds.push(id);
         }
     }
 
-    public removeById(...ids: string[]) {
+    public removeAnnotationById(...ids: string[]) {
         this._pdfjsContext.assertPdfViewerApplicationExists();
-        
 
         for (const id of ids) {
             const elements = Array.from(this._pdfjsContext.pdfjsDocument.querySelectorAll(`[${this._annotatedTextAttribute}="${id}"]`));
@@ -113,6 +119,26 @@ export default class TextAnnotator {
             }
 
             this._annotatedIds = this._annotatedIds.filter(x => x !== id);
+            this._coloredIds = this._coloredIds.filter(x => x !== id);
+        }
+    }
+
+    public removeColorById(...ids: string[]) {
+        this._pdfjsContext.assertPdfViewerApplicationExists();
+
+        for (const id of ids) {
+            const elements = Array.from(this._pdfjsContext.pdfjsDocument.querySelectorAll(`[${this._annotatedTextAttribute}="${id}"]`));
+            this._loggingProvider.sendDebug(`Removing color from ${id}...`, this._defaultLogSource);
+            if (elements.length === 0) {
+                this._loggingProvider.sendWarning(`Could not remove color from ${id}: no elements found.`, this._defaultLogSource);
+                return;
+            }
+
+            for (const element of elements) {
+                (element as HTMLElement).style.backgroundColor = 'transparent';
+            }
+
+            this._coloredIds = this._coloredIds.filter(x => x !== id);
         }
     }
 

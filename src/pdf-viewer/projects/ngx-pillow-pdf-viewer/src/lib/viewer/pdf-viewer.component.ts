@@ -12,9 +12,18 @@ import LayerManager from "ngx-pillow-pdf-viewer/annotator/layerManager";
 import DeferredPromise from "ngx-pillow-pdf-viewer/utils/deferredPromise";
 import { LocalisationService } from "ngx-pillow-pdf-viewer/utils/localisation/localisation.service";
 import DrawAnnotator, { canvasMouseType, drawData } from "ngx-pillow-pdf-viewer/annotator/drawAnnotator";
+import groupByKey from "ngx-pillow-pdf-viewer/utils/groupBy";
 
 export type annotationsSaveProviderDelegate = (annotation: Annotation) => void | Promise<void>;
 export type annotationsCommentSaveProviderDelegate = (annotation: Annotation, comment: AnnotationComment) => void | Promise<void>;
+
+/**
+ * Represents what annotations are shown.
+ * All equals all annotations, focused and unfocused.
+ * OnlyFocused will only show annotations when they are focused.
+ * OnlyFocusedElseUnfocused will only show focused annotations if there are any.
+ */
+export type showAnnotationsType = 'all' | 'onlyFocused' | 'onlyFocusedElseUnfocused'
 
 @Component({
     selector: 'lib-pdf-viewer',
@@ -102,6 +111,7 @@ export class PdfViewerComponent implements OnInit {
     @Input() public defaultTextAnnotationFocusColor = '#FF802040';
     @Input() public defaultPendingDrawAnnotationColor = '#00FF00';
     @Input() public defaultDrawAnnotationColor = '#FFA500';
+    @Input() public defaultDrawAnnotationFocusColor = '#FF4500';
 
     /** The provider that will fetch annotations asynchronously. */
     @Input() public annotationsProvider?: annotationsProviderDelegate;
@@ -446,8 +456,9 @@ export class PdfViewerComponent implements OnInit {
         // Wait for the page fetch to finish.
         await this.waitForPageAnnotations(pageNumber);
 
-        this.textAnnotatePage(pageNumber);
-        this.drawAnnotatePage(pageNumber);
+        this.annotateTextPage(pageNumber);
+        this.colorTextAnnotationPage(pageNumber, 'onlyFocusedElseUnfocused', true);
+        this.colorDrawAnnotationPage(pageNumber, 'onlyFocusedElseUnfocused', true);
     }
 
     private canvasOnMouse(event: MouseEvent, type: canvasMouseType) {
@@ -642,24 +653,30 @@ export class PdfViewerComponent implements OnInit {
         }
     }
 
-    private onAnnotationFocus(event: AnnotationFocusEventType) {
+    private onAnnotationFocus({ annotation }: AnnotationFocusEventType) {
         this.assertFileLoaded();
 
-        this.loggingProvider.sendDebug(`Focusing ${event.annotation.id}...`, this._defaultLogSource);
-        
-        if (event.annotation.type === 'text') {
-            this.textAnnotator.colorById(this.defaultTextAnnotationFocusColor, event.annotation.id);
-        }
+        this.loggingProvider.sendDebug(`Focusing ${annotation.id}...`, this._defaultLogSource);
+        const pageNumber = annotation.page;
+
+        this.removeTextAnnotationColorPage(pageNumber);
+        this.colorTextAnnotationPage(pageNumber, 'onlyFocusedElseUnfocused', true);
+
+        this.drawAnnotator.clearCanvas(pageNumber, false);
+        this.colorDrawAnnotationPage(pageNumber, 'onlyFocusedElseUnfocused', true);
     }
 
-    private onAnnotationUnfocus(event: AnnotationUnfocusEventType) {
+    private onAnnotationUnfocus({ annotation }: AnnotationUnfocusEventType) {
         this.assertFileLoaded();
 
-        this.loggingProvider.sendDebug(`Unfocusing ${event.annotation.id}...`, this._defaultLogSource);
+        this.loggingProvider.sendDebug(`Unfocusing ${annotation.id}...`, this._defaultLogSource);
+        const pageNumber = annotation.page;
 
-        if (event.annotation.type === 'text') {
-            this.textAnnotator.colorById(this.defaultTextAnnotationColor, event.annotation.id);
-        }
+        this.removeTextAnnotationColorPage(pageNumber);
+        this.colorTextAnnotationPage(pageNumber, 'onlyFocusedElseUnfocused', true);
+
+        this.drawAnnotator.clearCanvas(pageNumber, false);
+        this.colorDrawAnnotationPage(pageNumber, 'onlyFocusedElseUnfocused', true);
     }
 
     private onAnnotationEditorModeChanged(event: AnnotationEditorModeChangedEventType) {
@@ -690,54 +707,201 @@ export class PdfViewerComponent implements OnInit {
         }
     }
 
-    private textAnnotatePage(page: number) {
+    private annotateTextPage(page: number) {
         this.assertFileLoaded();
-        const annotations = this.annotations.filter(x => x.type === 'text' && x.page === page);
-        for (const annotation of annotations) {
 
-            // Already annotated.
-            if (this.textAnnotator.annotatedIds.includes(annotation.id)) {
-                continue;
+        const annotations = this.annotations.filter(x => x.page === page);
+        this.annotateText(annotations);
+    }
+
+    private annotateText(annotations: Annotation[]) {
+        this.assertFileLoaded();
+
+        // Group by page
+        const pagesAnnotations = groupByKey(annotations, 'page');
+
+        for (const entry of pagesAnnotations) {
+
+            const page = entry[0]
+            const annotations = entry[1];
+
+            // Check if page loaded.
+            const pageContext = this.pdfjsContext.pages?.find(x => x.page === page);
+            if (!pageContext || !pageContext.loaded) {
+                this.loggingProvider.sendWarning(`Tried to annotate text annotations on unknown or unloaded page ${page}`, this._defaultLogSource);
+                return;
             }
 
-            const textSelection = annotation.tryGetTextSelection();
-            if (!textSelection) {
-                this.loggingProvider.sendWarning(`Unable to annotate ${annotation.id}: not a valid text annotation.`, this._defaultLogSource);
-                continue;
-            }
+            for (const annotation of annotations) {
 
-            this.textAnnotator.annotateXpath(textSelection.xpath, textSelection.selectedText, page, annotation.id);
-            this.textAnnotator.colorById(this.defaultTextAnnotationColor, annotation.id);
+                // Not a text annotation
+                if (annotation.type !== 'text') {
+                    continue;
+                }
+    
+                // Already annotated.
+                if (this.textAnnotator.annotatedIds.includes(annotation.id)) {
+                    continue;
+                }
+    
+                const textSelection = annotation.tryGetTextSelection();
+                if (!textSelection) {
+                    this.loggingProvider.sendWarning(`Unable to annotate ${annotation.id}: not a valid text annotation.`, this._defaultLogSource);
+                    continue;
+                }
+    
+                this.textAnnotator.annotateXpath(textSelection.xpath, textSelection.selectedText, page, annotation.id);
+            }
         }
     }
 
-    private drawAnnotatePage(page: number) {
+    private removeTextAnnotationColorPage(page: number) {
         this.assertFileLoaded();
 
-        const annotations = this.annotations.filter(x => x.type === 'draw' && x.page === page);
-
-        // If we only want to show focused annotations, filter the array on them, and show those if there are any.
-
-        const drawDataCollection = annotations.map(x => this.getDrawData(x));
-
-        // Filter invalid data, drawAnnotator is guaranteed to exist.
-        const filteredDrawData = drawDataCollection.filter(x => !this.drawAnnotator?.coloredIds.includes(x.id));
-        if (filteredDrawData.length === 0) {
-            return;
+        const annotations = this.annotations.filter(x => x.page === page && x.type === 'text');
+        for(const annotation of annotations) {
+            this.textAnnotator.removeColorById(annotation.id);
         }
-
-        this.drawAnnotator.drawCanvasRectangle(page, false, false, ...filteredDrawData);
     }
 
-    private getDrawData(annotation: Annotation): drawData {
+    private colorTextAnnotationPage(page: number, showAnnotations: showAnnotationsType = 'all', showAsFocused = true) {
+        this.assertFileLoaded();
+
+        const annotations = this.annotations.filter(x => x.page === page);
+        this.colorTextAnnotation(annotations, showAnnotations, showAsFocused);
+    }
+
+    private colorTextAnnotation(annotations: Annotation[], showAnnotations: showAnnotationsType = 'all', showAsFocused = true) {
+        this.assertFileLoaded();
+
+        // If we only want to show focused annotations, filter the given annotations by focused.
+        if (showAnnotations !== 'all') {
+            const focusedAnnotations = annotations.filter(x => x.focused);
+            switch(showAnnotations) {
+
+                // Assign even if empty.
+                case "onlyFocused":
+                    annotations = focusedAnnotations;
+                    break;
+
+                // Only assign if empty.
+                case "onlyFocusedElseUnfocused":
+                    if (focusedAnnotations.length > 0) {
+                        annotations = focusedAnnotations;
+                    }
+                    break;
+
+                // Fallback prevents unused types, should more be added.
+                // These should be properly handled.
+                default:
+                    // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-unused-vars
+                    const defaultPreventUnusedType: never = showAnnotations;
+            }
+        }
+
+        // Filter to text only, and then group them by page.
+        annotations = annotations.filter(x => x.type === 'text');
+        const pagesAnnotations = groupByKey(annotations, 'page');
+
+        for (const entry of pagesAnnotations) {
+
+            const page = entry[0]
+            const annotations = entry[1];
+
+            // Check if page loaded.
+            const pageContext = this.pdfjsContext.pages?.find(x => x.page === page);
+            if (!pageContext || !pageContext.loaded) {
+                this.loggingProvider.sendWarning(`Tried to color text annotations on unknown or unloaded page ${page}`, this._defaultLogSource);
+                return;
+            }
+
+            for (const annotation of annotations) {
+    
+                // Already colored.
+                if (this.textAnnotator.coloredIds.includes(annotation.id)) {
+                    continue;
+                }
+    
+                const color = showAsFocused && annotation.focused ? this.defaultTextAnnotationFocusColor : this.defaultTextAnnotationColor;
+                this.textAnnotator.colorById(color, annotation.id);
+            }
+        }
+    }
+
+    private colorDrawAnnotationPage(page: number, showAnnotations: showAnnotationsType = 'all', showAsFocused = true) {
+        this.assertFileLoaded();
+
+        const annotations = this.annotations.filter(x => x.page === page);
+        this.colorDrawAnnotation(annotations, showAnnotations, showAsFocused);
+    }
+
+    private colorDrawAnnotation(annotations: Annotation[], showAnnotations: showAnnotationsType = 'all', showAsFocused = true) {
+        this.assertFileLoaded();
+
+        // If we only want to show focused annotations, filter the given annotations by focused.
+        if (showAnnotations !== 'all') {
+            const focusedAnnotations = annotations.filter(x => x.focused);
+            switch(showAnnotations) {
+
+                // Assign even if empty.
+                case "onlyFocused":
+                    annotations = focusedAnnotations;
+                    break;
+
+                // Only assign if empty.
+                case "onlyFocusedElseUnfocused":
+                    if (focusedAnnotations.length > 0) {
+                        annotations = focusedAnnotations;
+                    }
+                    break;
+
+                // Fallback prevents unused types, should more be added.
+                // These should be properly handled.
+                default:
+                    // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-unused-vars
+                    const defaultPreventUnusedType: never = showAnnotations;
+            }
+        }
+
+        // Filter to draw only, and then group them by page.
+        annotations = annotations.filter(x => x.type === 'draw');
+        const pagesAnnotations = groupByKey(annotations, 'page');
+
+        for (const entry of pagesAnnotations) {
+
+            const page = entry[0]
+            const annotations = entry[1];
+
+            // Check if page loaded.
+            const pageContext = this.pdfjsContext.pages?.find(x => x.page === page);
+            if (!pageContext || !pageContext.loaded) {
+                this.loggingProvider.sendWarning(`Tried to color draw annotations on unknown or unloaded page ${page}`, this._defaultLogSource);
+                return;
+            }
+
+            // Get the draw data.
+            const drawDataCollection = annotations.map(x => this.getDrawData(x, showAsFocused));
+
+            // Filter annotations already drawn, drawAnnotator is guaranteed to exist.
+            const filteredDrawData = drawDataCollection.filter(x => !this.drawAnnotator?.coloredIds.includes(x.id));
+            if (filteredDrawData.length === 0) {
+                return;
+            }
+
+            this.drawAnnotator.drawCanvasRectangle(page, false, false, ...filteredDrawData);
+        }
+    }
+
+    private getDrawData(annotation: Annotation, showAsFocused: boolean): drawData {
         const boundingBox = annotation.tryGetCompletedBoundingBox();
         if (!boundingBox) {
             throw new Error(`Unable to annotate ${annotation.id}: not a valid draw annotation, or the bounding box is not complete.`);
         }
 
+        const color = showAsFocused && annotation.focused ? this.defaultDrawAnnotationFocusColor : this.defaultDrawAnnotationColor;
         return {
             id: annotation.id,
-            color: this.defaultDrawAnnotationColor,
+            color,
             borderWidth: 1,
             bounds: boundingBox,
         }
