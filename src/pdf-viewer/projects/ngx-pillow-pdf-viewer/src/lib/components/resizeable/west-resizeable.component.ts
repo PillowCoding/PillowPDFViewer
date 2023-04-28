@@ -29,10 +29,6 @@ export class WestResizeableComponent
     private _lastMousePosition: number | null = null;
 
     public onMouseDown(event: MouseEvent) {
-        if (this._lastMousePosition) {
-            throw new Error('The last mouse position is already set.');
-        }
-
         this._lastMousePosition = event.pageX;
     }
 
