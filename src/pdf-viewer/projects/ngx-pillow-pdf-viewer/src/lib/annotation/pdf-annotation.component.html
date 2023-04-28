@@ -9,6 +9,7 @@
         <!-- left -->
         <div class="focus-selector flex">
             <button libClickStopPropagation
+                *ngIf="!loading && annotation.state === 'completed'"
                 (click)="toggleFocus()">
                 <span>&#10092;</span>
             </button>

@@ -350,8 +350,6 @@ export class PdfViewerComponent implements OnInit {
         annotation.reference = { ...selectionContext };
 
         this.textAnnotator.annotateSelection(selectionContext, annotation.id);
-        this.textAnnotator.colorById(this.defaultTextAnnotationColor, annotation.id);
-
         this.stopAnnotating();
 
         // Check if the sidebar exists if enabled.
@@ -362,6 +360,9 @@ export class PdfViewerComponent implements OnInit {
         this.sidebarComponent?.expand();
         this.stateHasChanged();
 
+        // Draw directly instead of rerendering the page.
+        // This will show the resulting rectangle even when there are focussed annotations that are shown.
+        this.textAnnotator.colorById(this.defaultTextAnnotationColor, annotation.id);
         this.saveAnnotation(annotation);
     }
 
@@ -531,7 +532,6 @@ export class PdfViewerComponent implements OnInit {
                 bounds: boundingBox,
             }
 
-            this.drawAnnotator.drawCanvasRectangle(annotation.page, false, false, drawData);
             this.drawAnnotator.clearCanvas(annotation.page, true);
             this.drawAnnotator.disableDrawCanvas(annotation.page, true);
 
@@ -546,6 +546,9 @@ export class PdfViewerComponent implements OnInit {
             this.sidebarComponent?.expand();
             this.stateHasChanged();
 
+            // Draw directly instead of rerendering the page.
+            // This will show the resulting rectangle even when there are focussed annotations that are shown.
+            this.drawAnnotator.drawCanvasRectangle(annotation.page, false, false, drawData);
             this.saveAnnotation(annotation);
         }
     }
