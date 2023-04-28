@@ -715,34 +715,32 @@ export class PdfViewerComponent implements OnInit {
         this.assertFileLoaded();
 
         const annotations = this.annotations.filter(x => x.type === 'draw' && x.page === page);
-        const drawDataCollection: (drawData | null)[] = annotations.map(x => {
-            const boundingBox = x.tryGetCompletedBoundingBox();
-            if (!boundingBox) {
-                this.loggingProvider.sendWarning(`Unable to annotate ${x.id}: not a valid draw annotation, or the bounding box is not complete.`, this._defaultLogSource);
-                return null;
-            }
 
-            // Ignore if already colored.
-            // (Draw annotator is guaranteed to exist)
-            if (this.drawAnnotator?.coloredIds.includes(x.id)) {
-                return null;
-            }
+        // If we only want to show focused annotations, filter the array on them, and show those if there are any.
 
-            return {
-                id: x.id,
-                color: this.defaultDrawAnnotationColor,
-                borderWidth: 1,
-                bounds: boundingBox,
-            }
-        });
+        const drawDataCollection = annotations.map(x => this.getDrawData(x));
 
-        // Filter invalid data
-        const filteredDrawData = drawDataCollection.filter(x => x !== null) as drawData[];
+        // Filter invalid data, drawAnnotator is guaranteed to exist.
+        const filteredDrawData = drawDataCollection.filter(x => !this.drawAnnotator?.coloredIds.includes(x.id));
         if (filteredDrawData.length === 0) {
             return;
         }
 
         this.drawAnnotator.drawCanvasRectangle(page, false, false, ...filteredDrawData);
+    }
+
+    private getDrawData(annotation: Annotation): drawData {
+        const boundingBox = annotation.tryGetCompletedBoundingBox();
+        if (!boundingBox) {
+            throw new Error(`Unable to annotate ${annotation.id}: not a valid draw annotation, or the bounding box is not complete.`);
+        }
+
+        return {
+            id: annotation.id,
+            color: this.defaultDrawAnnotationColor,
+            borderWidth: 1,
+            bounds: boundingBox,
+        }
     }
 
     public async fetchAnnotationsForPage(page: number)
