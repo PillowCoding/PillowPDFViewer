@@ -36,7 +36,7 @@ export class pdfViewerComponent
         }
 
         await this.delay();
-        return this._annotations.filter(x => x.page !== page);
+        return this._annotations.filter(x => x.page === page);
     }
 
     public async saveAnnotation(annotation: annotation)
@@ -67,7 +67,7 @@ export class pdfViewerComponent
         }
 
         await this.delay();
-        this._annotations = this._annotations.filter(x => x === annotation);
+        this._annotations = this._annotations.filter(x => x !== annotation);
         this.setLocallyStoredAnnotations(this._annotations);
     }
 
