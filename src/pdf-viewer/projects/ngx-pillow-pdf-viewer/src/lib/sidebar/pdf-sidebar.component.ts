@@ -88,7 +88,7 @@ export class PdfSidebarComponent implements OnInit {
 
         await this.pdfjsContext.loadViewerPromise;
         this.pdfjsContext.subscribeEventBus('pagesloaded', () => this.fetchAnnotations());
-        this.pdfjsContext.subscribeEventBus('pagechanging', () => this.fetchAnnotations());
+        this.pdfjsContext.subscribeEventBus('pagechanging', () => this.onPageChanging());
         this.pdfjsContext.subscribeEventBus('pendingAnnotationStarted', (e) => this.onPendingAnnotationStarted(e));
         this.pdfjsContext.subscribeEventBus('pendingAnnotationDeleted', (e) => this.onAnnotationDeleted(e));
         this.pdfjsContext.subscribeEventBus('annotationDeleted', (e) => this.onAnnotationDeleted(e));
@@ -120,10 +120,16 @@ export class PdfSidebarComponent implements OnInit {
         this.stateHasChanged();
     }
 
+    private onPageChanging() {
+        this.unfocusAll();
+        this.fetchAnnotations();
+    }
+
     private onPendingAnnotationStarted(event: PendingAnnotationStartedEventType) {
         this.annotations.unshift(event.annotation);
         this.stateHasChanged();
     }
+    
     private onAnnotationDeleted(event: PendingAnnotationDeletedEventType | AnnotationDeletedEventType) {
         this.annotations = this.annotations.filter(x => x.id !== event.annotation.id);
         this.stateHasChanged();
