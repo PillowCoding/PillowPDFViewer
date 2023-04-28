@@ -19,10 +19,10 @@ export class PdfAnnotationCommentComponent implements OnInit {
         // If the date is today, display the time alongside it.
         const today = new Date(this.annotationComment.dateCreated).setHours(0, 0, 0, 0) === new Date().setHours(0, 0, 0, 0);
         if (today) {
-            return this.datePipe.transform(this.annotationComment.dateCreated, 'H:mm');
+            return this.datePipe.transform(this.annotationComment.dateCreated, 'H:mm') || '';
         }
 
-        return this.datePipe.transform(this.annotationComment.dateCreated, 'd MMMM, y H:mm');
+        return this.datePipe.transform(this.annotationComment.dateCreated, 'd MMMM, y H:mm') || '';
     }
 
     constructor(

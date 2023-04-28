@@ -1,6 +1,7 @@
 {
     "sidebar.expand": "Expand",
     "sidebar.collapse": "Collapse",
+    "sidebar.unfocusAll": "Unfocus all",
 
     "annotate.title": "Annotating...",
     "annotate.cancelButton": "Cancel",
@@ -8,6 +9,7 @@
     "annotations.nonePage": "There are no annotations on this page.",
     "annotations.post": "Post",
     "annotate.moreComments": "+ {0} more...",
+    "annotate.dateIndication": "on {0}",
 
     "textAnnotator.enabled": "New text annotation",
     "drawAnnotator.enabled": "New draw annotation",

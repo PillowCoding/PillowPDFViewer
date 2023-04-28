@@ -9,7 +9,7 @@
         <lib-initials-avatar *ngIf="annotationComment?.creator && !annotationComment?.creatorUrl"
             [input]="annotationComment?.creator">
         </lib-initials-avatar>
-        <strong class="creator">{{annotationComment?.creator}}</strong> on {{dateDisplay}}
+        <strong class="creator">{{annotationComment?.creator}}</strong> {{'annotate.dateIndication' | translate: dateDisplay}}
     </div>
     
     <p class="comment">

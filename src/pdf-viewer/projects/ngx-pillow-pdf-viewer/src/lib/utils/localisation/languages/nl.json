@@ -1,6 +1,7 @@
 {
     "sidebar.expand": "Vergroot",
     "sidebar.collapse": "Sluit",
+    "sidebar.unfocusAll": "Ontfocus alles",
 
     "annotate.title": "Annoteren...",
     "annotate.cancelButton": "Annuleer",
@@ -8,6 +9,7 @@
     "annotations.nonePage": "Deze pagina bevat geen annotaties.",
     "annotations.post": "Plaats",
     "annotate.moreComments": "+ {0} meer...",
+    "annotate.dateIndication": "op {0}",
 
     "textAnnotator.enabled": "Nieuwe tekst annotatie",
     "drawAnnotator.enabled": "Nieuwe teken annotatie",
