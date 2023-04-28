@@ -1,6 +1,6 @@
 <div *ngIf="annotation"
     (click)="expanded ? collapse() : expand()"
-    [ngClass]="{'expanded': expanded, 'focus': focused}"
+    [ngClass]="{'expanded': expanded, 'focus': annotation.focused}"
     class="annotation-container"
     attr.data-annotation="{{annotation.id}}">
 

@@ -53,8 +53,6 @@ export class PdfAnnotationComponent implements OnInit {
         return this._inputLoadingCount > 0;
     }
 
-    @Input() focused = false;
-
     // If loadingCount is higher than 0, the component is loading.
     private _loadingCount = 0;
 
@@ -128,9 +126,9 @@ export class PdfAnnotationComponent implements OnInit {
 
     public toggleFocus() {
         this.assertParametersSet();
-        this.focused = !this.focused;
+        this.annotation.focused = !this.annotation.focused;
 
-        const event: EventBusEventType = this.focused ? 'annotationFocus' : 'annotationUnfocus';
+        const event: EventBusEventType = this.annotation.focused ? 'annotationFocus' : 'annotationUnfocus';
         this.pdfjsContext.dispatchEventBus(event, {
             source: this,
             annotation: this.annotation,

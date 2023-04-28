@@ -50,6 +50,7 @@ export default class Annotation {
     private _page: number;
 
     public reference: PartialReferenceType | null;
+    public focused = false;
 
     public get type() {
         return this._type;
