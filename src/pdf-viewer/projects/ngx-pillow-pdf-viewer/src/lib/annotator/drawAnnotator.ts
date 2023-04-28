@@ -230,6 +230,7 @@ export default class DrawAnnotator {
         }
 
         canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+        this._coloredIds.splice(0);
     }
 
     private getOpacityHex(opacity: number)

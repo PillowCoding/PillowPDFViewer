@@ -13,7 +13,7 @@ export default class TextAnnotator {
     private readonly _defaultLogSource = TextAnnotator.name;
     private readonly _annotatedTextAttribute = 'Text-annotated';
     private readonly _layerClassName = 'textAnnotateLayer';
-    private readonly _annotatedIds: string[] = [];
+    private _annotatedIds: string[] = [];
 
     public get annotatedIds() {
         return this._annotatedIds;
@@ -111,6 +111,8 @@ export default class TextAnnotator {
             for (const element of elements) {
                 element.remove();
             }
+
+            this._annotatedIds = this._annotatedIds.filter(x => x !== id);
         }
     }
 
