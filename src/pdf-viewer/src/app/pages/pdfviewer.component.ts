@@ -15,8 +15,7 @@ export class pdfViewerComponent
     @ViewChild('pdfViewer') private _pdfViewer!: PdfViewerComponent;
 
     // Fake delay can imitate I/O operations.
-    // Use the commented method instead of the uncommented one to imitate a delay.
-    private readonly delay = () => { return null };
+    // Uncomment the commented method to imitate a delay.
     //private readonly delay = () => { return new Promise<void>(resolve => setTimeout(resolve, 1000)); }
 
     private readonly _storedAnnotationKey = 'storedAnnotations';
@@ -36,7 +35,10 @@ export class pdfViewerComponent
             this._annotations = this.getLocallyStoredAnnotations();
         }
 
-        await this.delay();
+        if ('delay' in this && typeof this.delay === 'function') {
+            await this.delay();
+        }
+        
         return this._annotations.filter(x => x.page === page);
     }
 
@@ -46,7 +48,10 @@ export class pdfViewerComponent
             throw new Error('Expected annotations to exist.');
         }
 
-        await this.delay();
+        if ('delay' in this && typeof this.delay === 'function') {
+            await this.delay();
+        }
+
         this._annotations.push(annotation);
         this.setLocallyStoredAnnotations(this._annotations);
     }
@@ -57,7 +62,9 @@ export class pdfViewerComponent
             throw new Error('Expected annotations to exist.');
         }
 
-        await this.delay();
+        if ('delay' in this && typeof this.delay === 'function') {
+            await this.delay();
+        }
         this.setLocallyStoredAnnotations(this._annotations);
     }
 
@@ -67,7 +74,9 @@ export class pdfViewerComponent
             throw new Error('Expected annotations to exist.');
         }
 
-        await this.delay();
+        if ('delay' in this && typeof this.delay === 'function') {
+            await this.delay();
+        }
         this._annotations = this._annotations.filter(x => x !== annotation);
         this.setLocallyStoredAnnotations(this._annotations);
     }
