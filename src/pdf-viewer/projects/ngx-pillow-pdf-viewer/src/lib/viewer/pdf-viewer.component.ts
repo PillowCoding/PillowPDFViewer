@@ -615,7 +615,9 @@ export class PdfViewerComponent implements OnInit {
         this.stateHasChanged();
     }
 
-    private onAnnotationDeleted({ source, annotation}: DeleteAnnotationEventType) {
+    private onAnnotationDeleted({ source, annotation }: DeleteAnnotationEventType) {
+
+        this.assertFileLoaded();
 
         // Ignore from self.
         if (source === this) {
@@ -624,6 +626,13 @@ export class PdfViewerComponent implements OnInit {
 
         this.loggingProvider.sendDebug(`Deleting ${annotation.state} annotation: ${annotation.id}`, this._defaultLogSource);
         this._annotations = this._annotations.filter(x => x.id !== annotation.id);
+
+        // Text annotations need to be explicitly removed.
+        if (annotation.type === 'text') {
+            this.textAnnotator.removeAnnotationById(annotation.id);
+        }
+
+        this.rerenderAnnotationsPage(annotation.page);
     }
 
     private async saveAnnotation(annotation: Annotation) {
@@ -657,26 +666,14 @@ export class PdfViewerComponent implements OnInit {
         this.assertFileLoaded();
 
         this.loggingProvider.sendDebug(`Focusing ${annotation.id}...`, this._defaultLogSource);
-        const pageNumber = annotation.page;
-
-        this.removeTextAnnotationColorPage(pageNumber);
-        this.colorTextAnnotationPage(pageNumber, 'onlyFocusedElseUnfocused', true);
-
-        this.drawAnnotator.clearCanvas(pageNumber, false);
-        this.colorDrawAnnotationPage(pageNumber, 'onlyFocusedElseUnfocused', true);
+        this.rerenderAnnotationsPage(annotation.page);
     }
 
     private onAnnotationUnfocus({ annotation }: AnnotationUnfocusEventType) {
         this.assertFileLoaded();
 
         this.loggingProvider.sendDebug(`Unfocusing ${annotation.id}...`, this._defaultLogSource);
-        const pageNumber = annotation.page;
-
-        this.removeTextAnnotationColorPage(pageNumber);
-        this.colorTextAnnotationPage(pageNumber, 'onlyFocusedElseUnfocused', true);
-
-        this.drawAnnotator.clearCanvas(pageNumber, false);
-        this.colorDrawAnnotationPage(pageNumber, 'onlyFocusedElseUnfocused', true);
+        this.rerenderAnnotationsPage(annotation.page);
     }
 
     private onAnnotationEditorModeChanged(event: AnnotationEditorModeChangedEventType) {
@@ -705,6 +702,16 @@ export class PdfViewerComponent implements OnInit {
             this.stopAnnotating();
             this.stateHasChanged();
         }
+    }
+
+    private rerenderAnnotationsPage(pageNumber: number) {
+        this.assertFileLoaded();
+
+        this.removeTextAnnotationColorPage(pageNumber);
+        this.colorTextAnnotationPage(pageNumber, 'onlyFocusedElseUnfocused', true);
+
+        this.drawAnnotator.clearCanvas(pageNumber, false);
+        this.colorDrawAnnotationPage(pageNumber, 'onlyFocusedElseUnfocused', true);
     }
 
     private annotateTextPage(page: number) {
