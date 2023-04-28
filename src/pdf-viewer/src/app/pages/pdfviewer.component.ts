@@ -15,8 +15,9 @@ export class pdfViewerComponent
     @ViewChild('pdfViewer') private _pdfViewer!: PdfViewerComponent;
 
     // Fake delay can imitate I/O operations.
-    // Adjust the value to change the time it takes.
-    private readonly delay = () => { return new Promise<void>(resolve => setTimeout(resolve, 1000)); }
+    // Use the commented method instead of the uncommented one to imitate a delay.
+    private readonly delay = () => { return null };
+    //private readonly delay = () => { return new Promise<void>(resolve => setTimeout(resolve, 1000)); }
 
     private readonly _storedAnnotationKey = 'storedAnnotations';
 
