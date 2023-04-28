@@ -23,8 +23,29 @@
             </div>
 
             <header class="header">
+
                 <!-- Left side -->
-                <div libClickStopPropagation>
+                <div class="header-left">
+                    <img *ngIf="annotation?.creator && annotation?.creatorUrl"
+                        src="{{annotation.creatorUrl}}"
+                        height="24"
+                        width="24"
+                        size="24"
+                        class="avatar" />
+                    <lib-initials-avatar *ngIf="annotation?.creator && !annotation?.creatorUrl"
+                        class="initials-avatar"
+                        [input]="annotation.creator">
+                    </lib-initials-avatar>
+                    
+                    <div class="creator">
+                        <p *ngIf="annotation.creator">{{annotation.creator}}</p>
+                    </div>
+                </div>
+
+                <!-- Right side -->
+                <div class="header-right" libClickStopPropagation>
+                    <p class="font-bold">{{annotation.dateCreated | date: 'h:mm:ss'}}</p>
+
                     <div *ngIf="loading && !expanded"
                         class="loading-indicator inline">
                         <lib-loading-ring></lib-loading-ring>
@@ -36,17 +57,6 @@
                             [useCustomColor]="true"
                             (closed)="onDelete()" />
                     </div>
-                </div>
-
-                <!-- Middle -->
-                <div *ngIf="annotation.creator"
-                    class="header-middle">
-                    <p>{{annotation.creator}}</p>
-                </div>
-
-                <!-- Right side -->
-                <div class="header-right">
-                    <p class="font-bold">{{annotation.dateCreated | date: 'h:mm:ss'}}</p>
                 </div>
             </header>
 

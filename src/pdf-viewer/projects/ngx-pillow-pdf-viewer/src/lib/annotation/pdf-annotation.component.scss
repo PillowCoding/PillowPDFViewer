@@ -2,16 +2,14 @@
 {
     position: absolute;
     top: 0;
-    left: 0;
+    right: 0;
     width: 100%;
     height: 100%;
 
     &.inline {
-        width: auto;
-        transform: scale(0.4);
-        transform-origin: 0 0;
-        margin-left: 25px;
+        transform: scale(0.6);
         margin-top: 5px;
+        top: -15px;
     }
 }
 
@@ -32,6 +30,16 @@
     {
         background-color: var(--annotation-background-hover-color);
     }
+}
+
+.avatar {
+    margin-right: 8px;
+    vertical-align: middle;
+    border-radius: 50%;
+}
+
+.avatar, .initials-avatar {
+    margin-top: 5px;
 }
 
 .quote {
@@ -122,22 +130,27 @@
     display: flex;
     justify-content: space-between;
 
-    .header-middle, .header-right {
+    .header-left, .header-right {
         line-height: 10px;
     }
 
-    .header-middle {
-        margin: auto 5px auto 0;
-        border-bottom: solid 1px var(--annotation-border-color);
+    .header-left {
+        display: flex;
         flex-grow: 1;
 
-        p {
-            margin: 0 5px 5px 5px;
+        .creator {
+            margin: auto 5px auto 0;
+            border-bottom: solid 1px var(--annotation-border-color);
+            flex-grow: 1;
+
+            p {
+                margin: 0 5px 5px 5px;
+            }
         }
     }
 
     .header-right {
-        padding-right: 50px;
+        display: flex;
     }
 }
 
