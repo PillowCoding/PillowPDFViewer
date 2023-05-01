@@ -1,7 +1,5 @@
-import { Component, ViewChild } from '@angular/core';
-import { PdfViewerComponent } from 'ngx-pillow-pdf-viewer';
-import Annotation, { AnnotationComment, annotationObjectParameters } from 'ngx-pillow-pdf-viewer/annotation/annotation';
-import annotation from 'ngx-pillow-pdf-viewer/annotation/annotation';
+import { Component, ViewChild } from "@angular/core";
+import { PdfViewerComponent, annotationObjectParameters, Annotation, AnnotationComment } from "ngx-pillow-pdf-viewer";
 
 type storedAnnotations = { fileName: string, baseUrl: string, annotations: Array<annotationObjectParameters> };
 
@@ -20,7 +18,7 @@ export class pdfViewerComponent
 
     private readonly _storedAnnotationKey = 'storedAnnotations';
 
-    private _annotations?: Array<annotation>;
+    private _annotations?: Array<Annotation>;
 
     constructor() {
         this.fetchAnnotationsForPage = this.fetchAnnotationsForPage.bind(this);
@@ -42,7 +40,7 @@ export class pdfViewerComponent
         return this._annotations.filter(x => x.page === page);
     }
 
-    public async saveAnnotation(annotation: annotation)
+    public async saveAnnotation(annotation: Annotation)
     {
         if (!this._annotations) {
             throw new Error('Expected annotations to exist.');
@@ -57,7 +55,7 @@ export class pdfViewerComponent
         this.setLocallyStoredAnnotations(this._annotations);
     }
 
-    public async saveAnnotationComment(annotation: annotation, comment: AnnotationComment)
+    public async saveAnnotationComment(annotation: Annotation, comment: AnnotationComment)
     {
         if (!this._annotations) {
             throw new Error('Expected annotations to exist.');
@@ -71,7 +69,7 @@ export class pdfViewerComponent
         this.setLocallyStoredAnnotations(this._annotations);
     }
 
-    public async deleteAnnotation(annotation: annotation)
+    public async deleteAnnotation(annotation: Annotation)
     {
         if (!this._annotations) {
             throw new Error('Expected annotations to exist.');
@@ -84,7 +82,7 @@ export class pdfViewerComponent
         this.setLocallyStoredAnnotations(this._annotations);
     }
 
-    private async setLocallyStoredAnnotations(annotations: annotation[]) {
+    private async setLocallyStoredAnnotations(annotations: Annotation[]) {
         if (!this._pdfViewer.pdfjsContext?.pdfViewerApplication) {
             throw new Error('PDF application could not be found.');
         }

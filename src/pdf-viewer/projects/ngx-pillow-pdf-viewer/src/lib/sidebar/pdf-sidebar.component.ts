@@ -1,12 +1,12 @@
 import { trigger, state, style, transition, animate } from "@angular/animations";
 import { ChangeDetectorRef, Component, Input, OnInit, QueryList, ViewChildren } from "@angular/core";
-import annotation from "ngx-pillow-pdf-viewer/annotation/annotation";
+import { Annotation } from "ngx-pillow-pdf-viewer";
 import { PdfAnnotationComponent } from "ngx-pillow-pdf-viewer/annotation/pdf-annotation.component";
 import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import { AnnotationDeletedEventType, PendingAnnotationDeletedEventType, PendingAnnotationStartedEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 
-export type annotationsProviderDelegate = (page: number) => Promise<annotation[]>;
+export type annotationsProviderDelegate = (page: number) => Promise<Annotation[]>;
 
 @Component({
     selector: 'lib-pdf-sidebar',
@@ -37,7 +37,7 @@ export class PdfSidebarComponent implements OnInit {
     private _expandedSidebarWidth = 480;
     private _expanded = false;
 
-    public annotations: annotation[] = [];
+    public annotations: Annotation[] = [];
 
     // The completed annotations and its provider.
     @Input() public annotationsProvider?: annotationsProviderDelegate;
@@ -115,7 +115,7 @@ export class PdfSidebarComponent implements OnInit {
         }
 
         this.annotations = annotations
-            .sort((a: annotation, b: annotation) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime())
+            .sort((a: Annotation, b: Annotation) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime())
             .reverse();
         this.stateHasChanged();
     }

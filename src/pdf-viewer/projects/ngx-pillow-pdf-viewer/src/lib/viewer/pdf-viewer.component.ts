@@ -5,7 +5,7 @@ import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultL
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 import { AnnotationCommentSubmitEventType, AnnotationDeleteEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, AnnotationFocusEventType, AnnotationUnfocusEventType, PageRenderedEventType, TextLayerRenderedEventType } from "../types/eventBus";
 import { AnnotationType, boundingBox } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
-import Annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
+import { Annotation, AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfSidebarComponent, annotationsProviderDelegate } from "ngx-pillow-pdf-viewer/sidebar/pdf-sidebar.component";
 import TextAnnotator from "ngx-pillow-pdf-viewer/annotator/textAnnotator";
 import LayerManager from "ngx-pillow-pdf-viewer/annotator/layerManager";
@@ -658,7 +658,7 @@ export class PdfViewerComponent implements OnInit {
 
         this.pdfjsContext.dispatchEventBus('annotationDeleted', {
             source: this,
-            annotation: annotation,
+            annotation,
         });
     }
 

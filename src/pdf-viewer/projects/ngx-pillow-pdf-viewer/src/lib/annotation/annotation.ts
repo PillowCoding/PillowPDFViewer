@@ -91,7 +91,7 @@ export class AnnotationComment {
     }
 }
 
-export default class Annotation {
+export class Annotation {
     private _type: AnnotationType;
     private _id: string;
     private _dateCreated: Date;
@@ -180,7 +180,6 @@ export default class Annotation {
         annotation._id = annotationObject.id;
         annotation._dateCreated = annotationObject.dateCreated;
         
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         annotation._comments = annotationObject.comments.map(x => AnnotationComment.fromObject(x));
         annotation.reference = annotationObject.reference;
 

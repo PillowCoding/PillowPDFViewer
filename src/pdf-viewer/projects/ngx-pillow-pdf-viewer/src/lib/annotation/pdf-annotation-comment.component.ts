@@ -1,8 +1,8 @@
 import { DatePipe } from "@angular/common";
 import { Component, Input, OnInit } from "@angular/core";
-import annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
+import { Annotation, AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 
-export type annotationsProviderDelegate = (page: number) => Promise<annotation[]>;
+export type annotationsProviderDelegate = (page: number) => Promise<Annotation[]>;
 
 @Component({
     selector: 'lib-pdf-annotation-comment',

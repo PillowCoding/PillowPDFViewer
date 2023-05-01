@@ -1,10 +1,10 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
-import annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
+import { Annotation, AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import { EventBusEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 
-export type annotationsProviderDelegate = (page: number) => Promise<annotation[]>;
+export type annotationsProviderDelegate = (page: number) => Promise<Annotation[]>;
 
 @Component({
     selector: 'lib-pdf-annotation',
@@ -17,7 +17,7 @@ export class PdfAnnotationComponent implements OnInit {
     
     @Input() public loggingProvider?: LoggingProvider;
     @Input() public pdfjsContext?: PdfjsContext;
-    @Input() public annotation?: annotation;
+    @Input() public annotation?: Annotation;
     @Input() public expanded = false;
 
     @Input()
@@ -177,7 +177,7 @@ export class PdfAnnotationComponent implements OnInit {
     private assertParametersSet(): asserts this is this & {
         loggingProvider: LoggingProvider;
         pdfjsContext: PdfjsContext;
-        annotation: annotation;
+        annotation: Annotation;
     } {
         const missingParameters = [];
         if (!this.loggingProvider) { missingParameters.push('loggingProvider'); }

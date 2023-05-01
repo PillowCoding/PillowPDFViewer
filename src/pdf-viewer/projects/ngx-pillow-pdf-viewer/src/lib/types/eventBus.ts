@@ -1,4 +1,4 @@
-import annotation, { AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
+import { Annotation, AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import { PdfViewerComponent } from "../../public-api";
 import PDFPageView from "./pdfPageView";
 import PDFPresentationMode from "./pdfPresentationMode";
@@ -276,28 +276,28 @@ export type TextLayerRenderedEventType = EventBusEvent<PDFPageView> & {
 }
 
 export type PendingAnnotationStartedEventType = EventBusEvent<PdfViewerComponent> & {
-    annotation: annotation;
+    annotation: Annotation;
 }
 
 export type PendingAnnotationDeletedEventType = EventBusEvent<PdfViewerComponent> & {
-    annotation: annotation;
+    annotation: Annotation;
 }
 
 export type AnnotationDeleteEventType = EventBusEvent<PdfViewerComponent | PdfAnnotationComponent> & {
-    annotation: annotation;
+    annotation: Annotation;
 }
 
 export type AnnotationDeletedEventType = EventBusEvent<PdfViewerComponent | PdfAnnotationComponent> & {
-    annotation: annotation;
+    annotation: Annotation;
 }
 
 export type AnnotationCommentSubmitEventType = EventBusEvent<PdfAnnotationComponent> & {
-    annotation: annotation;
+    annotation: Annotation;
     comment: AnnotationComment;
 }
 
 export type AnnotationFocusEventType = EventBusEvent<PdfAnnotationComponent> & {
-    annotation: annotation;
+    annotation: Annotation;
 }
 
 export type AnnotationUnfocusEventType = AnnotationFocusEventType;
