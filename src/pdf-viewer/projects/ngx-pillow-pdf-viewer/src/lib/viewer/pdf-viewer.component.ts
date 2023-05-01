@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
-import PdfjsContext, { annotateDrawId, annotateTextId, toolType } from "ngx-pillow-pdf-viewer/pdfjsContext";
+import PdfjsContext, { annotateDrawId, annotateIconId, annotateTextId, toolType } from "ngx-pillow-pdf-viewer/pdfjsContext";
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
@@ -195,6 +195,7 @@ export class PdfViewerComponent implements OnInit {
         'drawEditor': { enabled: 'drawEditor.enabled', disabled: 'drawEditor.disabled'},
         'textAnnotator': { enabled: 'textAnnotator.enabled', disabled: 'textAnnotator.disabled'},
         'drawAnnotator': { enabled: 'drawAnnotator.enabled', disabled: 'drawAnnotator.disabled'},
+        'iconAnnotator': { enabled: 'iconAnnotator.enabled', disabled: 'iconAnnotator.disabled'},
     };
 
     constructor(
@@ -253,38 +254,26 @@ export class PdfViewerComponent implements OnInit {
         const textAnnotateStyle = `
             #${annotateTextId}::before
             {
-                -webkit-mask-image: var(--toolbarButton-editorFreeText-icon);
+                -webkit-mask-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiM4YzhjOGM7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5pY29uIC0gbGluZSAtIHRvb2wgLSBoaWdobGlnaHQ8L3RpdGxlPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTkuOTEsMTMuMDdoMy44NkwxMS44NCw4LjQ2Wm01LjQ2LDMuNjhMMTQuNjIsMTVIOS4wNUw3Ljc3LDE4SDUuNjNMMTAuNDUsNi42NGExLDEsMCwwLDEsMS0uNjRoMWExLjIzLDEuMjMsMCwwLDEsMSwuNjRsMiw0LjkxVjRINS44NUEyLjIyLDIuMjIsMCwwLDAsMy42Myw2LjIyVjE3Ljc4QTIuMjIsMi4yMiwwLDAsMCw1Ljg1LDIwaDkuNTJaIj48L3BhdGg+PHBhdGggZmlsbD0iZGVmYXVsdCIgY2xhc3M9ImNscy0xIiBkPSJNMjAuMzcsMlYyMmgtMlYyWiI+PC9wYXRoPjwvc3ZnPg==");
             }
         `;
         const drawAnnotateStyle = `
             #${annotateDrawId}::before
             {
-                -webkit-mask-image: var(--toolbarButton-editorInk-icon);
+                -webkit-mask-image: url("data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJpY29uIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iMCAwIDI0IDI0IiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCAyNCAyNDsiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+IC5zdDB7ZmlsbDojODY4RTk2O30gPC9zdHlsZT48cGF0aCBjbGFzcz0ic3QwIiBkPSJNMTkuMywzLjhINC43Yy0xLDAtMS44LDAuOC0xLjgsMS44djEyLjhjMCwxLDAuOCwxLjgsMS44LDEuOGgxNC43YzEsMCwxLjgtMC44LDEuOC0xLjhWNS42IEMyMS4yLDQuNiwyMC4zLDMuNywxOS4zLDMuOHogTTUuMSwxOFY2aDEzLjh2MTJINS4xeiI+PC9wYXRoPjxyZWN0IGZpbGw9Im5vbmUiIHg9IjUuMSIgeT0iNiIgd2lkdGg9IjEzLjgiIGhlaWdodD0iMTIiPjwvcmVjdD48L3N2Zz4=");
             }
         `;
-
-        const sharedStyle = `
-            #${annotateDrawId}::after, #${annotateTextId}::after
+        const iconAnnotateStyle = `
+            #${annotateIconId}::before
             {
-                content: 'A';
-                font-size: 8px;
-                position: absolute;
-                left: 4px;
-                top: 4px;
-
-                color: var(--main-color);
-                opacity: var(--toolbar-icon-opacity);
-            }
-            #${annotateDrawId}::before, #${annotateTextId}::before
-            {
-                color: var(--main-color);
-                opacity: var(--toolbar-icon-opacity);
+                -webkit-mask-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNhYmIwYzQ7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5pY29uIC0gdG9vbCAtIGNvbW1lbnQgLSBsaW5lPC90aXRsZT48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0yMCwyLjQ2SDRhMiwyLDAsMCwwLTIsMnYxMGEyLDIsMCwwLDAsMiwySDd2NS4wOGw2LjM1LTUuMDhIMjBhMiwyLDAsMCwwLDItMnYtMTBBMiwyLDAsMCwwLDIwLDIuNDZabTAsMTJIMTIuNjVMOSwxNy4zOFYxNC40Nkg0di0xMEgyMFoiPjwvcGF0aD48cGF0aCBmaWxsPSJkZWZhdWx0IiBjbGFzcz0iY2xzLTEiIGQ9Ik0xOCw4LjQ2SDZ2LTJIMThabS0yLjUsNEg2di0yaDkuNVoiPjwvcGF0aD48L3N2Zz4=");
             }
         `;
 
         // Insert the new buttons. Start disabled by default as they are only used with loaded files.
-        const annotateDrawButton = this.pdfjsContext.insertToolButton(annotateDrawId, 'beforebegin', 'textEditor', true);
-        const annotateTextButton = this.pdfjsContext.insertToolButton(annotateTextId, 'beforebegin', annotateDrawId, true);
+        const annotateIconButton = this.pdfjsContext.insertToolButton(annotateIconId, 'beforebegin', 'textEditor', true);
+        const annotateTextButton = this.pdfjsContext.insertToolButton(annotateTextId, 'beforebegin', annotateIconId, true);
+        const annotateDrawButton = this.pdfjsContext.insertToolButton(annotateDrawId, 'beforebegin', annotateTextId, true);
 
         const drawTranslation = this._localisationService.Translate(this.toolTypeTranslationMap['drawAnnotator'].disabled);
         this.pdfjsContext.setToolTitle('drawAnnotator', drawTranslation);
@@ -292,10 +281,14 @@ export class PdfViewerComponent implements OnInit {
         const textTranslation = this._localisationService.Translate(this.toolTypeTranslationMap['textAnnotator'].disabled);
         this.pdfjsContext.setToolTitle('textAnnotator', textTranslation);
 
-        this.pdfjsContext.injectStyle(textAnnotateStyle + drawAnnotateStyle + sharedStyle);
+        const iconTranslation = this._localisationService.Translate(this.toolTypeTranslationMap['iconAnnotator'].disabled);
+        this.pdfjsContext.setToolTitle('iconAnnotator', iconTranslation);
+
+        this.pdfjsContext.injectStyle(textAnnotateStyle + drawAnnotateStyle + iconAnnotateStyle);
 
         annotateDrawButton.onclick = () => this.beginNewAnnotation('draw');
         annotateTextButton.onclick = () => this.beginNewAnnotation('text');
+        annotateIconButton.onclick = () => { throw new Error('Currently not implemented.'); }
 
         // Collect the tools to disable.
         // The text and draw editor/annotator are disabled after the initial render.

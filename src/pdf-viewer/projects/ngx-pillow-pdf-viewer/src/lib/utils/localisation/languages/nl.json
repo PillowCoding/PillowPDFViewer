@@ -13,6 +13,7 @@
 
     "textAnnotator.enabled": "Nieuwe tekst annotatie",
     "drawAnnotator.enabled": "Nieuwe teken annotatie",
+    "iconAnnotator.enabled": "Nieuwe icoon annotatie",
     "openFile.enabled": "Open",
     "printing.enabled": "Print",
     "downloadPdf.enabled": "Opslaan",
@@ -21,6 +22,7 @@
 
     "textAnnotator.disabled": "Nieuwe tekst annotaties is niet mogelijk.",
     "drawAnnotator.disabled": "Nieuwe teken annotaties is niet mogelijk.",
+    "iconAnnotator.disabled": "Nieuwe icoon annotaties is niet mogelijk.",
     "openFile.disabled": "Het openen van bestanden is niet mogelijk.",
     "printing.disabled": "Het uitprinten van het bestand is niet mogelijk.",
     "downloadPdf.disabled": "Het opslaan van het bestand is niet mogelijk.",

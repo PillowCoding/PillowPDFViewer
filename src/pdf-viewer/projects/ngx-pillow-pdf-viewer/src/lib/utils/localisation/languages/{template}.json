@@ -13,6 +13,7 @@
 
     "textAnnotator.enabled": "",
     "drawAnnotator.enabled": "",
+    "iconAnnotator.enabled": "",
     "openFile.enabled": "",
     "printing.enabled": "",
     "downloadPdf.enabled": "",
@@ -21,6 +22,7 @@
 
     "textAnnotator.disabled": "",
     "drawAnnotator.disabled": "",
+    "iconAnnotator.disabled": "",
     "openFile.disabled": "",
     "printing.disabled": "",
     "downloadPdf.disabled": "",
