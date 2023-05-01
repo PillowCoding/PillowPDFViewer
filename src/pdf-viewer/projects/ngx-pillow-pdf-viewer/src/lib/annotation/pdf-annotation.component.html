@@ -51,7 +51,7 @@
                         <lib-loading-ring></lib-loading-ring>
                     </div>
 
-                    <div *ngIf="!loading && annotation.state === 'completed'"
+                    <div *ngIf="!loading && annotation.state === 'completed' && annotation.canDelete"
                         class="delete-annotation">
                         <lib-close-button
                             [useCustomColor]="true"

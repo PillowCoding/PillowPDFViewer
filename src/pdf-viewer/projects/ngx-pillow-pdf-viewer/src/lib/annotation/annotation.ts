@@ -1,5 +1,46 @@
 import generateGuid from "ngx-pillow-pdf-viewer/utils/generateGuid";
-import { AnnotationState, AnnotationType, PartialReferenceType, boundingBox } from "./annotationTypes";
+import { AnnotationState, AnnotationType, PartialReferenceType, ReferenceType, boundingBox } from "./annotationTypes";
+
+export type annotationCommentObjectParameters = Readonly<
+
+    // Required parameters
+    Required<Pick<AnnotationComment,
+        'content' | 'dateCreated'>>
+    
+    // Optional parameters.
+    & Partial<Pick<Annotation,
+        'creator' | 'creatorUrl'>>
+>;
+
+export type annotationCommentCreateObjectParameters = annotationCommentObjectParameters;
+
+export type annotationObjectParameters = Readonly<
+
+    // Required parameters
+    Required<Pick<Annotation,
+        'type' | 'page' | 'id' | 'dateCreated'>>
+    
+    // Optional parameters.
+    & Partial<Pick<Annotation,
+        'creator' | 'creatorUrl'>>
+    
+    // Adjusted type reference to be required.
+    // Adjusted type comment to satisfy custom type.
+    & {
+        reference: ReferenceType,
+        comments: annotationCommentObjectParameters[],
+    }
+>;
+
+export type annotationCreateObjectParameters = Readonly<
+
+    // Inherited parameters
+    annotationObjectParameters
+
+    // Optional parameters.
+    & Partial<Pick<Annotation,
+        'canDelete'>>
+>;
 
 export class AnnotationComment {
 
@@ -9,7 +50,7 @@ export class AnnotationComment {
     /** Optional creator of the comment. */
     public creator?: string;
 
-    /** Optional url to the profile pictute of the comment. */
+    /** Optional url to the profile picture of the comment. */
     public creatorUrl?: string;
 
     public get dateCreated() { return this._dateCreated; }
@@ -28,7 +69,7 @@ export class AnnotationComment {
         return AnnotationComment.fromObject(JSON.parse(serializedContent));
     }
 
-    public toObject() {
+    public toObject(): annotationCommentObjectParameters {
         return {
             content: this.content,
             creator: this.creator,
@@ -38,8 +79,7 @@ export class AnnotationComment {
     }
 
     // TODO: Validate object
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public static fromObject(commentObject: any) {
+    public static fromObject(commentObject: annotationCommentCreateObjectParameters) {
 
         const comment = new AnnotationComment(commentObject.content);
         comment._dateCreated = commentObject.dateCreated;
@@ -66,8 +106,14 @@ export default class Annotation {
     /** Optional creator of the annotation. */
     public creator?: string;
 
-    /** Optional url to the profile pictute of the creator. */
+    /** Optional url to the profile picture of the creator. */
     public creatorUrl?: string;
+
+    /** Boolean that determines if the annotation can be deleted.
+     * Modify this value if a user is not allowed to delete the annotation.
+     * Note that this is purely clientside and there should be secured checks to prevent deletion.
+     */
+    public canDelete = true;
 
     public get type() { return this._type; }
     public get id() { return this._id; }
@@ -103,33 +149,44 @@ export default class Annotation {
         return Annotation.fromObject(JSON.parse(serializedContent));
     }
 
-    public toObject() {
+    public toObject(): annotationObjectParameters {
+
+        // Validate state.
+        // This will validate that the reference is set.
+        if (this.state !== 'completed') {
+            throw new Error('Only completed annotations can be translated to an object.');
+        }
+
+        const reference = this.reference as ReferenceType;
+        const comments = this.comments.map(x => x.toObject());
+
         return {
             type: this.type,
             id: this.id,
             creator: this.creator,
             creatorUrl: this.creatorUrl,
             dateCreated: this.dateCreated,
-            comments: this.comments.map(x => x.toObject()),
+            comments,
             page: this.page,
-            reference: this.reference,
+            reference,
         }
     }
 
     // TODO: Validate object
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public static fromObject(annotationObject: any) {
+    public static fromObject(annotationObject: annotationCreateObjectParameters) {
 
         const annotation = new Annotation(annotationObject.type, annotationObject.page);
         annotation._id = annotationObject.id;
         annotation._dateCreated = annotationObject.dateCreated;
         
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        annotation._comments = (annotationObject.comments as any[]).map(x => AnnotationComment.fromObject(x));
+        annotation._comments = annotationObject.comments.map(x => AnnotationComment.fromObject(x));
         annotation.reference = annotationObject.reference;
 
         annotation.creator = annotationObject.creator;
         annotation.creatorUrl = annotationObject.creatorUrl;
+
+        annotation.canDelete = annotationObject.canDelete || true;
         return annotation;
     }
 

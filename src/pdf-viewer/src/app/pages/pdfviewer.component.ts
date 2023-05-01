@@ -1,9 +1,9 @@
 import { Component, ViewChild } from '@angular/core';
 import { PdfViewerComponent } from 'ngx-pillow-pdf-viewer';
-import Annotation, { AnnotationComment } from 'ngx-pillow-pdf-viewer/annotation/annotation';
+import Annotation, { AnnotationComment, annotationObjectParameters } from 'ngx-pillow-pdf-viewer/annotation/annotation';
 import annotation from 'ngx-pillow-pdf-viewer/annotation/annotation';
 
-type storedAnnotations = { fileName: string, baseUrl: string, annotations: Array<object> };
+type storedAnnotations = { fileName: string, baseUrl: string, annotations: Array<annotationObjectParameters> };
 
 @Component({
     selector: 'lib-pdfviewer',
