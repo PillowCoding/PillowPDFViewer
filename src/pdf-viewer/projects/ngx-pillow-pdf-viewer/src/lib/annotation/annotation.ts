@@ -1,15 +1,16 @@
 import generateGuid from "ngx-pillow-pdf-viewer/utils/generateGuid";
 import { AnnotationState, AnnotationType, PartialReferenceType, ReferenceType, boundingBox } from "./annotationTypes";
+import { PickPartial, PickRequired } from "ngx-pillow-pdf-viewer/utils/typings";
 
 export type annotationCommentObjectParameters = Readonly<
 
     // Required parameters
-    Required<Pick<AnnotationComment,
-        'content' | 'dateCreated'>>
+    PickRequired<AnnotationComment,
+        'content' | 'dateCreated'>
     
     // Optional parameters
-    & Partial<Pick<Annotation,
-        'creator' | 'creatorUrl'>>
+    & PickPartial<Annotation,
+        'creator' | 'creatorUrl'>
 >;
 
 export type annotationCommentCreateObjectParameters = annotationCommentObjectParameters;
@@ -17,12 +18,12 @@ export type annotationCommentCreateObjectParameters = annotationCommentObjectPar
 export type annotationObjectParameters = Readonly<
 
     // Required parameters
-    Required<Pick<Annotation,
-        'type' | 'page' | 'id' | 'dateCreated'>>
+    PickRequired<Annotation,
+        'type' | 'page' | 'id' | 'dateCreated'>
     
     // Optional parameters
-    & Partial<Pick<Annotation,
-        'creator' | 'creatorUrl'>>
+    & PickPartial<Annotation,
+        'creator' | 'creatorUrl'>
     
     // Adjusted type reference to be required.
     // Adjusted type comment to satisfy custom type.
@@ -38,8 +39,8 @@ export type annotationCreateObjectParameters = Readonly<
     annotationObjectParameters
 
     // Optional parameters
-    & Partial<Pick<Annotation,
-        'canDelete'>>
+    & PickPartial<Annotation,
+        'canDelete'>
 >;
 
 export class AnnotationComment {
