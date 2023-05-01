@@ -1,5 +1,5 @@
 import { Component, ViewChild } from "@angular/core";
-import { PdfViewerComponent, annotationObjectParameters, Annotation, AnnotationComment } from "ngx-pillow-pdf-viewer";
+import { PdfViewerComponent, annotationObjectParameters, Annotation, AnnotationComment, DefaultLoggingProvider } from "ngx-pillow-pdf-viewer";
 
 type storedAnnotations = { fileName: string, baseUrl: string, annotations: Array<annotationObjectParameters> };
 
@@ -16,8 +16,11 @@ export class pdfViewerComponent
     // Uncomment the commented method to imitate a delay.
     //private readonly delay = () => { return new Promise<void>(resolve => setTimeout(resolve, 1000)); }
 
-    private readonly _storedAnnotationKey = 'storedAnnotations';
+    // The logger that is used for the viewer.
+    // Severity can be adjusted if wanted.
+    public readonly loggingProvider = DefaultLoggingProvider.CreateDefaultAll('warning');
 
+    private readonly _storedAnnotationKey = 'storedAnnotations';
     private _annotations?: Array<Annotation>;
 
     constructor() {

@@ -1,7 +1,7 @@
 import { ReplaySubject } from 'rxjs';
 import LoggingProvider, { logSeverity, logSeverityArray, logSourceType } from './loggingProvider';
 
-export default class DefaultLoggingProvider extends LoggingProvider {
+export class DefaultLoggingProvider extends LoggingProvider {
     public override messages: ReplaySubject<unknown>;
     public override minimumLogSeverity: logSeverity;
 
@@ -42,5 +42,17 @@ export default class DefaultLoggingProvider extends LoggingProvider {
         }
         
         this.messages.next(message);
+    }
+
+    public static CreateDefaultDebugAll() {
+        return DefaultLoggingProvider.CreateDefaultAll('debug');
+    }
+
+    public static CreateDefaultWarnAll() {
+        return DefaultLoggingProvider.CreateDefaultAll('warning');
+    }
+
+    public static CreateDefaultAll(severity: logSeverity) {
+        return new DefaultLoggingProvider(severity, ['PdfViewerComponent', 'PdfjsContext', 'TextAnnotator', 'DrawAnnotator', 'LayerManager', 'PdfSidebarComponent'], 50);
     }
 }

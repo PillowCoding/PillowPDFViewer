@@ -1,7 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
 import PdfjsContext, { annotateDrawId, annotateIconId, annotateTextId, toolType } from "ngx-pillow-pdf-viewer/pdfjsContext";
 import pdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
-import DefaultLoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/defaultLoggingProvider";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 import { AnnotationCommentSubmitEventType, AnnotationDeleteEventType, AnnotationEditorModeChangedEventType, AnnotationEditorType, AnnotationFocusEventType, AnnotationUnfocusEventType, PageRenderedEventType, TextLayerRenderedEventType } from "../types/eventBus";
 import { AnnotationType, boundingBox } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
@@ -13,6 +12,7 @@ import DeferredPromise from "ngx-pillow-pdf-viewer/utils/deferredPromise";
 import { LocalisationService } from "ngx-pillow-pdf-viewer/utils/localisation/localisation.service";
 import DrawAnnotator, { canvasMouseType, drawData } from "ngx-pillow-pdf-viewer/annotator/drawAnnotator";
 import groupByKey from "ngx-pillow-pdf-viewer/utils/groupBy";
+import { DefaultLoggingProvider } from "ngx-pillow-pdf-viewer";
 
 export type annotationsSaveProviderDelegate = (annotation: Annotation) => void | Promise<void>;
 export type annotationsDeleteProviderDelegate = (annotation: Annotation) => void | Promise<void>;
@@ -210,7 +210,7 @@ export class PdfViewerComponent implements OnInit {
             this._relativeViewerPath = 'assets/pdfjs/web/viewer.html';
         }
         if (!this._loggingProvider) {
-            this._loggingProvider = new DefaultLoggingProvider('warning', ['EventBus', 'PdfViewerComponent', 'PdfjsContext', 'TextAnnotator', 'DrawAnnotator', 'LayerManager', 'PdfSidebarComponent'], 50);
+            this._loggingProvider = DefaultLoggingProvider.CreateDefaultWarnAll();
         }
 
         this._pdfjsContext = new PdfjsContext(this._loggingProvider, this._relativeViewerPath, this._iframeWrapper.nativeElement);
