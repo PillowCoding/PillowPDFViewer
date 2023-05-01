@@ -1,7 +1,9 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
+import { DomSanitizer } from "@angular/platform-browser";
 import { Annotation, AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
 import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
 import { EventBusEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
+import isBase64String from "ngx-pillow-pdf-viewer/utils/isBase64String";
 import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
 
 export type annotationsProviderDelegate = (page: number) => Promise<Annotation[]>;
@@ -61,8 +63,29 @@ export class PdfAnnotationComponent implements OnInit {
 
     private readonly _defaultLogSource = PdfAnnotationComponent.name;
 
+    public get avatarUrl() {
+        this.assertParametersSet();
+
+        if (!this.annotation.creatorUrl) {
+            return null;
+        }
+
+        if (typeof this.annotation.creatorUrl === 'string') {
+
+            // Check if base 64.
+            if (isBase64String(this.annotation.creatorUrl)) {
+                return 'data:image/png;base64,' + this.annotation.creatorUrl;
+            }
+            
+            return this.annotation.creatorUrl;
+        }
+
+        return 'data:image/png;base64,' + this.annotation.creatorUrl;
+    }
+
     constructor(
-        private changeDetector: ChangeDetectorRef
+        private readonly changeDetector: ChangeDetectorRef,
+        private readonly sanitizer: DomSanitizer,
     ) {
     }
 

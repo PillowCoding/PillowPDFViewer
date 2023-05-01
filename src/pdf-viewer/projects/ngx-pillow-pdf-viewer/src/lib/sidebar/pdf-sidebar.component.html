@@ -17,7 +17,8 @@
             </button>
 
             <lib-close-button *ngIf="expanded"
-                (closed)="collapse()"/>
+                (closed)="collapse()">
+            </lib-close-button>
 
             <button *ngIf="expanded && hasFocusedAnnotations"
                 (click)="unfocusAll()"

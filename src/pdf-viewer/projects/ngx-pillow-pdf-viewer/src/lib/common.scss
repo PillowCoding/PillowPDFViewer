@@ -30,6 +30,31 @@
     flex-grow: 1;
 }
 
+// Mostly used to prevent bootstrap defaults.
+.revert-top-margin {
+    margin-top: revert;
+}
+
+// Mostly used to prevent bootstrap defaults.
+.revert-bottom-margin {
+    margin-bottom: revert;
+}
+
+// Mostly used to prevent bootstrap defaults.
+.revert-font-family {
+    font-family: revert;
+}
+
+// Mostly used to prevent bootstrap defaults.
+.revert-font-size {
+    font-size: revert;
+}
+
+// Mostly used to prevent bootstrap defaults.
+.revert-line-height {
+    line-height: revert;
+}
+
 .loading-indicator {
     display: flex;
     justify-content: center;

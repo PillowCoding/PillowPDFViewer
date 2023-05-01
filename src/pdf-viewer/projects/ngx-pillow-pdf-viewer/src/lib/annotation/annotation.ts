@@ -52,7 +52,7 @@ export class AnnotationComment {
     public creator?: string;
 
     /** Optional url to the profile picture of the comment. */
-    public creatorUrl?: string;
+    public creatorUrl?: string | Uint16Array;
 
     public get dateCreated() { return this._dateCreated; }
     public get content() { return this._content; }
@@ -108,7 +108,7 @@ export class Annotation {
     public creator?: string;
 
     /** Optional url to the profile picture of the creator. */
-    public creatorUrl?: string;
+    public creatorUrl?: string | Uint16Array;
 
     /** Boolean that determines if the annotation can be deleted.
      * Modify this value if a user is not allowed to delete the annotation.

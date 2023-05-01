@@ -1,6 +1,8 @@
 import { DatePipe } from "@angular/common";
 import { Component, Input, OnInit } from "@angular/core";
+import { DomSanitizer } from "@angular/platform-browser";
 import { Annotation, AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
+import isBase64String from "ngx-pillow-pdf-viewer/utils/isBase64String";
 
 export type annotationsProviderDelegate = (page: number) => Promise<Annotation[]>;
 
@@ -25,8 +27,29 @@ export class PdfAnnotationCommentComponent implements OnInit {
         return this.datePipe.transform(this.annotationComment.dateCreated, 'd MMMM, y H:mm') || '';
     }
 
+    public get avatarUrl() {
+        this.assertParametersSet();
+
+        if (!this.annotationComment.creatorUrl) {
+            return null;
+        }
+
+        if (typeof this.annotationComment.creatorUrl === 'string') {
+
+            // Check if base 64.
+            if (isBase64String(this.annotationComment.creatorUrl)) {
+                return 'data:image/png;base64,' + this.annotationComment.creatorUrl;
+            }
+            
+            return this.annotationComment.creatorUrl;
+        }
+
+        return 'data:image/png;base64,' + this.annotationComment.creatorUrl;
+    }
+
     constructor(
-        private readonly datePipe: DatePipe
+        private readonly datePipe: DatePipe,
+        private readonly sanitizer: DomSanitizer,
     ) {
     }
 

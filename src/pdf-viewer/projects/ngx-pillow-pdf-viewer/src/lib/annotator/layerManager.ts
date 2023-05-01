@@ -72,7 +72,13 @@ export default class LayerManager {
     }
 
     public getLayerById(id: string) {
+        /*
         return this._layers.flatMap(x => x.layers)
+            .find(x => x.id === id);
+        */
+        return this._layers
+            .map(x => x.layers)
+            .reduce((actual, value) => actual.concat(value), [])
             .find(x => x.id === id);
     }
 

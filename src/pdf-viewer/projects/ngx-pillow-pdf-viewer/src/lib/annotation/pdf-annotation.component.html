@@ -27,7 +27,7 @@
                 <!-- Left side -->
                 <div class="header-left">
                     <img *ngIf="annotation?.creator && annotation?.creatorUrl"
-                        src="{{annotation.creatorUrl}}"
+                        src="{{avatarUrl}}"
                         height="24"
                         width="24"
                         size="24"
@@ -44,7 +44,7 @@
 
                 <!-- Right side -->
                 <div class="header-right" libClickStopPropagation>
-                    <p class="font-bold">{{annotation.dateCreated | date: 'h:mm:ss'}}</p>
+                    <p class="font-bold revert-top-margin revert-bottom-margin">{{annotation.dateCreated | date: 'h:mm:ss'}}</p>
 
                     <div *ngIf="loading && !expanded"
                         class="loading-indicator inline">
@@ -55,7 +55,8 @@
                         class="delete-annotation">
                         <lib-close-button
                             [useCustomColor]="true"
-                            (closed)="onDelete()" />
+                            (closed)="onDelete()">
+                        </lib-close-button>
                     </div>
                 </div>
             </header>
@@ -95,6 +96,7 @@
                 
                 <input #annotationCommentInput
                     [disabled]="inputLoading || annotation.state !== 'completed'"
+                    class="revert-font-family revert-font-size revert-line-height"
                     type="text"
                     aria-label="Comment input" />
                 <input [disabled]="inputLoading || annotation.state !== 'completed'"
