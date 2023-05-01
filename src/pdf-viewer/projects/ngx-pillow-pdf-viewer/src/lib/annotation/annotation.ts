@@ -186,7 +186,7 @@ export class Annotation {
         annotation.creator = annotationObject.creator;
         annotation.creatorUrl = annotationObject.creatorUrl;
 
-        annotation.canDelete = annotationObject.canDelete || true;
+        annotation.canDelete = annotationObject.canDelete !== undefined ? annotationObject.canDelete : true;
         return annotation;
     }
 
