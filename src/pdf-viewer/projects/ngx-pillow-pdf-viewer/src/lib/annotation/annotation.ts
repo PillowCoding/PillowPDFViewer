@@ -7,7 +7,7 @@ export type annotationCommentObjectParameters = Readonly<
     Required<Pick<AnnotationComment,
         'content' | 'dateCreated'>>
     
-    // Optional parameters.
+    // Optional parameters
     & Partial<Pick<Annotation,
         'creator' | 'creatorUrl'>>
 >;
@@ -20,7 +20,7 @@ export type annotationObjectParameters = Readonly<
     Required<Pick<Annotation,
         'type' | 'page' | 'id' | 'dateCreated'>>
     
-    // Optional parameters.
+    // Optional parameters
     & Partial<Pick<Annotation,
         'creator' | 'creatorUrl'>>
     
@@ -37,7 +37,7 @@ export type annotationCreateObjectParameters = Readonly<
     // Inherited parameters
     annotationObjectParameters
 
-    // Optional parameters.
+    // Optional parameters
     & Partial<Pick<Annotation,
         'canDelete'>>
 >;
@@ -111,7 +111,7 @@ export default class Annotation {
 
     /** Boolean that determines if the annotation can be deleted.
      * Modify this value if a user is not allowed to delete the annotation.
-     * Note that this is purely clientside and there should be secured checks to prevent deletion.
+     * Note that this is purely clientside and there should be secured serverside checks to prevent deletion.
      */
     public canDelete = true;
 
