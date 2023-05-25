@@ -1,0 +1,31 @@
+{
+    "sidebar.expand": "Expand",
+    "sidebar.collapse": "Collapse",
+    "sidebar.unfocusAll": "Unfocus all",
+
+    "annotate.title": "Annotating...",
+    "annotate.cancelButton": "Cancel",
+    
+    "annotations.nonePage": "There are no annotations on this page.",
+    "annotations.post": "Post",
+    "annotate.moreComments": "+ {0} more...",
+    "annotate.dateIndication": "on {0}",
+
+    "textAnnotator.enabled": "New text annotation",
+    "drawAnnotator.enabled": "New draw annotation",
+    "iconAnnotator.enabled": "New icon annotation",
+    "openFile.enabled": "Open",
+    "printing.enabled": "Print",
+    "downloadPdf.enabled": "Save",
+    "textEditor.enabled": "Text",
+    "drawEditor.enabled": "Draw",
+
+    "textAnnotator.disabled": "Annotate by text has been disabled.",
+    "drawAnnotator.disabled": "Annotate by drawing has been disabled.",
+    "iconAnnotator.disabled": "Annotate by icon has been disabled.",
+    "openFile.disabled": "Opening a file is disabled.",
+    "printing.disabled": "Printing is disabled.",
+    "downloadPdf.disabled": "Saving is disabled.",
+    "textEditor.disabled": "The text editor is disabled.",
+    "drawEditor.disabled": "The draw editor is disabled."
+}

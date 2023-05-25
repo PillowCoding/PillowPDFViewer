@@ -1,0 +1,108 @@
+<div *ngIf="annotation"
+    (click)="expanded ? collapse() : expand()"
+    [ngClass]="{'expanded': expanded, 'focus': annotation.focused}"
+    class="annotation-container"
+    attr.data-annotation="{{annotation.id}}">
+
+    <div class="flex">
+
+        <!-- left -->
+        <div class="focus-selector flex">
+            <button libClickStopPropagation
+                *ngIf="!loading && annotation.state === 'completed'"
+                (click)="toggleFocus()">
+                <span>&#10092;</span>
+            </button>
+        </div>
+
+        <!-- right -->
+        <div class="main-annotation grow">
+            <div *ngIf="loading && expanded"
+                class="loading-indicator">
+                <lib-loading-ring></lib-loading-ring>
+            </div>
+
+            <header class="header">
+
+                <!-- Left side -->
+                <div class="header-left">
+                    <img *ngIf="annotation?.creator && annotation?.creatorUrl"
+                        src="{{avatarUrl}}"
+                        height="24"
+                        width="24"
+                        size="24"
+                        class="avatar" />
+                    <lib-initials-avatar *ngIf="annotation?.creator && !annotation?.creatorUrl"
+                        class="initials-avatar"
+                        [input]="annotation.creator">
+                    </lib-initials-avatar>
+                    
+                    <div class="creator">
+                        <p *ngIf="annotation.creator" class="text">{{annotation.creator}}</p>
+                    </div>
+                </div>
+
+                <!-- Right side -->
+                <div class="header-right" libClickStopPropagation>
+                    <p class="font-bold revert-top-margin revert-bottom-margin text">{{annotation.dateCreated | date: 'h:mm:ss'}}</p>
+
+                    <div *ngIf="loading && !expanded"
+                        class="loading-indicator inline">
+                        <lib-loading-ring></lib-loading-ring>
+                    </div>
+
+                    <div *ngIf="!loading && annotation.state === 'completed' && annotation.canDelete"
+                        class="delete-annotation">
+                        <lib-close-button
+                            [useCustomColor]="true"
+                            (closed)="onDelete()">
+                        </lib-close-button>
+                    </div>
+                </div>
+            </header>
+
+            <blockquote class="quote" *ngIf="annotation.type === 'text'">
+                <ng-container *ngIf="annotation.tryGetTextSelection()">
+                    <p>{{annotation.tryGetTextSelection()?.selectedText}}</p>
+                </ng-container>
+                <ng-container *ngIf="!annotation.tryGetTextSelection()">
+                    <p>...</p>
+                </ng-container>
+            </blockquote>
+
+            <!-- Collapsed latest comment -->
+            <div [ngClass]="{'hidden': annotation.comments.length === 0 || expanded}"
+                class="collapsed-initial-comment">
+                <p class="comment text">
+                    <span class="font-bold">{{annotation.comments.at(-1)?.dateCreated | date: 'd/M/yy, H:mm'}}:</span> {{annotation.comments.at(-1)?.content}}
+                </p>
+                <p *ngIf="annotation.comments.length > 1"
+                    class="more-text muted">{{'annotate.moreComments' | translate: annotation.comments.length - 1}}</p>
+            </div>
+
+            <!-- Comments -->
+            <div [ngClass]="{'hidden': annotation.comments.length === 0 || !expanded}"
+                class="comments">
+                <lib-pdf-annotation-comment *ngFor="let comment of annotation.comments"
+                    class="comment"
+                    [annotationComment]="comment">
+                </lib-pdf-annotation-comment>
+            </div>
+
+            <!-- Comment form -->
+            <form libClickStopPropagation
+                [ngClass]="{'hidden': !expanded}"
+                class="form">
+                
+                <input #annotationCommentInput
+                    [disabled]="inputLoading || annotation.state !== 'completed'"
+                    class="revert-font-family revert-font-size revert-line-height"
+                    type="text"
+                    aria-label="Comment input" />
+                <input [disabled]="inputLoading || annotation.state !== 'completed'"
+                    (click)="onCommentSubmit()"
+                    type="submit" role="button" value="Post" />
+            </form>
+        </div>
+    </div>
+</div>

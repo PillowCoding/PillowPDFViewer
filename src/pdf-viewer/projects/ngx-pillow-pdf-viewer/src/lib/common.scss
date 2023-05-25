@@ -1,0 +1,293 @@
+.flex {
+    display: flex;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.full-height {
+    height: 100%;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.text {
+    color: var(--text-color);
+}
+
+.font-bold {
+    font-weight: bold;
+}
+
+.muted {
+    color: var(--text-muted-color);
+}
+
+.grow {
+    flex-grow: 1;
+}
+
+// Mostly used to prevent bootstrap defaults.
+.revert-top-margin {
+    margin-top: revert;
+}
+
+// Mostly used to prevent bootstrap defaults.
+.revert-bottom-margin {
+    margin-bottom: revert;
+}
+
+// Mostly used to prevent bootstrap defaults.
+.revert-font-family {
+    font-family: revert;
+}
+
+// Mostly used to prevent bootstrap defaults.
+.revert-font-size {
+    font-size: revert;
+}
+
+// Mostly used to prevent bootstrap defaults.
+.revert-line-height {
+    line-height: revert;
+}
+
+.loading-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+    
+    width: 100%;
+    height: 100%;
+
+    color: var(--loading-color);
+    opacity: var(--loading-color-opacity);
+}
+
+.toolbar-button
+{
+    background: none;
+    margin: 2px 1px;
+    padding: 2px 6px 0;
+    border: none;
+    border-radius: 2px;
+    user-select: none;
+    cursor: default;
+    box-sizing: border-box;
+    outline: none;
+    font: message-box;
+    position: relative;
+    float: left;
+
+    &.icon {
+        width: 28px;
+        height: 28px;
+
+        &::before {
+            opacity: var(--toolbar-icon-opacity);
+            top: 6px;
+            left: 6px;
+            position: absolute;
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            content: "";
+            background-color: var(--toolbar-icon-color);
+            mask-size: cover;
+            mask-repeat: no-repeat;
+            mask-position: center;
+        }
+    }
+
+    &[disabled] {
+        opacity: 0.5;
+    }
+
+    &:hover {
+        background-color: var(--button-background-hover-color);
+    }
+}
+
+.button {
+    cursor: pointer;
+    border: solid var(--button-border-color) 1px;
+    background-color: var(--button-background-color);
+    appearance: none;
+
+    &:hover {
+        background-color: var(--button-background-hover-color);
+    }
+
+    &:focus {
+        background-color: var(--button-background-focus-color);
+    }
+
+    &:disabled {
+        background-color: var(--button-background-disabled-color);
+    }
+
+    &.danger {
+        background-color: var(--button-danger-background-color);
+        border: solid var(--button-danger-border-color) 1px;
+        color: var(--button-danger-color);
+
+        &:hover {
+            background-color: var(--button-danger-background-hover-color);
+        }
+
+        &:focus {
+            background-color: var(--button-danger-background-focus-color);
+        }
+
+        &:disabled {
+            background-color: var(--button-danger-background-disabled-color);
+        }
+    }
+}
+
+.form
+{
+    display: flex;
+
+    input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        border-radius: 4px;
+        margin: 5px auto;
+        border: 1px solid var(--input-border-color);
+        background-color: var(--input-background-color);
+        color: var(--text-color);
+        outline: none;
+
+        &:focus {
+            background-color: var(--input-background-focus-color);
+        }
+
+        &:disabled {
+            background-color: var(--input-background-disabled-color);
+        }
+    }
+    
+    input[type="submit"] {
+        height: 29px;
+        width: 75px;
+        margin-left: 2px;
+        align-self: center;
+        color: var(--text-color);
+        cursor: pointer;
+        border: solid var(--input-border-color) 1px;
+        background-color: var(--input-background-color);
+        appearance: none;
+
+        &:hover {
+            background-color: var(--input-background-hover-color);
+        }
+
+        &:focus {
+            background-color: var(--input-background-focus-color);
+        }
+
+        &:disabled {
+            background-color: var(--input-background-disabled-color);
+        }
+    }
+}
+
+:host
+{
+    --text-color: rgb(12, 12, 13);
+    --text-muted-color: rgb(103, 103, 103);
+    --toolbar-icon-color: rgba(1, 1, 1);
+    --toolbar-icon-opacity: 0.7;
+
+    --sidebar-background-color: rgb(249, 249, 250);
+    
+    --border-color: rgb(184, 184, 184);
+    --lining-color: rgb(184, 184, 184);
+
+    --annotation-background-color: #e9e9e9;
+    --annotation-background-hover-color: #d8d8d8;
+    --annotation-background-focus-color: #cecece;
+    --annotation-shadow-color: 64, 64, 64;
+    --annotation-shadow-opacity: .4;
+
+    --focus-selector-color: rgba(20, 20, 20, 0.5);
+    --focus-selector-hover-color: rgba(0, 0, 0, 0.2);
+
+    --input-background-color: rgb(255, 255, 255);
+    --input-background-hover-color: rgb(233, 233, 233);
+    --input-background-focus-color: rgb(226, 226, 226);
+    --input-background-disabled-color: rgb(200, 200, 200);
+    --input-border-color: rgb(204, 204, 204);
+
+    --button-background-color: rgb(255, 255, 255);
+    --button-background-hover-color: rgb(221, 222, 223);
+    --button-background-focus-color: rgb(209, 209, 209);
+    --button-background-disabled-color: rgb(218, 218, 218);
+    --button-border-color: rgb(243, 243, 243);
+    --button-danger-color: rgb(228, 228, 228);
+    --button-danger-background-color: rgb(180, 48, 48);
+    --button-danger-background-hover-color: rgb(167, 45, 45);
+    --button-danger-background-focus-color: rgb(158, 42, 42);
+    --button-danger-background-disabled-color: rgb(214, 60, 60);
+    --button-danger-border-color: rgb(122, 34, 34);
+
+    --loading-color: rgb(0, 0, 0);
+    --loading-color-opacity: .4;
+
+    --quote-background-color: #e2e2e2;
+    --quote-border-color: #bbbbbb;
+
+    --resizeable-handle-color: #fff;
+    --resizeable-handle-ellipsis-color: rgb(0, 0, 0);
+    --resizeable-handle-border-color: #d3d3d3;
+}
+
+@media (prefers-color-scheme: dark) {
+    :host
+    {
+        --text-color: rgba(249, 249, 250, .8);
+        --text-muted-color: rgb(145, 145, 145);
+        --toolbar-icon-color: rgba(249, 249, 250);
+
+        --sidebar-background-color: rgb(56, 56, 61);
+
+        --border-color: rgba(0, 0, 0, 0.3);
+        --lining-color: rgb(128, 128, 128);
+
+        --annotation-background-color: rgb(66, 66, 70);
+        --annotation-background-hover-color: rgb(68, 68, 72);
+        --annotation-background-focus-color: rgb(81, 81, 84);
+        --annotation-shadow-color: 20, 20, 20;
+        --annotation-shadow-opacity: .4;
+
+        --button-background-hover-color: rgb(102, 102, 103);
+
+        --focus-selector-color: rgb(128, 128, 128);
+        --focus-selector-hover-color: rgb(107, 107, 107);
+
+        --input-background-color: rgb(74, 74, 79);
+        --input-background-hover-color: rgb(88, 88, 94);
+        --input-background-focus-color: rgb(90, 90, 97);
+        --input-background-disabled-color: rgb(56, 56, 56);
+        --input-border-color: rgb(50, 50, 50);
+
+        --loading-color: rgb(246, 246, 253);
+        --loading-color-opacity: .8;
+
+        --quote-background-color: rgb(61, 61, 65);
+        --quote-border-color: rgb(56, 56, 56);
+
+        --resizeable-handle-color: rgb(55, 55, 58);
+        --resizeable-handle-ellipsis-color: rgb(80, 80, 83);
+        --resizeable-handle-border-color: rgb(80, 80, 83);
+    }
+}

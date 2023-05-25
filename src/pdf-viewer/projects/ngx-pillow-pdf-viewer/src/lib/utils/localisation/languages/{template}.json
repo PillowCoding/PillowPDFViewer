@@ -1,0 +1,31 @@
+{
+    "sidebar.expand": "",
+    "sidebar.collapse": "",
+    "sidebar.unfocusAll": "",
+
+    "annotate.title": "",
+    "annotate.cancelButton": "",
+
+    "annotations.nonePage": "",
+    "annotations.post": "",
+    "annotate.moreComments": "",
+    "annotate.dateIndication": "",
+
+    "textAnnotator.enabled": "",
+    "drawAnnotator.enabled": "",
+    "iconAnnotator.enabled": "",
+    "openFile.enabled": "",
+    "printing.enabled": "",
+    "downloadPdf.enabled": "",
+    "textEditor.enabled": "",
+    "drawEditor.enabled": "",
+
+    "textAnnotator.disabled": "",
+    "drawAnnotator.disabled": "",
+    "iconAnnotator.disabled": "",
+    "openFile.disabled": "",
+    "printing.disabled": "",
+    "downloadPdf.disabled": "",
+    "textEditor.disabled": "",
+    "drawEditor.disabled": ""
+}
