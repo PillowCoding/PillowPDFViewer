@@ -18,6 +18,10 @@
     display: none !important;
 }
 
+.text {
+    color: var(--text-color);
+}
+
 .font-bold {
     font-weight: bold;
 }
@@ -75,7 +79,6 @@
     padding: 2px 6px 0;
     border: none;
     border-radius: 2px;
-    color: var(--toolbar-icon-color);
     user-select: none;
     cursor: default;
     box-sizing: border-box;
@@ -97,7 +100,7 @@
             width: 16px;
             height: 16px;
             content: "";
-            background-color: black;
+            background-color: var(--toolbar-icon-color);
             mask-size: cover;
             mask-repeat: no-repeat;
             mask-position: center;
@@ -208,13 +211,16 @@
     --sidebar-background-color: rgb(249, 249, 250);
     
     --border-color: rgb(184, 184, 184);
+    --lining-color: rgb(184, 184, 184);
 
     --annotation-background-color: #e9e9e9;
-    --annotation-border-color: rgb(184, 184, 184);
     --annotation-background-hover-color: #d8d8d8;
     --annotation-background-focus-color: #cecece;
     --annotation-shadow-color: 64, 64, 64;
     --annotation-shadow-opacity: .4;
+
+    --focus-selector-color: rgba(20, 20, 20, 0.5);
+    --focus-selector-hover-color: rgba(0, 0, 0, 0.2);
 
     --input-background-color: rgb(255, 255, 255);
     --input-background-hover-color: rgb(233, 233, 233);
@@ -239,21 +245,25 @@
 
     --quote-background-color: #e2e2e2;
     --quote-border-color: #bbbbbb;
+
+    --resizeable-handle-color: #fff;
+    --resizeable-handle-ellipsis-color: rgb(0, 0, 0);
+    --resizeable-handle-border-color: #d3d3d3;
 }
 
 @media (prefers-color-scheme: dark) {
     :host
     {
-        --text-color: rgb(240, 240, 240);
-        --text-muted-color: rgb(82, 82, 82);
-        --toolbar-icon-color: rgba(249, 249, 250, .7);
+        --text-color: rgba(249, 249, 250, .8);
+        --text-muted-color: rgb(145, 145, 145);
+        --toolbar-icon-color: rgba(249, 249, 250);
 
         --sidebar-background-color: rgb(56, 56, 61);
 
         --border-color: rgba(0, 0, 0, 0.3);
+        --lining-color: rgb(128, 128, 128);
 
         --annotation-background-color: rgb(66, 66, 70);
-        --annotation-border-color: rgba(0, 0, 0, 0.3);
         --annotation-background-hover-color: rgb(68, 68, 72);
         --annotation-background-focus-color: rgb(81, 81, 84);
         --annotation-shadow-color: 20, 20, 20;
@@ -261,16 +271,23 @@
 
         --button-background-hover-color: rgb(102, 102, 103);
 
+        --focus-selector-color: rgb(128, 128, 128);
+        --focus-selector-hover-color: rgb(107, 107, 107);
+
         --input-background-color: rgb(74, 74, 79);
-        --input-background-focus-color: rgb(75, 75, 75);
-        --input-background-focus-color: rgb(80, 80, 80);
-        --input-background-disabled-color: rgb(70, 70, 70);
+        --input-background-hover-color: rgb(88, 88, 94);
+        --input-background-focus-color: rgb(90, 90, 97);
+        --input-background-disabled-color: rgb(56, 56, 56);
         --input-border-color: rgb(50, 50, 50);
 
-        --loading-color: rgb(255, 255, 255);
+        --loading-color: rgb(246, 246, 253);
         --loading-color-opacity: .8;
 
-        --quote-background-color: rgb(65, 65, 65);
+        --quote-background-color: rgb(61, 61, 65);
         --quote-border-color: rgb(56, 56, 56);
+
+        --resizeable-handle-color: rgb(55, 55, 58);
+        --resizeable-handle-ellipsis-color: rgb(80, 80, 83);
+        --resizeable-handle-border-color: rgb(80, 80, 83);
     }
 }

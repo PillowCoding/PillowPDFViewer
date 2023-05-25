@@ -3,7 +3,7 @@ import { Component, Input } from "@angular/core";
 @Component({
     selector: 'lib-initials-avatar',
     template: `
-        <div class="avatar"
+        <div class="avatar text"
             [style.width.px]="size"
             [style.height.px]="size"
             [style.line-height.px]="size"

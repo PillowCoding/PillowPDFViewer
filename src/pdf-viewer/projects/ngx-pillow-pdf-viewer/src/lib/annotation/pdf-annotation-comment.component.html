@@ -1,5 +1,5 @@
 <div *ngIf="annotationComment?.creator">
-    <div class="header">
+    <div class="header text">
         <img *ngIf="annotationComment?.creator && annotationComment?.creatorUrl"
             src="{{avatarUrl}}"
             height="24"
@@ -12,7 +12,7 @@
         <strong class="creator">{{annotationComment?.creator}}</strong> {{'annotate.dateIndication' | translate: dateDisplay}}
     </div>
     
-    <p class="comment">
+    <p class="comment text">
         {{annotationComment?.content}}
     </p>
 </div>
@@ -20,5 +20,5 @@
 <div *ngIf="!annotationComment?.creator"
     class="bordered">
 
-    <p class="inline-comment"><span class="font-bold">{{dateDisplay}}:</span> {{annotationComment?.content}}</p>
+    <p class="inline-comment text"><span class="font-bold">{{dateDisplay}}:</span> {{annotationComment?.content}}</p>
 </div>

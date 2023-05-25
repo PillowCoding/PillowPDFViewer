@@ -38,13 +38,13 @@
                     </lib-initials-avatar>
                     
                     <div class="creator">
-                        <p *ngIf="annotation.creator">{{annotation.creator}}</p>
+                        <p *ngIf="annotation.creator" class="text">{{annotation.creator}}</p>
                     </div>
                 </div>
 
                 <!-- Right side -->
                 <div class="header-right" libClickStopPropagation>
-                    <p class="font-bold revert-top-margin revert-bottom-margin">{{annotation.dateCreated | date: 'h:mm:ss'}}</p>
+                    <p class="font-bold revert-top-margin revert-bottom-margin text">{{annotation.dateCreated | date: 'h:mm:ss'}}</p>
 
                     <div *ngIf="loading && !expanded"
                         class="loading-indicator inline">
@@ -73,7 +73,7 @@
             <!-- Collapsed latest comment -->
             <div [ngClass]="{'hidden': annotation.comments.length === 0 || expanded}"
                 class="collapsed-initial-comment">
-                <p class="comment">
+                <p class="comment text">
                     <span class="font-bold">{{annotation.comments.at(-1)?.dateCreated | date: 'd/M/yy, H:mm'}}:</span> {{annotation.comments.at(-1)?.content}}
                 </p>
                 <p *ngIf="annotation.comments.length > 1"

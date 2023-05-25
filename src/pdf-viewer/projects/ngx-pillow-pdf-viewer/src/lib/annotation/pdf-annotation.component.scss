@@ -53,6 +53,7 @@
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    color: var(--text-color);
 
     &::before {
         color: var(--text-color);
@@ -97,10 +98,10 @@
         outline: none;
         cursor: pointer;
         font: message-box;
-        color:rgba(20, 20, 20, 0.5);
+        color: var(--focus-selector-color);
 
         &:hover {
-            background-color: rgba(0, 0, 0, 0.2);
+            background-color: var(--focus-selector-hover-color);
         }
 
         span {
@@ -138,7 +139,7 @@
 
         .creator {
             margin: auto 5px auto 0;
-            border-bottom: solid 1px var(--annotation-border-color);
+            border-bottom: solid 1px var(--lining-color);
             flex-grow: 1;
 
             p {
