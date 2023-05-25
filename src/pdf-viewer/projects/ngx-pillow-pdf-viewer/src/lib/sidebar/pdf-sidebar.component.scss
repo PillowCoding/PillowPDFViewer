@@ -1,0 +1,40 @@
+.sidebar-container {
+    background-color: var(--sidebar-background-color);
+    border-left: solid 1px var(--border-color);
+}
+
+.annotation-container {
+    overflow-y: auto;
+    height: calc(100% - 32px);
+}
+
+.unfocus-all {
+    font-size: smaller;
+}
+
+.no-annotations
+{
+    background: rgba(#000000, 0.05);
+    border: solid 1px rgba(#000000, 0.1);
+    border-radius: 2px;
+    padding: 8px 20px 12px 20px;
+    margin: 0 5px 0 5px;
+    text-align: center;
+    align-self: center;
+}
+
+#expand-sidebar::before
+{
+    mask-image: url(/assets/pdfjs/web/images/toolbarButton-secondaryToolbarToggle.svg);
+    transform: rotate(180deg);
+}
+
+ol {
+    padding: .5rem 0 .5rem 0;
+    margin: 0;
+    
+    & > li {
+        list-style: none;
+        margin-bottom: 8px;
+    }
+}
