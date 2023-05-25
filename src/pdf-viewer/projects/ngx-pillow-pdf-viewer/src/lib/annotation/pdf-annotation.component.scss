@@ -1,0 +1,173 @@
+.loading-indicator
+{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+
+    &.inline {
+        transform: scale(0.6);
+    }
+}
+
+.annotation-container {
+    background-color: var(--annotation-background-color);
+    box-shadow: -2px 2px 5px 0px rgba(var(--annotation-shadow-color), var(--annotation-shadow-opacity));
+    border-radius: 5px;
+    margin: 0 .25rem 0 .25rem;
+    cursor: pointer;
+    position: relative;
+
+    &.focus
+    {
+        background-color: var(--annotation-background-focus-color);
+    }
+
+    &:hover:not(.focus)
+    {
+        background-color: var(--annotation-background-hover-color);
+    }
+}
+
+.avatar {
+    margin-right: 8px;
+    vertical-align: middle;
+    border-radius: 50%;
+}
+
+.avatar, .initials-avatar {
+    margin-top: 5px;
+}
+
+.quote {
+    display: -webkit-box;
+    margin: 0;
+    background: var(--quote-background-color);
+    border-left: 10px solid var(--quote-border-color);
+    border-radius: 2px;
+    padding: 0.5em 10px;
+    quotes: "\201C""\201D""\2018""\2019";
+    text-overflow: ellipsis;
+    max-height: 120px;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: var(--text-color);
+
+    &::before {
+        color: var(--text-color);
+        content: open-quote;
+        font-size: 2rem;
+        line-height: 0.1em;
+        margin-right: 0.25em;
+        vertical-align: -0.4em;
+    }
+    
+    &::after {
+        content: no-close-quote;
+    }
+
+    > p
+    {
+        display: inline;
+        font-size: .7rem;
+    }
+}
+
+.annotation-container.expanded .quote {
+    -webkit-line-clamp: 4;
+}
+
+.focus-selector {
+    min-height: 100%;
+    min-width: 25px;
+    align-items: center;
+
+    button {
+        background: none;
+        width: 80%;
+
+        // Based on the border radius of the annotation.
+        height: calc(100% - (5px * 2));
+        border-radius: 2px;
+
+        border: none;
+        user-select: none;
+        box-sizing: border-box;
+        outline: none;
+        cursor: pointer;
+        font: message-box;
+        color: var(--focus-selector-color);
+
+        &:hover {
+            background-color: var(--focus-selector-hover-color);
+        }
+
+        span {
+            transform: scaleY(2);
+            display: block;
+        }
+    }
+}
+
+.delete-annotation {
+    padding-top: 6px;
+}
+
+.main-annotation {
+    padding: .15rem .5rem .5rem 0;
+
+    &.expanded
+    {
+        padding: .5rem .5rem 1rem 1rem;
+    }
+}
+
+.header
+{
+    display: flex;
+    justify-content: space-between;
+
+    .header-left, .header-right {
+        line-height: 10px;
+    }
+
+    .header-left {
+        display: flex;
+        flex-grow: 1;
+
+        .creator {
+            margin: auto 5px auto 0;
+            border-bottom: solid 1px var(--lining-color);
+            flex-grow: 1;
+
+            p {
+                margin: 0 5px 5px 5px;
+            }
+        }
+    }
+
+    .header-right {
+        display: flex;
+    }
+}
+
+.collapsed-initial-comment {
+    padding-left: 10px;
+    margin-top: 5px;
+}
+
+.comments {
+    margin-top: 4px;
+}
+
+.comment {
+    display: block;
+    margin: 4px 0 4px 0;
+}
+
+.more-text {
+    margin: 0;
+    font-size: x-small;
+}

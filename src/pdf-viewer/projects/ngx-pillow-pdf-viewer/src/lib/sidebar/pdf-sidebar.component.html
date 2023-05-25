@@ -1,0 +1,51 @@
+<lib-west-resizeable
+    [enabled]="expanded"
+    [shouldResize]="sidebarWidthShouldResize"
+    (widthChanged)="onSidebarWidthChanged($event)">
+
+    <div
+        [@expandCollapse]="{ value: expanded ? 'expand' : 'collapse', params: { expandedWidth: expandedSidebarWidth }}"
+        class="full-height sidebar-container">
+
+        <div class="flex">
+            <button *ngIf="!expanded"
+                class="toolbar-button icon"
+                id="expand-sidebar"
+                [disabled]="pdfjsContext?.fileState !== 'loaded'"
+                [title]="'expand'"
+                (click)="expand()">
+            </button>
+
+            <lib-close-button *ngIf="expanded"
+                (closed)="collapse()">
+            </lib-close-button>
+
+            <button *ngIf="expanded && hasFocusedAnnotations"
+                (click)="unfocusAll()"
+                class="toolbar-button unfocus-all">
+                {{'sidebar.unfocusAll' | translate}}
+            </button>
+        </div>
+
+        <div *ngIf="canShowAnnotations"
+            [ngClass]="{'hidden': !expanded}"
+            class="annotation-container">
+            <div *ngIf="isLoading(currentShownPage)"
+                class="loading-indicator">
+                <lib-loading-ring></lib-loading-ring>
+            </div>
+            <div *ngIf="!isLoading(currentShownPage) && annotations.length === 0">
+                <p class="no-annotations">{{'annotations.nonePage' | translate}}</p>
+            </div>
+            <ol *ngIf="!isLoading(currentShownPage)">
+                <li *ngFor="let annotation of annotations">
+                    <lib-pdf-annotation #annotation
+                        [loggingProvider]="loggingProvider"
+                        [pdfjsContext]="pdfjsContext"
+                        [annotation]="annotation">
+                    </lib-pdf-annotation>
+                </li>
+            </ol>
+        </div>
+    </div>
+</lib-west-resizeable>

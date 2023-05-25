@@ -1,0 +1,21 @@
+.bordered {
+    border-left: solid 1px var(--border-color);
+    padding-left: 10px;
+}
+
+.avatar {
+    vertical-align: middle;
+    border-radius: 50%;
+}
+
+.creator {
+    margin-left: 4px;
+}
+
+.inline-comment {
+    margin: 4px 0 4px 0;
+}
+
+.comment {
+    margin: 0 0 0 32px;
+}

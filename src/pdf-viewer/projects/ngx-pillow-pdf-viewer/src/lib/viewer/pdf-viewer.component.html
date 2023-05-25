@@ -1,0 +1,24 @@
+<div class="viewer-container flex full-height">
+    <iframe #iframeWrapper title="PDF viewer">
+    </iframe>
+
+    <lib-pdf-sidebar #sidebar
+        *ngIf="pdfjsContext?.viewerState === 'loaded' && sidebarEnabled"
+        [pdfjsContext]="pdfjsContext"
+        [loggingProvider]="loggingProvider"
+        [annotationsProvider]="fetchSidebarAnnotationsForPage">
+    </lib-pdf-sidebar>
+</div>
+
+<div #annotateInfo
+    [ngClass]="{'hidden': annotationMode === 'none'}"
+    class="annotate-info-container">
+    
+    <div class="annotate-info">
+        <p>{{'annotate.title' | translate}}</p>
+        <button (click)="stopAnnotating()"
+            class="button danger">
+            {{'annotate.cancelButton' | translate}}
+        </button>
+    </div>
+</div>
