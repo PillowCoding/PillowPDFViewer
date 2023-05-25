@@ -1,2 +1,3 @@
-# Ignore ngx-pillow-pdf-viewer assets
-[pP]dfjs/
+# Ignore PDF.JS assets
+[pP]dfjs/*
+![pP]dfjs/.gitkeep

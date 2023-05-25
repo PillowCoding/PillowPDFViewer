@@ -12,10 +12,8 @@ import { Component, EventEmitter, Input, Output } from "@angular/core";
     `,
     styles: [`
 
-        .close.custom {
-            &:hover {
-                background-color: rgba(0, 0, 0, .1);
-            }
+        .close.custom:hover {
+            background-color: rgba(0, 0, 0, .1);
         }
 
         .close::before {

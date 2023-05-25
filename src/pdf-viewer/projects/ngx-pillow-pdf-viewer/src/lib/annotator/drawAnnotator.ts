@@ -1,7 +1,7 @@
-import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
-import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
+import PdfjsContext from "../pdfjsContext";
+import LoggingProvider from "../utils/logging/loggingProvider";
 import LayerManager, { layer } from "./layerManager";
-import { boundingBox } from "ngx-pillow-pdf-viewer/annotation/annotationTypes";
+import { boundingBox } from "../annotation/annotationTypes";
 
 export type canvasMouseType = 'mouseup' | 'mousedown' | 'mousemove';
 export type drawData = {

@@ -1,5 +1,5 @@
-import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
-import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
+import PdfjsContext from "../pdfjsContext";
+import LoggingProvider from "../utils/logging/loggingProvider";
 
 export type pageLayers = {
     page: number;

@@ -1,6 +1,6 @@
-import generateGuid from "ngx-pillow-pdf-viewer/utils/generateGuid";
+import generateGuid from "../utils/generateGuid";
 import { AnnotationState, AnnotationType, PartialReferenceType, ReferenceType, boundingBox } from "./annotationTypes";
-import { PickPartial, PickRequired } from "ngx-pillow-pdf-viewer/utils/typings";
+import { PickPartial, PickRequired } from "../utils/typings";
 
 export type annotationCommentObjectParameters = Readonly<
 

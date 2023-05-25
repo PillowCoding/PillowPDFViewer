@@ -1,7 +1,4 @@
 
-
-
-
 <!-- Anchor for the "back to top" links -->
 <a id="readme-top"></a>
 
