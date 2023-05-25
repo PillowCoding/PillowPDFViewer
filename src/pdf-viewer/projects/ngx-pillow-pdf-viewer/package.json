@@ -1,6 +1,6 @@
 {
   "name": "ngx-pillow-pdf-viewer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description":"An Angular PDF viewer using PDF.JS. This project is adding a lot of support to the base PDF.JS viewer, including support for custom annotations.",
   "author": "PillowCoding (PillowCoding@hotmail.com)",
   "repository": {

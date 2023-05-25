@@ -1,6 +1,7 @@
 
 
 
+
 <!-- Anchor for the "back to top" links -->
 <a id="readme-top"></a>
 
@@ -13,7 +14,7 @@
   <h1>Pillow PDF viewer</h1>
 </div>
 
-This is a PDF viewer for Angular. The project internally uses PDF.JS for the rendering of the page, and introduces many features including custom annotations support, which extends the base PDF.JS viewer.
+This is a PDF viewer for Angular. The project internally uses [PDF.JS](https://github.com/mozilla/pdf.js) for the rendering of the page, and introduces many features including custom annotations support, which extends the base PDF.JS viewer.
 
 > This project is a work in progress. The latest finished features are found on the "dev" branch.
 
@@ -45,19 +46,23 @@ This is a PDF viewer for Angular. The project internally uses PDF.JS for the ren
 ## Getting Started
 
 ### Requirements
-- Atleast Angular 13.
+- Angular 13 or higher.
+- Downloaded PDF.JS (see below).
+
+### Note before usage
+This project uses [PDF.JS](https://github.com/mozilla/pdf.js) as a base and wraps around its features. Be sure to have PDF.JS as part of your project before using this package.
+1. Download the latest version of pdf.js (this project has been created with [`v3.3.122`](https://github.com/mozilla/pdf.js/releases/tag/v3.3.122)). The project requires [pdfjs-3.3.122-dist.zip](https://github.com/mozilla/pdf.js/releases/download/v3.3.122/pdfjs-3.3.122-dist.zip).
+2. Place the content of the zip file inside your `assets/` folder.
+	- Note that by default the viewer is assumed to be in `assets/pdfjs/web/viewer.html`. If this is different, then you can modify the `[viewerRelativePath]` parameter of the component.
 
 ### Installation
 
-1. Clone the repository: `git clone https://github.com/PillowCoding/PillowPDFViewer.git`
-	- If you want to clone just the dev repository: `git clone -b dev --single-branch https://github.com/PillowCoding/PillowPDFViewer.git`
-2. Download the latest version of pdf.js (this project has been created with [`v3.3.122`](https://github.com/mozilla/pdf.js/releases/tag/v3.3.122)). The project requires [pdfjs-3.3.122-dist.zip](https://github.com/mozilla/pdf.js/releases/download/v3.3.122/pdfjs-3.3.122-dist.zip).
-3. Place the content of the zip file inside your `assets/` folder.
-	- Note that by default the viewer is assumed to be in `assets/pdfjs/web/viewer.html`. If this is different, then you can modify the `[viewerRelativePath]` parameter of the component.
+Install with NPM: `npm i ngx-pillow-pdf-viewer`.
 
-### Running the project
-1. Navigate into `src/pdf-viewer`.
-2. Run `npm start`
+
+### Contributing to the repository
+Clone the repository: `git clone https://github.com/PillowCoding/PillowPDFViewer.git`
+- If you want to clone just the dev repository: `git clone -b dev --single-branch https://github.com/PillowCoding/PillowPDFViewer.git`
 
 <!-- Project overview -->
 ## Project overview
@@ -81,7 +86,7 @@ This is a PDF viewer for Angular. The project internally uses PDF.JS for the ren
 
 <!-- Frequently asked questions -->
 ## Frequently asked questions
-#### How do I fix `Error: The PDFViewerApplication could not be found.`?
+#### How do I fix "Error: The PDFViewerApplication could not be found."?
 - Follow the installation of the project. You are required to manually install and add PDF.JS due to its size. After inserting PDF.JS into the `assets` folder of your project, the error will be gone.
 
 <!-- Issues -->
