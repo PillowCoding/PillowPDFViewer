@@ -1,10 +1,10 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
 import { DomSanitizer } from "@angular/platform-browser";
-import { Annotation, AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
-import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
-import { EventBusEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
-import isBase64String from "ngx-pillow-pdf-viewer/utils/isBase64String";
-import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
+import { Annotation, AnnotationComment } from "../annotation/annotation";
+import PdfjsContext from "../pdfjsContext";
+import { EventBusEventType } from "../types/eventBus";
+import isBase64String from "../utils/isBase64String";
+import LoggingProvider from "../utils/logging/loggingProvider";
 
 export type annotationsProviderDelegate = (page: number) => Promise<Annotation[]>;
 

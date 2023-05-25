@@ -1,10 +1,10 @@
 import { trigger, state, style, transition, animate } from "@angular/animations";
 import { ChangeDetectorRef, Component, Input, OnInit, QueryList, ViewChildren } from "@angular/core";
-import { Annotation } from "ngx-pillow-pdf-viewer";
-import { PdfAnnotationComponent } from "ngx-pillow-pdf-viewer/annotation/pdf-annotation.component";
-import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
-import { AnnotationDeletedEventType, PendingAnnotationDeletedEventType, PendingAnnotationStartedEventType } from "ngx-pillow-pdf-viewer/types/eventBus";
-import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
+import { Annotation } from "../annotation/annotation";
+import { PdfAnnotationComponent } from "../annotation/pdf-annotation.component";
+import PdfjsContext from "../pdfjsContext";
+import { AnnotationDeletedEventType, PendingAnnotationDeletedEventType, PendingAnnotationStartedEventType } from "../types/eventBus";
+import LoggingProvider from "../utils/logging/loggingProvider";
 
 export type annotationsProviderDelegate = (page: number) => Promise<Annotation[]>;
 

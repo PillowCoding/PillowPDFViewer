@@ -1,11 +1,12 @@
-import { Annotation, AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
-import { PdfViewerComponent } from "../../public-api";
+import { Annotation, AnnotationComment } from "../annotation/annotation";
 import PDFPageView from "./pdfPageView";
 import PDFPresentationMode from "./pdfPresentationMode";
 import { PDFViewer, scrollModeType, spreadModeType } from "./pdfViewer";
 import { PdfjsWindow } from "./pdfjsWindow";
 import { SecondaryToolbar, Toolbar } from "./toolbar";
-import { PdfAnnotationComponent } from "ngx-pillow-pdf-viewer/annotation/pdf-annotation.component";
+import { PdfAnnotationComponent } from "../annotation/pdf-annotation.component";
+
+//import { PdfViewerComponent } from "../viewer/pdf-viewer.component";
 
 export default interface EventBus {
     on: (name: string, listener: (e: object) => void, options?: object) => void;
@@ -275,19 +276,19 @@ export type TextLayerRenderedEventType = EventBusEvent<PDFPageView> & {
     source: PDFPageView;
 }
 
-export type PendingAnnotationStartedEventType = EventBusEvent<PdfViewerComponent> & {
+export type PendingAnnotationStartedEventType = EventBusEvent/*<PdfViewerComponent>*/ & {
     annotation: Annotation;
 }
 
-export type PendingAnnotationDeletedEventType = EventBusEvent<PdfViewerComponent> & {
+export type PendingAnnotationDeletedEventType = EventBusEvent/*<PdfViewerComponent>*/ & {
     annotation: Annotation;
 }
 
-export type AnnotationDeleteEventType = EventBusEvent<PdfViewerComponent | PdfAnnotationComponent> & {
+export type AnnotationDeleteEventType = EventBusEvent/*<PdfViewerComponent | PdfAnnotationComponent>*/ & {
     annotation: Annotation;
 }
 
-export type AnnotationDeletedEventType = EventBusEvent<PdfViewerComponent | PdfAnnotationComponent> & {
+export type AnnotationDeletedEventType = EventBusEvent/*<PdfViewerComponent | PdfAnnotationComponent>*/ & {
     annotation: Annotation;
 }
 

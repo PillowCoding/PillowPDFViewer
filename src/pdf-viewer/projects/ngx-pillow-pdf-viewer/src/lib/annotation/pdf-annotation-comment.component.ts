@@ -1,8 +1,8 @@
 import { DatePipe } from "@angular/common";
 import { Component, Input, OnInit } from "@angular/core";
 import { DomSanitizer } from "@angular/platform-browser";
-import { Annotation, AnnotationComment } from "ngx-pillow-pdf-viewer/annotation/annotation";
-import isBase64String from "ngx-pillow-pdf-viewer/utils/isBase64String";
+import { Annotation, AnnotationComment } from "../annotation/annotation";
+import isBase64String from "../utils/isBase64String";
 
 export type annotationsProviderDelegate = (page: number) => Promise<Annotation[]>;
 

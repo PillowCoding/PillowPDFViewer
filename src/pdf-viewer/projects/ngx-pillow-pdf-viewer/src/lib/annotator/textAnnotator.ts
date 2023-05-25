@@ -1,6 +1,6 @@
-import PdfjsContext from "ngx-pillow-pdf-viewer/pdfjsContext";
-import { SelectedTextContext } from "ngx-pillow-pdf-viewer/pdfjsContextTypes";
-import LoggingProvider from "ngx-pillow-pdf-viewer/utils/logging/loggingProvider";
+import PdfjsContext from "../pdfjsContext";
+import { SelectedTextContext } from "../pdfjsContextTypes";
+import LoggingProvider from "../utils/logging/loggingProvider";
 import LayerManager from "./layerManager";
 
 export type textContextElement = {

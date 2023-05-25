@@ -1,5 +1,6 @@
 
 
+
 <!-- Anchor for the "back to top" links -->
 <a id="readme-top"></a>
 
@@ -27,6 +28,9 @@ This is a PDF viewer for Angular. The project internally uses PDF.JS for the ren
       <a href="#project-overview">Project overview</a>
     </li>
     <li>
+      <a href="#frequently-asked-questions">Frequently asked questions</a>
+    </li>
+    <li>
       <a href="#issues">Issues</a>
     </li>
 	<li>
@@ -47,8 +51,9 @@ This is a PDF viewer for Angular. The project internally uses PDF.JS for the ren
 
 1. Clone the repository: `git clone https://github.com/PillowCoding/PillowPDFViewer.git`
 	- If you want to clone just the dev repository: `git clone -b dev --single-branch https://github.com/PillowCoding/PillowPDFViewer.git`
-2. Download the latest version of pdf.js (this project has been created with [`v3.3.122`](https://github.com/mozilla/pdf.js/releases/tag/v3.3.122)).
-3. Place the content of the release inside your `assets/` folder. By default the viewer is assumed to be in `assets/pdfjs/web/viewer.html`. If this is different, then you can modify the `[viewerRelativePath]` parameter.
+2. Download the latest version of pdf.js (this project has been created with [`v3.3.122`](https://github.com/mozilla/pdf.js/releases/tag/v3.3.122)). The project requires [pdfjs-3.3.122-dist.zip](https://github.com/mozilla/pdf.js/releases/download/v3.3.122/pdfjs-3.3.122-dist.zip).
+3. Place the content of the zip file inside your `assets/` folder.
+	- Note that by default the viewer is assumed to be in `assets/pdfjs/web/viewer.html`. If this is different, then you can modify the `[viewerRelativePath]` parameter of the component.
 
 ### Running the project
 1. Navigate into `src/pdf-viewer`.
@@ -73,6 +78,11 @@ This is a PDF viewer for Angular. The project internally uses PDF.JS for the ren
 ### Folder structure
 - `projects/ngx-pillow-pdf-viewer`: The main project containing all the functionalities for using the PDF viewer.
 - `src/`: The example project that implements the main project and showcases its usage.
+
+<!-- Frequently asked questions -->
+## Frequently asked questions
+#### How do I fix `Error: The PDFViewerApplication could not be found.`?
+- Follow the installation of the project. You are required to manually install and add PDF.JS due to its size. After inserting PDF.JS into the `assets` folder of your project, the error will be gone.
 
 <!-- Issues -->
 ## Issues
